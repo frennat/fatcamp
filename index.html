@@ -7,6 +7,10 @@
 <meta name="description" content="Lifted.AI — an agent that builds your session from what you've got and what you want to hit.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lifted">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <title>Lifted.AI</title>
 <style>
 /* ============================================================
@@ -38,6 +42,8 @@
   --shadow:0 1px 0 rgba(27,26,25,.05), 0 10px 30px -18px rgba(27,26,25,.45);
   --grain:rgba(27,26,25,.045);
   --muscle-base:#CFC9BC;
+  --rig-lit:rgb(38,36,40);
+  --rig-dim:rgb(178,172,161);
 
   --f-display:"Avenir Next Condensed","Haettenschweiler","Impact","Arial Narrow",sans-serif;
   --f-body:"Avenir Next","Avenir","Segoe UI",system-ui,sans-serif;
@@ -66,6 +72,8 @@
     --shadow:0 1px 0 rgba(0,0,0,.4), 0 18px 40px -24px #000;
     --grain:rgba(255,255,255,.035);
     --muscle-base:#3A3740;
+    --rig-lit:rgb(243,240,233);
+    --rig-dim:rgb(56,54,62);
   }
 }
 :root[data-theme="dark"]{
@@ -75,6 +83,7 @@
   --p20:#4E7EDB; --p10:#2FA765;
   --shadow:0 1px 0 rgba(0,0,0,.4), 0 18px 40px -24px #000;
   --grain:rgba(255,255,255,.035); --muscle-base:#3A3740;
+  --rig-lit:rgb(243,240,233); --rig-dim:rgb(56,54,62);
 }
 :root[data-theme="light"]{
   --bg:#EFEDE7; --bg-sunk:#E4E1D9; --surface:#FBFAF7; --surface-2:#F4F2EC;
@@ -83,6 +92,7 @@
   --p20:#2B62C4; --p10:#1F8A52;
   --shadow:0 1px 0 rgba(27,26,25,.05), 0 10px 30px -18px rgba(27,26,25,.45);
   --grain:rgba(27,26,25,.045); --muscle-base:#CFC9BC;
+  --rig-lit:rgb(38,36,40); --rig-dim:rgb(178,172,161);
 }
 
 *{box-sizing:border-box}
@@ -379,7 +389,21 @@ input[type=range]::-moz-range-thumb{
 .rigbox .tempo{
   position:absolute;top:8px;right:10px;font-family:var(--f-mono);font-size:9px;letter-spacing:.1em;color:var(--ink-3);
 }
-.rigctl{display:flex;align-items:center;gap:10px;padding:8px 10px;border-top:1px solid var(--line);background:var(--surface)}
+.rig3d{position:relative;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.rig3d.grabbing{cursor:grabbing}
+.rig3d canvas{display:block;width:100%;outline:none}
+.rig3d canvas:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.rigctl{display:flex;align-items:center;gap:8px;padding:8px 10px;border-top:1px solid var(--line);background:var(--surface);flex-wrap:wrap}
+.viewbtns{display:inline-flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.viewbtns button{font-family:var(--f-mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  padding:6px 8px;border:0;background:var(--surface-2);color:var(--ink-3);cursor:pointer;transition:all .14s}
+.viewbtns button + button{border-left:1px solid var(--line)}
+.viewbtns button:hover{color:var(--ink)}
+.viewbtns button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.drag-hint{position:absolute;left:10px;bottom:8px;font-family:var(--f-mono);font-size:8.5px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);pointer-events:none;
+  opacity:.85;transition:opacity .4s}
+.rig3d.touched .drag-hint{opacity:0}
 .rigctl .sp{font-family:var(--f-mono);font-size:9.5px;color:var(--ink-3);letter-spacing:.1em}
 .anatomybox{border:1px solid var(--line);border-radius:var(--r);background:var(--bg-sunk);padding:10px}
 .cuebox{margin-top:12px;border-left:2px solid var(--accent);padding:2px 0 2px 12px}
@@ -444,8 +468,46 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 .dlg-hd h3{font-size:21px;text-transform:uppercase}
 .dlg-bd{padding:16px 18px;max-height:62vh;overflow:auto}
 .dlg-ft{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
-.eqgroup{margin-bottom:16px}
-.eqgroup > .eyebrow{margin-bottom:8px}
+.eqsec{margin-bottom:22px}
+.eqsec:last-child{margin-bottom:4px}
+.eqsec > .eyebrow{margin-bottom:6px}
+.eqsec .sub{font-size:12.5px;color:var(--ink-3);margin:0 0 10px;line-height:1.5}
+.eqgroup{margin-bottom:14px}
+.eqg{font-family:var(--f-mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 7px}
+#eqCount{font-family:var(--f-mono);font-size:9px;letter-spacing:.12em;color:var(--accent)}
+.eqadd{display:flex;gap:8px;align-items:stretch}
+.eqadd textarea{
+  flex:1;font:inherit;font-size:13.5px;padding:9px 11px;border-radius:var(--r);resize:vertical;
+  border:1px solid var(--line-hard);background:var(--surface-2);color:var(--ink);min-height:44px;
+}
+.eqadd textarea::placeholder{color:var(--ink-3)}
+.eqadd .btn{align-self:stretch}
+.eqresult{font-size:12.5px;color:var(--p10);margin:8px 0 0;min-height:1em}
+.photorow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.photorow .btn{cursor:pointer}
+.photorow .btn[disabled]{opacity:.4;cursor:not-allowed}
+.gymphoto{display:block;width:100%;margin-top:10px;border-radius:var(--r);border:1px solid var(--line)}
+.chip.custom{border-style:dashed}
+.iconbtn.profile{padding:0;overflow:hidden}
+.pav{width:100%;height:100%;display:grid;place-items:center;font-family:var(--f-display);
+  font-size:13px;letter-spacing:.02em;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.35)}
+.prow .pav{width:34px;height:34px;border-radius:50%;flex:none;font-size:13px}
+.plist{display:grid;gap:6px;margin-bottom:12px}
+.prow{display:flex;align-items:center;gap:11px;padding:9px 11px;border:1px solid var(--line);
+  border-radius:var(--r);background:var(--surface-2)}
+.prow.on{border-color:var(--accent);background:var(--accent-wash)}
+.pmeta{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.pmeta b{font-family:var(--f-display);font-size:17px;text-transform:uppercase;line-height:1.05}
+.pmeta small{font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.ptag{font-family:var(--f-mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);border:1px solid var(--accent);border-radius:2px;padding:3px 6px}
+.prow-actions{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.pname{width:140px}
+.codebox{width:100%;margin-top:10px;font-family:var(--f-mono);font-size:11px;word-break:break-all;
+  padding:9px 11px;border-radius:var(--r);border:1px solid var(--line-hard);
+  background:var(--surface-2);color:var(--ink-2);resize:vertical}
+.dlg-note{font-size:12px;color:var(--ink-3);margin-right:auto;align-self:center}
 
 /* ---------- toast / xp burst ---------- */
 .toast{
@@ -475,8 +537,16 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 @keyframes rv{to{opacity:1;transform:none}}
 
 /* phone: the sticky header has to earn its height */
+.rankline{display:none}
 @media (max-width:520px){
-  .topbar{gap:7px;padding:7px var(--pad)}
+  .topbar{gap:7px;padding:7px var(--pad) 9px;position:sticky}
+  .hud-cell.rank{display:none}
+  .rankline{display:flex;align-items:center;gap:8px;flex-basis:100%;order:9;margin-top:-1px}
+  .rankline b{font-family:var(--f-mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink-3);font-weight:400;white-space:nowrap}
+  .rankline i{flex:1;height:2px;background:var(--bg-sunk);border-radius:2px;overflow:hidden;display:block;position:relative}
+  .rankline i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--pct,0%);background:var(--accent);
+    transition:width .8s cubic-bezier(.2,.8,.2,1)}
   .brand{font-size:21px}
   .brand i{width:9px;height:9px;margin-right:5px}
   .hud{gap:5px}
@@ -492,6 +562,11 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
   .mscheme{font-size:14px}
   .move-row{gap:10px;padding:12px var(--pad)}
   .sessionhead .actions{margin-left:0}
+  .statrow{grid-template-columns:repeat(2,1fr)}
+  .stat{border-bottom:1px solid var(--line)}
+  .stat:nth-child(2n){border-right:0}
+  .stat:nth-last-child(-n+2){border-bottom:0}
+  .stat small{white-space:nowrap}
 }
 
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
@@ -513,10 +588,12 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
       </div>
       <div class="hud-cell"><small>Points</small><b id="hudXp" class="num">0</b></div>
       <div class="hud-cell streak"><small>Streak</small><b id="hudStreak" class="num">0</b></div>
+      <button class="iconbtn profile" id="profileBtn" aria-label="Profile"></button>
       <button class="iconbtn" id="themeBtn" aria-label="Switch theme" title="Switch theme">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
       </button>
     </div>
+    <div class="rankline" aria-hidden="true"><b id="hudRankSm"></b><i id="hudXpLine"></i></div>
   </header>
 
   <section class="hero">
@@ -547,11 +624,11 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
         <p class="eyebrow">Where are you lifting</p>
         <div class="locrow">
           <div class="seg" id="locSeg" role="group" aria-label="Location">
-            <button type="button" data-loc="basement" aria-pressed="true">Basement</button>
+            <button type="button" data-loc="home" aria-pressed="true">Home</button>
             <button type="button" data-loc="public" aria-pressed="false">Public Gym</button>
           </div>
           <div class="locnote" id="locNote"></div>
-          <button class="linkbtn" id="editEquip" type="button">Edit the basement kit</button>
+          <button class="linkbtn" id="editEquip" type="button">Edit your home gym</button>
         </div>
       </div>
 
@@ -622,15 +699,31 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 <dialog id="equipDlg">
   <form method="dialog">
     <div class="dlg-hd">
-      <h3>The basement kit</h3>
+      <h3>Your home gym</h3>
       <button class="iconbtn" value="cancel" style="margin-left:auto" aria-label="Close">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
       </button>
     </div>
     <div class="dlg-bd" id="eqBody"></div>
     <div class="dlg-ft">
-      <button class="btn ghost" value="cancel" type="submit">Cancel</button>
-      <button class="btn primary" value="save" type="submit">Save kit</button>
+      <span class="dlg-note">Changes save as you make them</span>
+      <button class="btn primary" value="done" type="submit">Done</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="profileDlg">
+  <form method="dialog">
+    <div class="dlg-hd">
+      <h3>Profile</h3>
+      <button class="iconbtn" value="close" style="margin-left:auto" aria-label="Close">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
+    </div>
+    <div class="dlg-bd" id="pBody"></div>
+    <div class="dlg-ft">
+      <span class="dlg-note">Everything stays on this device</span>
+      <button class="btn primary" value="done" type="submit">Done</button>
     </div>
   </form>
 </dialog>
@@ -967,126 +1060,15 @@ function solve(j, root, l2, a2){
   return {q, L2, A2};
 }
 
-/* A figure lying flat is nearly 200 units long, so prone and hanging poses
-   run off the canvas once limbs are their true length. Measure the whole rep
-   and shrink only what doesn't fit — upright poses keep their native scale so
-   the figure stays the same size from one exercise to the next. */
-function fitFor(arch){
-  if(arch._fit !== undefined) return arch._fit;
-  let x0=1e9, y0=1e9, x1=-1e9, y1=-1e9;
-  for(let i=0;i<=4;i++){
-    const t = i/4;
-    const sol = solve(lerpArr(arch.a.j, arch.b.j, t), arch.root || "ankle",
-      (arch.a.l2&&arch.b.l2) ? lerpArr(arch.a.l2, arch.b.l2, t) : null,
-      (arch.a.a2&&arch.b.a2) ? lerpArr(arch.a.a2, arch.b.a2, t) : null);
-    const pts = sol.q.concat(sol.L2||[], sol.A2||[]);
-    for(let k=0;k<pts.length;k+=2){
-      const xs = arch.v === "front" ? [pts[k], 200-pts[k]] : [pts[k]];  /* front view mirrors */
-      for(const x of xs){ x0=Math.min(x0,x); x1=Math.max(x1,x); }
-      y0=Math.min(y0,pts[k+1]); y1=Math.max(y1,pts[k+1]);
-    }
-  }
-  /* pad by what the stroke actually adds: a head at the top, thin feet below */
-  x0-=14; x1+=14; y0-=15; y1+=6;
-  const L=4, R=196, T=2, B=232;
-  if(x0>=L && x1<=R && y0>=T && y1<=B) return (arch._fit = "");
-  const s  = Math.min(1, (R-L)/(x1-x0), (B-T)/(y1-y0));
-  const tx = L - x0*s + Math.max(0, ((R-L) - (x1-x0)*s)/2);
-  /* standing figures keep their feet on the floor; everything else centers */
-  const ty = (arch.root||"ankle") === "ankle"
-    ? B - y1*s
-    : T - y0*s + Math.max(0, ((B-T) - (y1-y0)*s)/2);
-  return (arch._fit = "translate("+tx.toFixed(1)+","+ty.toFixed(1)+") scale("+s.toFixed(3)+")");
-}
+/* ====================================================================== 3D
+   The figure is a real 3D skeleton drawn to canvas: joints carry depth, the
+   camera orbits, and bones paint back-to-front. The authored 2D poses supply
+   the plane the lift actually happens in — sagittal for side archetypes,
+   frontal for front ones — and limbs extrude off that plane to left and right.
+   ====================================================================== */
+const SH_W = 10, HIP_W = 7, SPLAY = 2;
+const BODY_CY = 120;
 
-const RIG_NS = "http://www.w3.org/2000/svg";
-function el(tag,attrs){ const n=document.createElementNS(RIG_NS,tag); for(const k in attrs) n.setAttribute(k,attrs[k]); return n; }
-
-/* Build one rig instance bound to an <svg>. Returns {set(t), arch} */
-function makeRig(host, archKey, opts){
-  opts = opts||{};
-  const arch = ARCH[archKey] || ARCH.stretch;
-  const props = propsFor(arch, opts.x);
-  const svg = el("svg",{viewBox:"0 0 200 240", width:"100%", role:"img",
-                        "aria-label":"Animated demonstration of the movement",
-                        style:"display:block;max-height:"+(opts.h||260)+"px"});
-  /* ground */
-  const gShadow = el("ellipse",{cx:100,cy:222,rx:52,ry:4,fill:"var(--ink)",opacity:".08"});
-  const ground  = el("line",{x1:14,y1:224,x2:186,y2:224,stroke:"var(--line-hard)","stroke-width":"1.2"});
-  const stage   = el("g",{});                       /* fit transform lives here */
-  const fit = fitFor(arch);
-  if(fit) stage.setAttribute("transform", fit);
-  const gPropB  = el("g",{});                       /* props behind body */
-  const gFar    = el("g",{opacity:".34"});          /* far-side limbs     */
-  const gBody   = el("g",{});
-  const gPropF  = el("g",{});                       /* props in front     */
-  stage.append(gPropB, gFar, gBody, gPropF);
-  stage.insertBefore(gShadow, gPropB);
-  svg.append(ground, stage);
-
-  const C = "var(--ink)";
-  const farLeg = el("path",{fill:"none",stroke:C,"stroke-width":"13","stroke-linecap":"round","stroke-linejoin":"round"});
-  const farArm = el("path",{fill:"none",stroke:C,"stroke-width":"9","stroke-linecap":"round","stroke-linejoin":"round"});
-  gFar.append(farLeg,farArm);
-
-  const leg   = el("path",{fill:"none",stroke:C,"stroke-width":"14","stroke-linecap":"round","stroke-linejoin":"round"});
-  const foot  = el("path",{fill:"none",stroke:C,"stroke-width":"7","stroke-linecap":"round"});
-  const torso = el("path",{fill:"none",stroke:C,"stroke-width":"25","stroke-linecap":"round"});
-  const neckL = el("path",{fill:"none",stroke:C,"stroke-width":"11","stroke-linecap":"round"});
-  const arm   = el("path",{fill:"none",stroke:C,"stroke-width":"9.5","stroke-linecap":"round","stroke-linejoin":"round"});
-  const head  = el("circle",{r:"12.5",fill:C});
-  const legM  = el("path",{fill:"none",stroke:C,"stroke-width":"14","stroke-linecap":"round","stroke-linejoin":"round",opacity:"0"});
-  const footM = el("path",{fill:"none",stroke:C,"stroke-width":"7","stroke-linecap":"round",opacity:"0"});
-  const armM  = el("path",{fill:"none",stroke:C,"stroke-width":"9.5","stroke-linecap":"round","stroke-linejoin":"round",opacity:"0"});
-  gBody.append(legM,footM,leg,foot,torso,neckL,armM,arm,head);
-
-  host.innerHTML = "";
-  host.appendChild(svg);
-
-  const mirrored = arch.v === "front";
-  const MX = x => 200 - x;
-
-  function set(t){
-    const A=arch.a, B=arch.b;
-    const raw  = lerpArr(A.j,B.j,t);
-    const rl2  = (A.l2&&B.l2) ? lerpArr(A.l2,B.l2,t) : null;
-    const ra2  = (A.a2&&B.a2) ? lerpArr(A.a2,B.a2,t) : null;
-    const sol  = solve(raw, arch.root || "ankle", rl2, ra2);
-    const j = sol.q, l2 = sol.L2, a2 = sol.A2;
-    const P = i => [j[i*2], j[i*2+1]];
-    const [hx,hy]=P(0),[nx,ny]=P(1),[sx,sy]=P(2),[ex,ey]=P(3),[wx,wy]=P(4),
-          [px,py]=P(5),[ix,iy]=P(6),[kx,ky]=P(7),[ax,ay]=P(8),[tx,ty]=P(9);
-
-    torso.setAttribute("d",`M${nx},${ny} L${px},${py}`);
-    neckL.setAttribute("d",`M${hx},${hy+8} L${nx},${ny}`);
-    head.setAttribute("cx",hx); head.setAttribute("cy",hy);
-    leg.setAttribute("d",`M${ix},${iy} L${kx},${ky} L${ax},${ay}`);
-    foot.setAttribute("d",`M${ax},${ay} L${tx},${ty}`);
-    arm.setAttribute("d",`M${sx},${sy} L${ex},${ey} L${wx},${wy}`);
-
-    if(mirrored){
-      legM.setAttribute("opacity",".85"); footM.setAttribute("opacity",".85"); armM.setAttribute("opacity",".85");
-      legM.setAttribute("d",`M${MX(ix)},${iy} L${MX(kx)},${ky} L${MX(ax)},${ay}`);
-      footM.setAttribute("d",`M${MX(ax)},${ay} L${MX(tx)},${ty}`);
-      armM.setAttribute("d",`M${MX(sx)},${sy} L${MX(ex)},${ey} L${MX(wx)},${wy}`);
-      farLeg.setAttribute("d",""); farArm.setAttribute("d","");
-    }else{
-      legM.setAttribute("opacity","0"); footM.setAttribute("opacity","0"); armM.setAttribute("opacity","0");
-      const l = l2 ? `M${ix-5},${iy+2} L${l2[0]-5},${l2[1]+2} L${l2[2]-5},${l2[3]+2}`
-                   : `M${ix-6},${iy+3} L${kx-6},${ky+3} L${ax-6},${ay+2}`;
-      farLeg.setAttribute("d", l2 ? `M${ix-5},${iy+2} L${l2[0]},${l2[1]} L${l2[2]},${l2[3]}` : l);
-      farArm.setAttribute("d", a2 ? `M${sx-5},${sy+2} L${a2[0]},${a2[1]} L${a2[2]},${a2[3]}`
-                                  : `M${sx-6},${sy+3} L${ex-6},${ey+3} L${wx-6},${wy+3}`);
-    }
-    drawProps(gPropB,gPropF,props,{hx,hy,nx,ny,sx,sy,ex,ey,wx,wy,px,py,ix,iy,kx,ky,ax,ay,tx,ty},mirrored,t);
-  }
-  set(0);
-  return {set, arch};
-}
-
-/* The implement belongs to the exercise, not the archetype — a bodyweight calf
-   raise and a loaded one share a pose but not a dumbbell. Archetypes declare
-   *where* the hands hold something; the exercise decides *what*. */
 const HAND_POS = {bb_back:"back", bb_front:"hands", bb_hands:"hands", bb_lap:"lap",
                   db_hands:"hands", kb_hands:"hands"};
 function implementOf(x){
@@ -1111,111 +1093,368 @@ function propsFor(arch, x){
   return out;
 }
 
-/* equipment drawn around the figure */
-function drawProps(back, front, list, q, mirrored, t){
-  let B="", F="";
-  const plate = (x,y,r) =>
-    `<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="var(--accent)" stroke-width="5"/>`+
-    `<circle cx="${x}" cy="${y}" r="${r-6}" fill="none" stroke="var(--accent)" stroke-width="1.2" opacity=".55"/>`+
-    `<circle cx="${x}" cy="${y}" r="2.4" fill="var(--accent)"/>`;
-  const dbell = (x,y) =>
-    `<g><rect x="${x-4}" y="${y-11}" width="8" height="22" rx="2.5" fill="var(--accent)"/>`+
-    `<rect x="${x-6.5}" y="${y-8}" width="13" height="16" rx="2" fill="var(--accent)" opacity=".85"/></g>`;
-  const bar = (x,y,len) => `<line x1="${x-len}" y1="${y}" x2="${x+len}" y2="${y}" stroke="var(--ink-2)" stroke-width="3" stroke-linecap="round"/>`;
-  const kbell = (x,y) =>
-    `<g><path d="M${x-8},${y+4} a8,9 0 1,1 16,0 z" fill="var(--accent)"/>`+
-    `<path d="M${x-5},${y-2} a5,6 0 0,1 10,0" fill="none" stroke="var(--accent)" stroke-width="3"/></g>`;
-  const HAND_XY = {hands:[q.wx,q.wy], back:[q.sx-2,q.sy-6], lap:[q.px+4,q.py-12]};
+/* solved 2D pose -> named 3D joints */
+function pose3(sol, view){
+  const q = sol.q, L2 = sol.L2, A2 = sol.A2;
+  const P = i => [q[i*2], q[i*2+1]];
+  const hd=P(0), nk=P(1), sh=P(2), el=P(3), wr=P(4), pv=P(5), hp=P(6), kn=P(7), an=P(8), to=P(9);
+  if(view === "front"){
+    const M = x => 200 - x;                     /* frontal plane: no extrusion */
+    return {head:[hd[0],hd[1],0], neck:[nk[0],nk[1],0], pelvis:[pv[0],pv[1],0],
+      shR:[sh[0],sh[1],0], elR:[el[0],el[1],0], wrR:[wr[0],wr[1],0],
+      shL:[M(sh[0]),sh[1],0], elL:[M(el[0]),el[1],0], wrL:[M(wr[0]),wr[1],0],
+      hipR:[hp[0],hp[1],0], knR:[kn[0],kn[1],0], anR:[an[0],an[1],0], toR:[to[0],to[1],0],
+      hipL:[M(hp[0]),hp[1],0], knL:[M(kn[0]),kn[1],0], anL:[M(an[0]),an[1],0], toL:[M(to[0]),to[1],0]};
+  }
+  const lk = L2 ? [L2[0],L2[1]] : kn, la = L2 ? [L2[2],L2[3]] : an, lt = L2 ? [L2[4],L2[5]] : to;
+  const ae = A2 ? [A2[0],A2[1]] : el, aw = A2 ? [A2[2],A2[3]] : wr;
+  return {head:[hd[0],hd[1],0], neck:[nk[0],nk[1],0], pelvis:[pv[0],pv[1],0],
+    shR:[sh[0],sh[1],SH_W],  elR:[el[0],el[1],SH_W],  wrR:[wr[0],wr[1],SH_W],
+    shL:[sh[0],sh[1],-SH_W], elL:[ae[0],ae[1],-SH_W], wrL:[aw[0],aw[1],-SH_W],
+    hipR:[hp[0],hp[1],HIP_W],  knR:[kn[0],kn[1],HIP_W+SPLAY],  anR:[an[0],an[1],HIP_W],  toR:[to[0],to[1],HIP_W],
+    hipL:[hp[0],hp[1],-HIP_W], knL:[lk[0],lk[1],-(HIP_W+SPLAY)], anL:[la[0],la[1],-HIP_W], toL:[lt[0],lt[1],-HIP_W]};
+}
+
+const BONES = [
+  ["neck","pelvis",27],["head","neck",13],["shL","shR",14],["hipL","hipR",16],
+  ["shR","elR",10.5],["elR","wrR",8.5],["shL","elL",10.5],["elL","wrL",8.5],
+  ["hipR","knR",15],["knR","anR",12.5],["anR","toR",7],
+  ["hipL","knL",15],["knL","anL",12.5],["anL","toL",7]
+];
+
+function makeCam(view){
+  return {yaw: view === "front" ? 0.24 : 0.52, pitch: 0.10, d: 620};
+}
+function project(p, cam, fit){
+  const x = p[0]-100, y = p[1]-BODY_CY, z = p[2];
+  const cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw);
+  const X  =  x*cy + z*sy;
+  const Zr = -x*sy + z*cy;
+  const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+  const Y  = y*cp - Zr*sp;
+  const Z  = y*sp + Zr*cp;
+  const k  = cam.d/(cam.d + Z);
+  return [fit.ox + X*k*fit.s, fit.oy + Y*k*fit.s, Z, k];
+}
+
+/* colour helpers — read the live theme so both light and dark shade correctly */
+function rgbOf(str){
+  const m = str.match(/-?\d+(\.\d+)?/g);
+  return m ? [+m[0], +m[1], +m[2]] : [128,128,128];
+}
+/* the resolved palette only changes when the theme does */
+let PAL = null, palKey = "";
+function palette(){
+  const k = (document.documentElement.getAttribute("data-theme")||"auto")+"|"+
+            matchMedia("(prefers-color-scheme: dark)").matches;
+  if(PAL && palKey === k) return PAL;
+  const cs = getComputedStyle(document.documentElement);
+  palKey = k;
+  return (PAL = {
+    ink:  rgbOf(cs.getPropertyValue("--rig-lit") || "rgb(240,237,230)"),
+    dim:  rgbOf(cs.getPropertyValue("--rig-dim") || "rgb(60,58,66)"),
+    line: cs.getPropertyValue("--line").trim() || "#333",
+    acc:  cs.getPropertyValue("--accent").trim() || "#e8503f",
+    sunk: cs.getPropertyValue("--bg-sunk").trim() || "#111"
+  });
+}
+function mix(a,b,t){ return "rgb("+Math.round(a[0]+(b[0]-a[0])*t)+","+Math.round(a[1]+(b[1]-a[1])*t)+","+Math.round(a[2]+(b[2]-a[2])*t)+")"; }
+
+/* world-space bounds across the whole rep, so the figure fills the frame */
+function boundsFor(arch){
+  if(arch._b3) return arch._b3;
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(let i=0;i<=6;i++){
+    const t = i/6;
+    const sol = solve(lerpArr(arch.a.j, arch.b.j, t), arch.root || "ankle",
+      (arch.a.l2&&arch.b.l2) ? lerpArr(arch.a.l2, arch.b.l2, t) : null,
+      (arch.a.a2&&arch.b.a2) ? lerpArr(arch.a.a2, arch.b.a2, t) : null);
+    const J3 = pose3(sol, arch.v);
+    for(const k in J3){
+      const p = J3[k];
+      x0=Math.min(x0,p[0]); x1=Math.max(x1,p[0]);
+      y0=Math.min(y0,p[1]); y1=Math.max(y1,p[1]);
+    }
+  }
+  return (arch._b3 = {x0:x0-18, x1:x1+18, y0:y0-20, y1:y1+16});
+}
+
+function makeRig(host, archKey, opts){
+  opts = opts || {};
+  const arch = ARCH[archKey] || ARCH.stretch;
+  const props = propsFor(arch, opts.x);
+  const cam = makeCam(arch.v);
+  const bb = boundsFor(arch);
+
+  const wrap = document.createElement("div");
+  wrap.className = "rig3d";
+  const cv = document.createElement("canvas");
+  cv.setAttribute("role","img");
+  cv.setAttribute("aria-label","Rotatable 3D demonstration of the movement");
+  cv.tabIndex = 0;
+  wrap.appendChild(cv);
+  host.innerHTML = ""; host.appendChild(wrap);
+
+  const ctx = cv.getContext("2d");
+  let W = 0, H = 0, fit = {s:1, ox:0, oy:0};
+  function resize(){
+    const r = wrap.getBoundingClientRect();
+    W = Math.max(200, r.width); H = opts.h || 260;
+    const dpr = Math.min(2.5, window.devicePixelRatio || 1);
+    cv.width = W*dpr; cv.height = H*dpr; cv.style.width = W+"px"; cv.style.height = H+"px";
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    const s = Math.min(W/(bb.x1-bb.x0), H/(bb.y1-bb.y0)) * 0.94;
+    fit = {s, ox: W/2 - ((bb.x0+bb.x1)/2 - 100)*s, oy: H/2 - ((bb.y0+bb.y1)/2 - BODY_CY)*s};
+  }
+  resize();
+  const ro = window.ResizeObserver ? new ResizeObserver(resize) : null;
+  if(ro) ro.observe(wrap);
+
+  let curT = 0;
+  function set(t){ curT = t; draw(); }
+
+  function draw(){
+    if(!W) return;
+    const {ink, dim, line, acc, sunk} = palette();
+    ctx.clearRect(0,0,W,H);
+
+    const sol = solve(lerpArr(arch.a.j, arch.b.j, curT), arch.root || "ankle",
+      (arch.a.l2&&arch.b.l2) ? lerpArr(arch.a.l2, arch.b.l2, curT) : null,
+      (arch.a.a2&&arch.b.a2) ? lerpArr(arch.a.a2, arch.b.a2, curT) : null);
+    const J3 = pose3(sol, arch.v);
+    const S = {};
+    for(const k in J3) S[k] = project(J3[k], cam, fit);
+
+    /* floor grid, drawn first — it is what makes the rotation legible */
+    ctx.save();
+    ctx.strokeStyle = line; ctx.globalAlpha = .5; ctx.lineWidth = 1;
+    const GY = 226, G = 78, STEP = 26;
+    for(let g=-G; g<=G; g+=STEP){
+      let p = project([100+g, GY, -G], cam, fit), q2 = project([100+g, GY, G], cam, fit);
+      ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(q2[0],q2[1]); ctx.stroke();
+      p = project([100-G, GY, g], cam, fit); q2 = project([100+G, GY, g], cam, fit);
+      ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(q2[0],q2[1]); ctx.stroke();
+    }
+    ctx.restore();
+
+    /* everything else sorts back-to-front together */
+    /* near limbs read bright, far limbs recede but stay visible */
+    const litness = d => Math.max(0.16, Math.min(1, 0.74 - d/80));
+    const items = [];
+    for(const [A,B,w] of BONES){
+      const p = S[A], q2 = S[B];
+      if(!p || !q2) continue;
+      items.push({z:(p[2]+q2[2])/2, f:()=>{
+        const lw = w * fit.s * ((p[3]+q2[3])/2);
+        ctx.lineCap = "round";
+        ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(q2[0],q2[1]);
+        ctx.strokeStyle = sunk; ctx.lineWidth = lw + 3.5; ctx.stroke();  /* separates overlaps */
+        ctx.strokeStyle = mix(dim, ink, litness((p[2]+q2[2])/2));
+        ctx.lineWidth = lw; ctx.stroke();
+      }});
+    }
+    const hd = S.head;
+    items.push({z:hd[2], f:()=>{
+      const r = 13*fit.s*hd[3];
+      ctx.fillStyle = sunk;
+      ctx.beginPath(); ctx.arc(hd[0], hd[1], r+1.8, 0, 7); ctx.fill();
+      ctx.fillStyle = mix(dim, ink, litness(hd[2]));
+      ctx.beginPath(); ctx.arc(hd[0], hd[1], r, 0, 7); ctx.fill();
+    }});
+    drawProps3(items, props, J3, S, cam, fit, ctx, acc, line, curT);
+
+    items.sort((a,b)=> b.z - a.z);
+    for(const it of items) it.f();
+  }
+
+  /* orbit by drag, on mouse or finger */
+  let drag = null;
+  const down = e => { drag = {x:(e.touches?e.touches[0]:e).clientX, y:(e.touches?e.touches[0]:e).clientY,
+                             yaw:cam.yaw, pitch:cam.pitch}; wrap.classList.add("grabbing"); };
+  const move = e => {
+    if(!drag) return;
+    const t = e.touches ? e.touches[0] : e;
+    cam.yaw   = drag.yaw + (t.clientX - drag.x) * 0.011;
+    cam.pitch = Math.max(-0.5, Math.min(0.7, drag.pitch + (t.clientY - drag.y) * 0.006));
+    if(e.cancelable) e.preventDefault();
+    draw();
+  };
+  const up = () => { drag = null; wrap.classList.remove("grabbing"); };
+  wrap.addEventListener("mousedown", down);
+  window.addEventListener("mousemove", move);
+  window.addEventListener("mouseup", up);
+  wrap.addEventListener("touchstart", down, {passive:true});
+  wrap.addEventListener("touchmove", move, {passive:false});
+  wrap.addEventListener("touchend", up);
+  cv.addEventListener("keydown", e => {
+    if(e.key === "ArrowLeft"){ cam.yaw -= .18; draw(); e.preventDefault(); }
+    if(e.key === "ArrowRight"){ cam.yaw += .18; draw(); e.preventDefault(); }
+    if(e.key === "ArrowUp"){ cam.pitch = Math.max(-.5, cam.pitch-.09); draw(); e.preventDefault(); }
+    if(e.key === "ArrowDown"){ cam.pitch = Math.min(.7, cam.pitch+.09); draw(); e.preventDefault(); }
+  });
+
+  return {set, cam, draw, view:arch.v,
+          setView(v){ cam.yaw = v; cam.pitch = .10; draw(); },
+          destroy(){ if(ro) ro.disconnect(); window.removeEventListener("mousemove",move); window.removeEventListener("mouseup",up); }};
+}
+
+/* ---- equipment, as 3D primitives that sort with the body ---- */
+function drawProps3(items, list, J3, S, cam, fit, ctx, acc, line, t){
+  const P = p => project(p, cam, fit);
+  const seg = (a,b,w,col,cap) => items.push({z:(a[2]+b[2])/2, f:()=>{
+    ctx.strokeStyle = col; ctx.lineWidth = w*fit.s*((a[3]+b[3])/2); ctx.lineCap = cap||"round";
+    ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.stroke(); }});
+  /* a plate is a disc in the sagittal plane: yaw squashes its width */
+  const disc = (c, r, col, w) => items.push({z:c[2], f:()=>{
+    ctx.strokeStyle = col; ctx.lineWidth = (w||5)*fit.s*c[3];
+    ctx.beginPath();
+    ctx.ellipse(c[0], c[1], Math.max(.6, r*fit.s*c[3]*Math.abs(Math.cos(cam.yaw))),
+                r*fit.s*c[3], 0, 0, 7);
+    ctx.stroke(); }});
+  const solidDisc = (c, r, col) => items.push({z:c[2], f:()=>{
+    ctx.fillStyle = col; ctx.beginPath();
+    ctx.ellipse(c[0], c[1], Math.max(.6, r*fit.s*c[3]*Math.abs(Math.cos(cam.yaw))), r*fit.s*c[3], 0, 0, 7);
+    ctx.fill(); }});
+  const slab = (x0,x1,y,z0,z1,col) => {
+    const c = [P([x0,y,z0]),P([x1,y,z0]),P([x1,y,z1]),P([x0,y,z1])];
+    items.push({z:(c[0][2]+c[2][2])/2, f:()=>{
+      ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(c[0][0],c[0][1]);
+      for(let i=1;i<4;i++) ctx.lineTo(c[i][0],c[i][1]);
+      ctx.closePath(); ctx.fill(); }});
+  };
 
   for(const pr of list){
     if(pr.indexOf("@") > 0){
       const [impl,pos] = pr.split("@");
-      const [x,y] = HAND_XY[pos] || HAND_XY.hands;
-      if(impl === "bar")          F += bar(x,y,28) + plate(x,y,15);
-      else if(impl === "barOnly") F += bar(x,y,30);
-      else if(impl === "db"){     F += dbell(x,y); if(mirrored) F += dbell(200-x,y); }
-      else if(impl === "kb")      F += kbell(x,y);
-      else if(impl === "med")     F += `<circle cx="${x}" cy="${y}" r="11" fill="var(--accent)"/>`;
-      else if(impl === "cable"){
-        const axp = 194, ayp = Math.max(30, y-26);
-        F += `<rect x="${axp-14}" y="${ayp-16}" width="16" height="46" rx="2" fill="none" stroke="var(--line-hard)" stroke-width="2"/>`+
-             `<rect x="${axp-11}" y="${ayp-13}" width="10" height="22" fill="var(--line-hard)"/>`+
-             `<path d="M${x},${y} L${axp-6},${ayp-16}" fill="none" stroke="var(--ink-2)" stroke-width="1.6"/>`+
-             `<rect x="${x-6}" y="${y-3.5}" width="12" height="7" rx="3.5" fill="var(--accent)"/>`;
-        if(mirrored) F += `<path d="M${200-x},${y} L${axp-6},${ayp-16}" fill="none" stroke="var(--ink-2)" stroke-width="1.6"/>`+
-                          `<rect x="${194-x}" y="${y-3.5}" width="12" height="7" rx="3.5" fill="var(--accent)"/>`;
-      }
-      else if(impl === "band"){
-        F += `<path d="M${x},${y} L${x-4},214" fill="none" stroke="var(--accent)" stroke-width="2.5" opacity=".85"/>`+
-             `<rect x="${x-6}" y="${y-3}" width="12" height="6" rx="3" fill="var(--accent)"/>`;
-        if(mirrored) F += `<path d="M${200-x},${y} L${204-x},214" fill="none" stroke="var(--accent)" stroke-width="2.5" opacity=".85"/>`+
-                          `<rect x="${194-x}" y="${y-3}" width="12" height="6" rx="3" fill="var(--accent)"/>`;
+      let cx, cy, cz0, cz1;
+      if(pos === "back"){ const s = J3.shR, l = J3.shL; cx = s[0]-2; cy = s[1]-7; cz0 = l[2]; cz1 = s[2]; }
+      else if(pos === "lap"){ const p = J3.pelvis; cx = p[0]+4; cy = p[1]-13; cz0 = -14; cz1 = 14; }
+      else { cx = J3.wrR[0]; cy = J3.wrR[1]; cz0 = J3.wrL[2]; cz1 = J3.wrR[2]; }
+      const useTwoHands = (pos !== "hands") || Math.abs(J3.wrR[0]-J3.wrL[0]) < 26;
+
+      if(impl === "bar" || impl === "barOnly"){
+        const half = 62;
+        seg(P([cx,cy,-half]), P([cx,cy,half]), 3.2, line, "round");
+        if(impl === "bar"){
+          disc(P([cx,cy,-half+5]), 13, acc, 4.5);
+          disc(P([cx,cy, half-5]), 13, acc, 4.5);
+        }
+      } else if(impl === "db"){
+        const put = (jx,jy,jz) => {
+          seg(P([jx,jy,jz-9]), P([jx,jy,jz+9]), 5, acc, "round");
+          solidDisc(P([jx,jy,jz-9]), 7, acc); solidDisc(P([jx,jy,jz+9]), 7, acc);
+        };
+        if(useTwoHands){ put(J3.wrR[0],J3.wrR[1],J3.wrR[2]); put(J3.wrL[0],J3.wrL[1],J3.wrL[2]); }
+        else put(J3.wrR[0],J3.wrR[1],J3.wrR[2]);
+      } else if(impl === "kb"){
+        const w = J3.wrR;
+        solidDisc(P([w[0], w[1]+9, w[2]]), 10, acc);
+        seg(P([w[0]-5,w[1]-1,w[2]]), P([w[0]+5,w[1]-1,w[2]]), 3, acc, "round");
+      } else if(impl === "med"){
+        const w = J3.wrR; solidDisc(P([w[0],w[1],w[2]]), 11, acc);
+      } else if(impl === "cable"){
+        const w = J3.wrR, ay = Math.max(30, w[1]-26);
+        slab(184,196, ay-16, -8, 8, line);
+        seg(P([w[0],w[1],w[2]]), P([190, ay-16, 0]), 1.6, line, "butt");
+        solidDisc(P([w[0],w[1],w[2]]), 5, acc);
+      } else if(impl === "band"){
+        const w = J3.wrR;
+        seg(P([w[0],w[1],w[2]]), P([w[0]-4,214,w[2]]), 2.4, acc, "round");
+        if(useTwoHands){ const l = J3.wrL; seg(P([l[0],l[1],l[2]]), P([l[0]-4,214,l[2]]), 2.4, acc, "round"); }
       }
       continue;
     }
     switch(pr){
       case "bench": {
-        /* the slab tracks the solved torso, so it stays under the lifter */
-        const y = Math.max(q.ny, q.py) + 13, x = Math.min(q.nx, q.px) - 26, w = Math.abs(q.px - q.nx) + 52;
-        B += `<rect x="${x}" y="${y}" width="${w}" height="9" rx="2" fill="var(--line-hard)"/>`+
-             `<rect x="${x+13}" y="${y+9}" width="7" height="${Math.max(6,206-y)}" fill="var(--line-hard)"/>`+
-             `<rect x="${x+w-20}" y="${y+9}" width="7" height="${Math.max(6,206-y)}" fill="var(--line-hard)"/>`;
+        const y = Math.max(J3.neck[1], J3.pelvis[1]) + 14;
+        const x0 = Math.min(J3.neck[0], J3.pelvis[0]) - 26, x1 = Math.max(J3.neck[0], J3.pelvis[0]) + 20;
+        slab(x0, x1, y, -20, 20, line);
+        seg(P([x0+14,y,0]), P([x0+14,214,0]), 6, line, "butt");
+        seg(P([x1-14,y,0]), P([x1-14,214,0]), 6, line, "butt");
         break; }
       case "bench_low": {
-        const y = q.sy + 13, x = q.sx - 30;
-        B += `<rect x="${x}" y="${y}" width="86" height="9" rx="2" fill="var(--line-hard)"/>`+
-             `<rect x="${x+12}" y="${y+9}" width="7" height="${Math.max(6,212-y)}" fill="var(--line-hard)"/>`;
+        const y = J3.shR[1] + 14, x0 = J3.shR[0] - 32;
+        slab(x0, x0+84, y, -20, 20, line);
+        seg(P([x0+14,y,0]), P([x0+14,216,0]), 6, line, "butt");
         break; }
       case "bench_incl": {
-        /* pad laid along the torso, offset to the back of the spine */
-        const dx = q.px-q.nx, dy = q.py-q.ny, L = Math.hypot(dx,dy)||1;
-        const nx = -dy/L*15, ny = dx/L*15;   /* torso normal, 15 units of padding */
-        const ax = q.nx+nx, ay = q.ny+ny, bx = q.px+nx, by = q.py+ny;
-        B += `<path d="M${q.nx},${q.ny} L${ax},${ay} L${bx},${by} L${q.px},${q.py} Z" fill="var(--line-hard)"/>`+
-             `<rect x="${(ax+bx)/2-4}" y="${(ay+by)/2}" width="7" height="${Math.max(8,208-(ay+by)/2)}" fill="var(--line-hard)"/>`;
+        const n = J3.neck, p = J3.pelvis;
+        const dx = p[0]-n[0], dy = p[1]-n[1], L = Math.hypot(dx,dy)||1;
+        const nx = -dy/L*16, ny = dx/L*16;
+        const a = P([n[0]+nx, n[1]+ny, -18]), b = P([p[0]+nx, p[1]+ny, -18]);
+        const c = P([p[0]+nx, p[1]+ny, 18]), d = P([n[0]+nx, n[1]+ny, 18]);
+        items.push({z:(a[2]+c[2])/2, f:()=>{ ctx.fillStyle = line; ctx.beginPath();
+          ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.lineTo(c[0],c[1]); ctx.lineTo(d[0],d[1]);
+          ctx.closePath(); ctx.fill(); }});
+        seg(P([(n[0]+p[0])/2+nx,(n[1]+p[1])/2+ny,0]), P([(n[0]+p[0])/2+nx,214,0]), 6, line, "butt");
         break; }
-      case "seat":
-        B += `<rect x="86" y="${q.py+6}" width="66" height="9" rx="2" fill="var(--line-hard)"/>`+
-             `<rect x="112" y="${q.py+15}" width="8" height="${Math.max(8,206-(q.py+15))}" fill="var(--line-hard)"/>`; break;
-      case "pullup_bar":
-        B += `<line x1="${q.wx-54}" y1="${q.wy}" x2="${q.wx+54}" y2="${q.wy}" stroke="var(--ink-2)" stroke-width="5" stroke-linecap="round"/>`+
-             `<line x1="${q.wx-48}" y1="${q.wy}" x2="${q.wx-48}" y2="2" stroke="var(--line-hard)" stroke-width="4"/>`+
-             `<line x1="${q.wx+48}" y1="${q.wy}" x2="${q.wx+48}" y2="2" stroke="var(--line-hard)" stroke-width="4"/>`; break;
-      case "dip_bars":
-        B += `<line x1="${q.wx-46}" y1="${q.wy}" x2="${q.wx+46}" y2="${q.wy}" stroke="var(--ink-2)" stroke-width="5" stroke-linecap="round"/>`+
-             `<line x1="${q.wx-36}" y1="${q.wy}" x2="${q.wx-36}" y2="216" stroke="var(--line-hard)" stroke-width="4"/>`+
-             `<line x1="${q.wx+36}" y1="${q.wy}" x2="${q.wx+36}" y2="216" stroke="var(--line-hard)" stroke-width="4"/>`; break;
-      case "cable_high":
-        B += `<rect x="150" y="14" width="26" height="60" rx="2" fill="none" stroke="var(--line-hard)" stroke-width="2"/>`+
-             `<rect x="154" y="18" width="18" height="${20+t*22}" fill="var(--line-hard)"/>`+
-             `<path d="M163,16 L163,10 L${q.wx},${q.wy}" fill="none" stroke="var(--ink-2)" stroke-width="1.6"/>`;
-        F += `<circle cx="${q.wx}" cy="${q.wy}" r="4" fill="var(--accent)"/>`; break;
-      case "machine_pad":
-        F += `<rect x="${q.ax-8}" y="${q.ay-6}" width="16" height="12" rx="4" fill="var(--accent)"/>`; break;
-      case "machine_pad2":
-        F += `<rect x="${q.ax-8}" y="${q.ay-6}" width="16" height="12" rx="4" fill="var(--accent)"/>`; break;
-      case "box":
-        B += `<rect x="${q.ax-24}" y="${q.ay+5}" width="72" height="${Math.max(10,218-q.ay)}" fill="none" stroke="var(--line-hard)" stroke-width="3"/>`; break;
-      case "wheel":
-        F += `<circle cx="${q.wx}" cy="${q.wy+6}" r="10" fill="none" stroke="var(--accent)" stroke-width="4"/>`+
-             `<line x1="${q.wx-13}" y1="${q.wy+6}" x2="${q.wx+13}" y2="${q.wy+6}" stroke="var(--ink-2)" stroke-width="3"/>`; break;
-      case "rope":
-        F += `<path d="M${q.wx},${q.wy} Q${100},${170+Math.sin(t*Math.PI)*60} ${200-q.wx},${q.wy}" fill="none" stroke="var(--accent)" stroke-width="2" opacity=".8"/>`; break;
-      case "bike":
-        B += `<circle cx="62" cy="188" r="30" fill="none" stroke="var(--line-hard)" stroke-width="3"/>`+
-             `<circle cx="152" cy="196" r="22" fill="none" stroke="var(--line-hard)" stroke-width="3"/>`+
-             `<path d="M62,188 L104,150 L128,196 M104,150 L120,132" fill="none" stroke="var(--line-hard)" stroke-width="3"/>`; break;
-      case "erg":
-        B += `<line x1="26" y1="196" x2="188" y2="196" stroke="var(--line-hard)" stroke-width="4"/>`+
-             `<circle cx="34" cy="168" r="20" fill="none" stroke="var(--line-hard)" stroke-width="3"/>`+
-             `<path d="M34,168 L${q.wx},${q.wy}" fill="none" stroke="var(--ink-2)" stroke-width="1.6"/>`;
-        F += `<line x1="${q.wx-9}" y1="${q.wy-4}" x2="${q.wx+9}" y2="${q.wy+4}" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>`; break;
-      case "sled":
-        B += `<path d="M180,214 L180,150 M170,214 L192,214" fill="none" stroke="var(--line-hard)" stroke-width="4"/>`+
-             `<path d="M${q.wx},${q.wy} L178,158" stroke="var(--ink-2)" stroke-width="2.5"/>`; break;
+      case "seat": {
+        const p = J3.pelvis;
+        slab(p[0]-30, p[0]+32, p[1]+13, -18, 18, line);
+        seg(P([p[0]+4,p[1]+13,0]), P([p[0]+4,212,0]), 6, line, "butt");
+        break; }
+      case "pullup_bar": {
+        const w = J3.wrR;
+        seg(P([w[0],w[1],-58]), P([w[0],w[1],58]), 4.5, line, "round");
+        seg(P([w[0],w[1],-52]), P([w[0],2,-52]), 3.4, line, "butt");
+        seg(P([w[0],w[1], 52]), P([w[0],2, 52]), 3.4, line, "butt");
+        break; }
+      case "dip_bars": {
+        const w = J3.wrR;
+        seg(P([w[0]-42,w[1],-24]), P([w[0]+42,w[1],-24]), 4.2, line, "round");
+        seg(P([w[0]-42,w[1], 24]), P([w[0]+42,w[1], 24]), 4.2, line, "round");
+        seg(P([w[0]-30,w[1],-24]), P([w[0]-30,216,-24]), 3.6, line, "butt");
+        seg(P([w[0]-30,w[1], 24]), P([w[0]-30,216, 24]), 3.6, line, "butt");
+        break; }
+      case "cable_high": {
+        const w = J3.wrR;
+        slab(178,196, 20, -10, 10, line);
+        seg(P([w[0],w[1],w[2]]), P([187,26,0]), 1.6, line, "butt");
+        solidDisc(P([w[0],w[1],w[2]]), 5, acc);
+        break; }
+      case "machine_pad": case "machine_pad2": {
+        const a = J3.anR;
+        seg(P([a[0],a[1],-11]), P([a[0],a[1],11]), 11, acc, "round");
+        break; }
+      case "box": {
+        const a = J3.anR;
+        slab(a[0]-24, a[0]+46, a[1]+6, -26, 26, line);
+        seg(P([a[0]-20,a[1]+6,-24]), P([a[0]-20,218,-24]), 4, line, "butt");
+        seg(P([a[0]+42,a[1]+6,-24]), P([a[0]+42,218,-24]), 4, line, "butt");
+        break; }
+      case "wheel": {
+        const w = J3.wrR;
+        disc(P([w[0],w[1]+7,0]), 10, acc, 4);
+        seg(P([w[0],w[1]+7,-13]), P([w[0],w[1]+7,13]), 3, line, "round");
+        break; }
+      case "rope": {
+        const w = J3.wrR, sag = 170 + Math.sin(t*Math.PI)*58;
+        const a = P([w[0],w[1],w[2]]), m = P([100,sag,0]), b = P([J3.wrL[0],J3.wrL[1],J3.wrL[2]]);
+        items.push({z:m[2], f:()=>{ ctx.strokeStyle = acc; ctx.lineWidth = 2*fit.s; ctx.globalAlpha=.85;
+          ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.quadraticCurveTo(m[0],m[1],b[0],b[1]); ctx.stroke();
+          ctx.globalAlpha=1; }});
+        break; }
+      case "bike": {
+        disc(P([62,188,0]), 30, line, 3); disc(P([152,196,0]), 22, line, 3);
+        seg(P([62,188,0]), P([104,150,0]), 3, line, "round");
+        seg(P([104,150,0]), P([128,196,0]), 3, line, "round");
+        seg(P([104,150,0]), P([120,132,0]), 3, line, "round");
+        break; }
+      case "erg": {
+        const w = J3.wrR;
+        seg(P([26,198,0]), P([190,198,0]), 4, line, "butt");
+        disc(P([34,168,0]), 20, line, 3);
+        seg(P([34,168,0]), P([w[0],w[1],0]), 1.6, line, "butt");
+        seg(P([w[0],w[1],-12]), P([w[0],w[1],12]), 4, acc, "round");
+        break; }
+      case "sled": {
+        const w = J3.wrR;
+        seg(P([180,214,0]), P([180,150,0]), 4, line, "round");
+        seg(P([180,214,-14]), P([180,214,14]), 4, line, "round");
+        seg(P([w[0],w[1],w[2]]), P([178,158,0]), 2.5, line, "butt");
+        break; }
     }
   }
-  back.innerHTML = B; front.innerHTML = F;
 }
 
 /* one animation loop drives every mounted rig */
@@ -1225,6 +1464,7 @@ const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 function tick(ts){
   const dt = Math.min(64, ts - (lastTs||ts)); lastTs = ts;
   for(const r of RIGS){
+    if(r.orbit){ r.rig.cam.yaw += dt/1000 * 0.42; if(!r.playing) r.rig.draw(); }
     if(!r.playing){ continue; }
     r.phase += dt/1000 * r.speed;
     const cyc = r.phase % 2;
@@ -1237,13 +1477,14 @@ function tick(ts){
 }
 function mountRig(host, archKey, opts){
   const rig = makeRig(host, archKey, opts);
-  const inst = {rig, phase:0, speed:(opts&&opts.speed)||0.62, playing:!reduced, onPhase:opts&&opts.onPhase};
+  const inst = {rig, phase:0, speed:(opts&&opts.speed)||0.62, playing:!reduced,
+                orbit:false, onPhase:opts&&opts.onPhase};
   RIGS.add(inst);
   if(!rafId) rafId = requestAnimationFrame(tick);
   if(reduced) rig.set(0.5);
   return inst;
 }
-function unmountAll(){ RIGS.clear(); }
+function unmountAll(){ for(const r of RIGS){ if(r.rig.destroy) r.rig.destroy(); } RIGS.clear(); }
 /* --------------------------------------------------------------- equipment */
 const EQUIP = {
   bw:        {n:"Floor space",        g:"Basics"},
@@ -1272,7 +1513,7 @@ const EQUIP = {
   sled:      {n:"Sled / prowler",     g:"Cardio"}
 };
 const EQUIP_IDS = Object.keys(EQUIP);
-const BASEMENT_DEFAULT = ["bw","bench","incline","rack","barbell","dumbbell","kettlebell","pullupbar","bands","abwheel","box","jumprope"];
+const HOME_DEFAULT = ["bw","bench","incline","rack","barbell","dumbbell","kettlebell","pullupbar","bands","abwheel","box","jumprope"];
 const PUBLIC_SET = EQUIP_IDS.slice();
 
 /* ------------------------------------------------------------- exercises
@@ -1713,7 +1954,7 @@ function coverageOf(act){
 
 function generate(cfg){
   const rnd = mulberry(cfg.seed);
-  const avail = cfg.loc === "basement" ? state.equip.slice() : PUBLIC_SET.slice();
+  const avail = cfg.loc === "home" ? state.equip.slice() : PUBLIC_SET.slice();
   const has = x => x.eq.every(t => avail.includes(t));
   const pool = X.filter(x => x.cls !== "cardio" && has(x));
 
@@ -1874,38 +2115,6 @@ function scoreSession(s, streak){
   return {base:Math.round(base), covBonus, mult:+mult.toFixed(2), total};
 }
 /* ------------------------------------------------------------------ state */
-const KEY = "liftedai.v1";
-const DEFAULT_CFG = {loc:"basement", count:5, effort:2, focus:["full"], compounds:[], cardioOn:false, cstyle:"intervals", preset:null};
-let state = {
-  equip: BASEMENT_DEFAULT.slice(),
-  xp:0, streak:0, freezes:0, lastDay:null,
-  history:[], badges:[], theme:null,
-  cfg: Object.assign({}, DEFAULT_CFG),
-  session: null
-};
-let store = {get(){ try{ return localStorage.getItem(KEY); }catch(e){ return null; } },
-             set(v){ try{ localStorage.setItem(KEY,v); }catch(e){} }};
-function load(){
-  const raw = store.get(); if(!raw) return;
-  try{
-    const d = JSON.parse(raw);
-    Object.assign(state, d);
-    state.cfg = Object.assign({}, DEFAULT_CFG, d.cfg||{});
-    if(state.session && state.session.moves)
-      state.session.moves.forEach(m => { m.x = XMAP[m.id] || m.x; });
-    if(state.session && state.session.cardio && state.session.cardio.xid)
-      state.session.cardio.x = XMAP[state.session.cardio.xid] || state.session.cardio.x;
-  }catch(e){}
-}
-function save(){
-  const s = JSON.parse(JSON.stringify(state, (k,v) => k === "x" ? undefined : v));
-  if(state.session){
-    s.session = Object.assign({}, state.session);
-    s.session.moves = state.session.moves.map(m => { const c = Object.assign({}, m); delete c.x; return c; });
-    if(state.session.cardio){ s.session.cardio = Object.assign({}, state.session.cardio, {xid:state.session.cardio.x.id}); delete s.session.cardio.x; }
-  }
-  store.set(JSON.stringify(s));
-}
 const $  = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -1942,16 +2151,335 @@ function checkBadges(){
   return got;
 }
 
+/* ---------------------------------------------------------------- profiles
+   Progress belongs to a profile, profiles live on this device. There is no
+   server behind this app, so "signing in somewhere else" isn't a thing it can
+   honestly offer — carrying a profile to another device is an explicit move,
+   by code or by backup file. */
+const KEY = "liftedai.v2", OLD_KEY = "liftedai.v1";
+const PROFILE_FIELDS = ["name","color","equip","customEquip","gymPhoto","xp","streak",
+                        "freezes","lastDay","history","badges","cfg","session"];
+const PROFILE_COLORS = ["var(--p25)","var(--p20)","var(--p15)","var(--p10)"];
+const DEFAULT_CFG = {loc:"home", count:5, effort:2, focus:["full"], compounds:[], cardioOn:false, cstyle:"intervals", preset:null};
+
+function blankProfile(name, color){
+  return {name:name||"You", color:color||PROFILE_COLORS[0],
+          equip:HOME_DEFAULT.slice(), customEquip:[], gymPhoto:null,
+          xp:0, streak:0, freezes:0, lastDay:null, history:[], badges:[],
+          cfg:Object.assign({}, DEFAULT_CFG), session:null};
+}
+let vault = {v:2, active:"p1", theme:null, profiles:{}};
+let state = blankProfile();
+
+const store = {
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } }
+};
+function newId(){ return "p" + Date.now().toString(36) + Math.floor(Math.random()*1e3).toString(36); }
+
+function packSession(sess){
+  if(!sess) return null;
+  const o = Object.assign({}, sess);
+  o.moves = sess.moves.map(m => { const c = Object.assign({}, m); delete c.x; return c; });
+  if(sess.cardio){ o.cardio = Object.assign({}, sess.cardio, {xid:sess.cardio.x.id}); delete o.cardio.x; }
+  return o;
+}
+function unpackSession(sess){
+  if(!sess) return null;
+  if(sess.moves) sess.moves.forEach(m => { m.x = XMAP[m.id] || m.x; });
+  if(sess.cardio && sess.cardio.xid) sess.cardio.x = XMAP[sess.cardio.xid];
+  if(sess.cardio && !sess.cardio.x) sess.cardio = null;
+  return sess;
+}
+function migrateProfile(p){
+  const b = blankProfile(p.name, p.color);
+  const out = Object.assign(b, p);
+  out.cfg = Object.assign({}, DEFAULT_CFG, p.cfg || {});
+  if(out.cfg.loc === "basement") out.cfg.loc = "home";      /* renamed after v1 */
+  if(!Array.isArray(out.customEquip)) out.customEquip = [];
+  if(!Array.isArray(out.equip) || !out.equip.length) out.equip = HOME_DEFAULT.slice();
+  if(!Array.isArray(out.history)) out.history = [];
+  if(!Array.isArray(out.badges)) out.badges = [];
+  out.session = unpackSession(out.session);
+  return out;
+}
+function load(){
+  const rawV2 = store.get(KEY);
+  if(rawV2){
+    try{
+      const v = JSON.parse(rawV2);
+      if(v && v.profiles && Object.keys(v.profiles).length){
+        vault = {v:2, active:v.active, theme:v.theme || null, profiles:{}};
+        for(const id in v.profiles) vault.profiles[id] = migrateProfile(v.profiles[id]);
+        if(!vault.profiles[vault.active]) vault.active = Object.keys(vault.profiles)[0];
+        state = vault.profiles[vault.active];
+        return;
+      }
+    }catch(e){}
+  }
+  const rawV1 = store.get(OLD_KEY);
+  if(rawV1){
+    try{
+      const d = JSON.parse(rawV1);
+      const id = newId();
+      vault = {v:2, active:id, theme:d.theme || null, profiles:{}};
+      vault.profiles[id] = migrateProfile(Object.assign(blankProfile("You"), d));
+      state = vault.profiles[id];
+      save();
+      return;
+    }catch(e){}
+  }
+  const id = newId();
+  vault = {v:2, active:id, theme:null, profiles:{}};
+  vault.profiles[id] = state = blankProfile("You");
+}
+function save(){
+  vault.profiles[vault.active] = state;
+  const packed = {v:2, active:vault.active, theme:vault.theme, profiles:{}};
+  for(const id in vault.profiles){
+    const p = vault.profiles[id];
+    const o = {};
+    for(const f of PROFILE_FIELDS) o[f] = f === "session" ? packSession(p.session) : p[f];
+    packed.profiles[id] = o;
+  }
+  if(!store.set(KEY, JSON.stringify(packed))){
+    /* storage full — almost always the gym photo */
+    if(state.gymPhoto){
+      state.gymPhoto = null;
+      packed.profiles[vault.active].gymPhoto = null;
+      if(store.set(KEY, JSON.stringify(packed)))
+        toast("Photo dropped", "This device ran out of local storage, so the gym photo was removed. Your progress is safe.", "");
+    }
+  }
+}
+function switchProfile(id){
+  if(!vault.profiles[id] || id === vault.active) return;
+  save();
+  vault.active = id;
+  state = vault.profiles[id];
+  save();
+  unmountAll();
+  renderPresets(); renderFocus(); renderCardioChips(); syncControls();
+  renderHUD(); renderLog(); renderSession(false);
+  toast("Switched to "+state.name, state.xp.toLocaleString()+" points · "+state.streak+"-day streak", "");
+}
+
+/* ---- transfer: a code you can paste, or a file you can keep ---- */
+function encodeProfile(p, withPhoto){
+  const o = {};
+  for(const f of PROFILE_FIELDS) o[f] = f === "session" ? null : p[f];
+  if(!withPhoto) o.gymPhoto = null;
+  const json = JSON.stringify({lifted:1, p:o});
+  /* btoa needs latin1, so widen through UTF-8 first */
+  return "LIFTED-" + btoa(unescape(encodeURIComponent(json))).replace(/=+$/,"");
+}
+function decodeProfile(code){
+  const body = String(code).trim().replace(/^LIFTED-/,"").replace(/\s+/g,"");
+  const json = decodeURIComponent(escape(atob(body)));
+  const o = JSON.parse(json);
+  if(!o || !o.p) throw new Error("not a Lifted.AI code");
+  return migrateProfile(o.p);
+}
+function importProfile(p, mode){
+  if(mode === "merge"){
+    const seen = new Set(state.history.map(h => h.date));
+    state.history = state.history.concat(p.history.filter(h => !seen.has(h.date)))
+                      .sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0,60);
+    state.xp = Math.max(state.xp, p.xp);
+    state.streak = Math.max(state.streak, p.streak);
+    state.freezes = Math.max(state.freezes, p.freezes);
+    if(!state.lastDay || (p.lastDay && p.lastDay > state.lastDay)) state.lastDay = p.lastDay;
+    state.badges = [...new Set(state.badges.concat(p.badges))];
+    state.equip = [...new Set(state.equip.concat(p.equip))];
+    state.customEquip = [...new Set(state.customEquip.concat(p.customEquip))];
+    if(p.gymPhoto && !state.gymPhoto) state.gymPhoto = p.gymPhoto;
+    save();
+    unmountAll(); syncControls(); renderHUD(); renderLog(); renderSession(false);
+    toast("Merged in", state.xp.toLocaleString()+" points · "+state.history.length+" sessions on file", "");
+  }else{
+    const id = newId();
+    p.session = null;
+    p.color = PROFILE_COLORS[Object.keys(vault.profiles).length % PROFILE_COLORS.length];
+    vault.profiles[id] = p;
+    save();
+    switchProfile(id);
+  }
+}
+function backupFilename(){
+  return "lifted-ai-" + state.name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") +
+         "-" + dayKey(new Date()) + ".json";
+}
+function saveBackup(){
+  const o = {};
+  for(const f of PROFILE_FIELDS) o[f] = f === "session" ? null : state[f];
+  const data = JSON.stringify({lifted:1, exported:new Date().toISOString(), p:o}, null, 1);
+  const name = backupFilename();
+  if(window.claude && window.claude.downloads){
+    window.claude.downloads.save({filename:name, data}).then(
+      () => toast("Backup saved", "Keep it somewhere you'll find it again.", ""),
+      err => { if(err && err.code === "declined") return;
+               toast("Couldn't save", (err && err.message) || "Try the transfer code instead.", ""); });
+    return;
+  }
+  try{
+    const url = URL.createObjectURL(new Blob([data], {type:"application/json"}));
+    const a = document.createElement("a");
+    a.href = url; a.download = name; document.body.appendChild(a); a.click();
+    a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000);
+    toast("Backup saved", name, "");
+  }catch(e){
+    toast("Couldn't save a file", "Use the transfer code instead — it carries everything but the photo.", "");
+  }
+}
+
+/* ------------------------------------------------------------ profile UI */
+const pdlg = $("#profileDlg");
+function initials(n){
+  const parts = String(n||"?").trim().split(/\s+/);
+  return ((parts[0][0]||"?") + (parts[1] ? parts[1][0] : "")).toUpperCase();
+}
+function renderProfileBtn(){
+  const b = $("#profileBtn");
+  b.innerHTML = `<span class="pav" style="background:${state.color}">${esc(initials(state.name))}</span>`;
+  b.title = state.name + " — " + state.xp.toLocaleString() + " points";
+  b.setAttribute("aria-label", "Profile: " + state.name);
+}
+function renderProfileDlg(){
+  const ids = Object.keys(vault.profiles);
+  $("#pBody").innerHTML = `
+    <div class="eqsec">
+      <p class="eyebrow">Who's lifting</p>
+      <div class="plist">
+        ${ids.map(id => {
+          const p = vault.profiles[id], on = id === vault.active;
+          return `<div class="prow ${on?"on":""}" data-pid="${id}">
+            <span class="pav" style="background:${p.color}">${esc(initials(p.name))}</span>
+            <span class="pmeta">
+              <b>${esc(p.name)}</b>
+              <small class="num">${p.xp.toLocaleString()} pts · ${p.streak}-day streak · ${p.history.length} session${p.history.length===1?"":"s"}</small>
+            </span>
+            ${on ? `<span class="ptag">Current</span>`
+                 : `<button class="btn ghost" type="button" data-switch="${id}">Switch</button>`}
+          </div>`;
+        }).join("")}
+      </div>
+      <div class="prow-actions">
+        <input id="pName" class="wt pname" value="${esc(state.name)}" maxlength="24" aria-label="Profile name">
+        <button class="btn" id="pRename" type="button">Rename</button>
+        <button class="btn ghost" id="pNew" type="button">New profile</button>
+        ${ids.length > 1 ? `<button class="btn ghost" id="pDel" type="button">Delete this one</button>` : ""}
+      </div>
+    </div>
+
+    <div class="eqsec">
+      <p class="eyebrow">Carry it to another device</p>
+      <p class="sub">Lifted.AI keeps everything on the device it runs on — there's no server to
+        sign in to, which is why it works with no signal. Move a profile with a code or a backup file.</p>
+      <div class="photorow">
+        <button class="btn" id="pCode" type="button">Show transfer code</button>
+        <button class="btn ghost" id="pBackup" type="button">Save a backup file</button>
+      </div>
+      <textarea id="pCodeBox" class="codebox" rows="3" readonly hidden
+        aria-label="Transfer code"></textarea>
+      <p class="sub" id="pCodeNote" hidden>Copy this, open Lifted.AI on the other device, and paste it below.
+        The code carries your progress and kit, but not the gym photo — use a backup file for that.</p>
+    </div>
+
+    <div class="eqsec">
+      <p class="eyebrow">Bring a profile in</p>
+      <div class="eqadd">
+        <textarea id="pPaste" rows="2" spellcheck="false" placeholder="Paste a LIFTED- code here"></textarea>
+        <button class="btn primary" id="pImport" type="button">Load</button>
+      </div>
+      <div class="photorow" style="margin-top:8px">
+        <label class="btn ghost" for="pFile">Or open a backup file</label>
+        <input type="file" accept="application/json,.json" id="pFile" class="sr">
+      </div>
+      <p class="eqresult" id="pResult"></p>
+    </div>`;
+
+  $$("#pBody [data-switch]").forEach(b => b.addEventListener("click", () => {
+    switchProfile(b.dataset.switch); renderProfileDlg(); renderProfileBtn();
+  }));
+  $("#pRename").addEventListener("click", () => {
+    const v = $("#pName").value.trim();
+    if(!v){ $("#pResult").textContent = "Give it a name first."; return; }
+    state.name = v; save(); renderProfileBtn(); renderProfileDlg();
+  });
+  $("#pNew").addEventListener("click", () => {
+    const id = newId();
+    const n = Object.keys(vault.profiles).length;
+    vault.profiles[id] = blankProfile("Lifter "+(n+1), PROFILE_COLORS[n % PROFILE_COLORS.length]);
+    save(); switchProfile(id); renderProfileDlg(); renderProfileBtn();
+  });
+  const del = $("#pDel");
+  if(del) del.addEventListener("click", () => {
+    if(!confirm("Delete “"+state.name+"” and everything in it? This can't be undone.")) return;
+    delete vault.profiles[vault.active];
+    vault.active = Object.keys(vault.profiles)[0];
+    state = vault.profiles[vault.active];
+    save(); unmountAll();
+    renderPresets(); renderFocus(); renderCardioChips(); syncControls();
+    renderHUD(); renderLog(); renderSession(false);
+    renderProfileDlg(); renderProfileBtn();
+    toast("Deleted", "Now on "+state.name+".", "");
+  });
+  $("#pCode").addEventListener("click", () => {
+    const box = $("#pCodeBox");
+    box.value = encodeProfile(state, false);
+    box.hidden = false; $("#pCodeNote").hidden = false;
+    box.focus(); box.select();
+    if(navigator.clipboard && navigator.clipboard.writeText)
+      navigator.clipboard.writeText(box.value).then(
+        () => toast("Code copied", "Paste it into Lifted.AI on your other device.", ""), () => {});
+  });
+  $("#pBackup").addEventListener("click", saveBackup);
+  $("#pImport").addEventListener("click", () => {
+    const raw = $("#pPaste").value.trim();
+    if(!raw){ $("#pResult").textContent = "Paste a code first."; return; }
+    let p;
+    try{ p = decodeProfile(raw); }
+    catch(e){ $("#pResult").textContent = "That doesn't look like a Lifted.AI transfer code."; return; }
+    askImport(p);
+  });
+  $("#pFile").addEventListener("change", e => {
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    const fr = new FileReader();
+    fr.onload = () => {
+      try{
+        const o = JSON.parse(fr.result);
+        if(!o || !o.p) throw new Error();
+        askImport(migrateProfile(o.p));
+      }catch(err){ $("#pResult").textContent = "That file isn't a Lifted.AI backup."; }
+    };
+    fr.readAsText(f);
+  });
+}
+function askImport(p){
+  const merge = confirm(
+    "Found “"+p.name+"” — "+p.xp.toLocaleString()+" points, "+p.streak+"-day streak, "+
+    p.history.length+" session"+(p.history.length===1?"":"s")+".\n\n"+
+    "OK  = merge it into "+state.name+" (keeps the best of both)\n"+
+    "Cancel = add it as a separate profile");
+  importProfile(p, merge ? "merge" : "new");
+  renderProfileDlg(); renderProfileBtn();
+  $("#pResult").textContent = "";
+}
+$("#profileBtn").addEventListener("click", () => { renderProfileDlg(); pdlg.showModal(); });
+
 /* ------------------------------------------------------------------ theme */
 function applyTheme(){
-  if(state.theme) document.documentElement.setAttribute("data-theme", state.theme);
+  if(vault.theme) document.documentElement.setAttribute("data-theme", vault.theme);
   else document.documentElement.removeAttribute("data-theme");
 }
 $("#themeBtn").addEventListener("click", () => {
-  const dark = state.theme ? state.theme === "dark"
+  const dark = vault.theme ? vault.theme === "dark"
              : matchMedia("(prefers-color-scheme: dark)").matches;
-  state.theme = dark ? "light" : "dark";
+  vault.theme = dark ? "light" : "dark";
   applyTheme(); save();
+  PAL = null;
+  for(const r of RIGS) r.rig.draw();
 });
 
 /* ------------------------------------------------------------------- HUD */
@@ -1959,6 +2487,8 @@ function renderHUD(){
   const {r, next, pct} = rankFor(state.xp);
   $("#hudRank").textContent = r.n;
   $("#hudXpBar").style.width = pct+"%";
+  $("#hudRankSm").textContent = r.n;
+  $("#hudXpLine").style.setProperty("--pct", pct+"%");
   $("#hudRank").parentElement.title = next ? (next.xp - state.xp)+" points to "+next.n : "Top rank — nothing left to load";
   $("#hudXp").textContent = state.xp.toLocaleString();
   const sEl = $("#hudStreak");
@@ -1983,7 +2513,7 @@ function applyPreset(k){
   c.preset = k; c.count = p.count; c.effort = p.effort;
   c.focus = p.focus.slice(); c.cardioOn = p.cardio; c.cstyle = p.cstyle;
   /* auto-pick the compounds this kit can actually support */
-  const avail = c.loc === "basement" ? state.equip : PUBLIC_SET;
+  const avail = c.loc === "home" ? state.equip : PUBLIC_SET;
   const bigs = X.filter(x => x.big && x.eq.every(t => avail.includes(t)));
   const seen = new Set(); const chosen = [];
   const order = ["squat","hinge","push_h","pull_h","push_v","pull_v","lunge","hip"];
@@ -2011,7 +2541,7 @@ function renderFocus(){
   }));
 }
 function renderCompounds(){
-  const avail = state.cfg.loc === "basement" ? state.equip : PUBLIC_SET;
+  const avail = state.cfg.loc === "home" ? state.equip : PUBLIC_SET;
   const bigs = X.filter(x => x.big).sort((a,b) => patOrd(a.pat)-patOrd(b.pat) || a.n.localeCompare(b.n));
   $("#compoundChips").innerHTML = bigs.map(x => {
     const ok = x.eq.every(t => avail.includes(t));
@@ -2045,9 +2575,9 @@ function syncControls(){
   $("#effortLabel").textContent = EFFORT_N[c.effort];
   $("#effortNote").textContent = EFFORT_NOTE[c.effort];
   $("#cardioOn").checked = c.cardioOn;
-  $("#editEquip").style.display = c.loc === "basement" ? "" : "none";
-  const avail = c.loc === "basement" ? state.equip : PUBLIC_SET;
-  $("#locNote").textContent = c.loc === "basement"
+  $("#editEquip").style.display = c.loc === "home" ? "" : "none";
+  const avail = c.loc === "home" ? state.equip : PUBLIC_SET;
+  $("#locNote").textContent = c.loc === "home"
     ? state.equip.length+" pieces of kit on hand — the generator will not prescribe anything you can't load."
     : "Full commercial gym. Racks, cables, machines and conditioning gear are all fair game.";
   const slots = c.count - c.compounds.length;
@@ -2065,7 +2595,7 @@ function syncControls(){
 /* controls: location, stepper, effort, cardio */
 $$("#locSeg button").forEach(b => b.addEventListener("click", () => {
   state.cfg.loc = b.dataset.loc; state.cfg.preset = null;
-  const avail = state.cfg.loc === "basement" ? state.equip : PUBLIC_SET;
+  const avail = state.cfg.loc === "home" ? state.equip : PUBLIC_SET;
   state.cfg.compounds = state.cfg.compounds.filter(id => XMAP[id].eq.every(t => avail.includes(t)));
   syncControls(); save();
 }));
@@ -2074,30 +2604,231 @@ $("#mDown").addEventListener("click", () => { state.cfg.count = Math.max(Math.ma
 $("#effort").addEventListener("input", e => { state.cfg.effort = +e.target.value; state.cfg.preset=null; syncControls(); save(); });
 $("#cardioOn").addEventListener("change", e => { state.cfg.cardioOn = e.target.checked; state.cfg.preset=null; syncControls(); save(); });
 
-/* --------------------------------------------------------- equipment kit */
+/* ------------------------------------------------------- equipment parsing
+   People write "dumbells", "power cage", "concept 2". Match generously, and
+   keep anything unmatched rather than silently dropping what someone owns. */
+const EQ_SYN = {
+  bw:        ["floor","floor space","bodyweight","body weight","mat","yoga mat","open space","nothing","space"],
+  bench:     ["bench","flat bench","weight bench","utility bench"],
+  incline:   ["adjustable bench","incline bench","fid bench","decline bench","adjustable"],
+  rack:      ["rack","squat rack","power rack","power cage","cage","squat stands","stands","half rack","full rack"],
+  barbell:   ["barbell","bar","olympic bar","olympic barbell","plates","weight plates","bumper plates","free weights","weights"],
+  ezbar:     ["ez bar","ez curl bar","curl bar","ez-bar","preacher bar"],
+  dumbbell:  ["dumbbell","dumbell","dumbbells","dumbells","db","dbs","adjustable dumbbells","hex dumbbells","powerblocks","bowflex"],
+  kettlebell:["kettlebell","kettle bell","kb","kbs","kettlebells"],
+  trapbar:   ["trap bar","hex bar","deadlift bar"],
+  medball:   ["medicine ball","med ball","slam ball","wall ball","dead ball"],
+  pullupbar: ["pull up bar","pullup bar","pull-up bar","chin up bar","chinup bar","doorway bar","chin bar"],
+  dipbar:    ["dip bar","dip bars","dip station","parallettes","parallel bars","dip belt"],
+  bands:     ["band","bands","resistance band","resistance bands","loop band","loop bands","tube bands","mini bands","therabands"],
+  abwheel:   ["ab wheel","ab roller","roller wheel"],
+  box:       ["box","plyo box","plyometric box","step","stepper","aerobic step","bench step","stool"],
+  cable:     ["cable","cables","cable machine","cable stack","cable crossover","functional trainer","lat pulldown","pulldown","pulley","lat tower"],
+  machine:   ["machine","machines","selectorized","leg curl machine","leg extension machine","pec deck","chest press machine","shoulder press machine","hamstring curl"],
+  smith:     ["smith machine","smith"],
+  legpress:  ["leg press","hack squat","leg press machine"],
+  treadmill: ["treadmill","running machine","tread"],
+  bike:      ["bike","exercise bike","assault bike","air bike","spin bike","stationary bike","echo bike","peloton","airdyne"],
+  rower:     ["rower","rowing machine","rowing erg","erg","concept 2","concept2","c2"],
+  jumprope:  ["jump rope","jumprope","skipping rope","skip rope","speed rope","rope"],
+  sled:      ["sled","prowler","push sled","weight sled"]
+};
+const EQ_LOOKUP = (() => {
+  const t = {};
+  for(const id of EQUIP_IDS){
+    t[norm(EQUIP[id].n)] = id;
+    for(const w of (EQ_SYN[id]||[])) t[norm(w)] = id;
+  }
+  return t;
+})();
+function norm(str){
+  return String(str).toLowerCase()
+    .replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim()
+    .replace(/\b(\d+)\s*(kg|lb|lbs|pound|pounds)\b/g,"")     /* "20kg kettlebell" */
+    .replace(/\b(a|an|the|some|my|pair|set|of|x|and)\b/g," ")
+    .replace(/\s+/g," ").trim();
+}
+function singular(w){ return w.replace(/(?:ies)$/,"y").replace(/(?:sses)$/,"ss").replace(/s$/,""); }
+
+/* free text -> {found:[ids], unknown:[strings]} */
+function parseEquipment(text){
+  const found = new Set(), unknown = [];
+  const lines = String(text)
+    .split(/[\n,;•·]|(?:^|\s)[-*]\s|\d+\.\s/)
+    .map(s => s.trim()).filter(Boolean);
+  for(const raw of lines){
+    /* drop list scaffolding Claude or a person might include */
+    const line = raw
+      .replace(/^(i (?:have|own|see)|there(?:'s| is| are)|equipment|includes?|visible)\b:?/i,"")
+      .replace(/^(?:and|also|plus)\s+/i,"")
+      .replace(/^(?:a|an|the|some|my)\s+/i,"").trim();
+    if(!line || line.length > 90) { if(line.length > 90) unknown.push(raw.slice(0,90)); continue; }
+    const n = norm(line);
+    if(!n) continue;
+    let id = EQ_LOOKUP[n] || EQ_LOOKUP[singular(n)];
+    if(!id){                                   /* longest synonym contained in the phrase */
+      let best = "", bid = null;
+      for(const key in EQ_LOOKUP){
+        if(key.length > 2 && key.length > best.length &&
+           (n === key || n.includes(" "+key) || n.includes(key+" ") || n.startsWith(key) || n.endsWith(key))){
+          best = key; bid = EQ_LOOKUP[key];
+        }
+      }
+      id = bid;
+    }
+    if(id) found.add(id); else unknown.push(line);
+  }
+  return {found:[...found], unknown};
+}
+
+const PHOTO_PROMPT =
+"Look at this photo of my gym and list every piece of exercise equipment you can see. " +
+"Reply with a plain comma-separated list and nothing else — no sentences, no explanation. " +
+"Use common names, for example: squat rack, barbell, adjustable dumbbells, flat bench, pull-up bar, kettlebell, resistance bands.";
+
+/* ------------------------------------------------------------ kit editor */
 const dlg = $("#equipDlg");
-$("#editEquip").addEventListener("click", () => {
+function eqGroups(){
   const groups = {};
-  for(const id of EQUIP_IDS){ (groups[EQUIP[id].g] = groups[EQUIP[id].g] || []).push(id); }
-  $("#eqBody").innerHTML = Object.entries(groups).map(([g,ids]) => `
-    <div class="eqgroup"><p class="eyebrow">${g}</p><div class="chips">
-    ${ids.map(id => `<button class="chip sm" type="button" data-eq="${id}" aria-pressed="${state.equip.includes(id)}">${EQUIP[id].n}</button>`).join("")}
-    </div></div>`).join("");
-  $$("#eqBody .chip").forEach(b => b.addEventListener("click", ev => {
-    ev.preventDefault();
-    const on = b.getAttribute("aria-pressed") === "true";
+  for(const id of EQUIP_IDS) (groups[EQUIP[id].g] = groups[EQUIP[id].g] || []).push(id);
+  return groups;
+}
+function renderKit(){
+  const groups = eqGroups();
+  $("#eqBody").innerHTML = `
+    <div class="eqsec">
+      <p class="eyebrow">Add by typing</p>
+      <p class="sub">Commas or new lines. Paste a whole list and it will sort itself out.</p>
+      <div class="eqadd">
+        <textarea id="eqText" rows="2" spellcheck="false"
+          placeholder="squat rack, adjustable dumbbells, pull-up bar, jump rope"></textarea>
+        <button class="btn primary" id="eqAdd" type="button">Add</button>
+      </div>
+      <p class="eqresult" id="eqResult"></p>
+    </div>
+
+    <div class="eqsec">
+      <p class="eyebrow">Read it off a photo</p>
+      <p class="sub">Lifted.AI runs entirely on your device with no internet, so it can't look at
+        the photo itself. Keep the photo here as your reference and tick things off against it —
+        or hand the photo to Claude and paste the answer into the box above.</p>
+      <div class="photorow">
+        <label class="btn" for="eqPhoto">${state.gymPhoto ? "Replace photo" : "Choose a photo"}</label>
+        <input type="file" accept="image/*" id="eqPhoto" class="sr">
+        ${state.gymPhoto ? `<button class="btn ghost" id="eqPhotoClear" type="button">Remove</button>` : ""}
+        <button class="btn ghost" id="eqPrompt" type="button" ${state.gymPhoto ? "" : "disabled"}>Copy prompt for Claude</button>
+      </div>
+      ${state.gymPhoto ? `<img class="gymphoto" src="${state.gymPhoto}" alt="Your gym">` : ""}
+    </div>
+
+    <div class="eqsec">
+      <p class="eyebrow">Everything you have <span id="eqCount"></span></p>
+      ${Object.entries(groups).map(([g,ids]) => `
+        <div class="eqgroup"><p class="eqg">${g}</p><div class="chips">
+        ${ids.map(id => `<button class="chip sm" type="button" data-eq="${id}"
+            aria-pressed="${state.equip.includes(id)}">${EQUIP[id].n}</button>`).join("")}
+        </div></div>`).join("")}
+      <div class="eqgroup" id="customWrap" ${state.customEquip.length ? "" : "hidden"}>
+        <p class="eqg">Yours, noted</p>
+        <p class="sub">Kept on your list. No exercises in the library use these yet, so they
+          won't change what gets generated.</p>
+        <div class="chips" id="customChips"></div>
+      </div>
+    </div>`;
+
+  $$("#eqBody .chip[data-eq]").forEach(b => b.addEventListener("click", () => {
+    const id = b.dataset.eq, on = b.getAttribute("aria-pressed") === "true";
     b.setAttribute("aria-pressed", String(!on));
+    state.equip = on ? state.equip.filter(e => e !== id) : state.equip.concat([id]);
+    afterKitChange();
   }));
-  dlg.showModal();
-});
-dlg.addEventListener("close", () => {
-  if(dlg.returnValue !== "save") return;
-  state.equip = $$("#eqBody .chip").filter(b => b.getAttribute("aria-pressed") === "true").map(b => b.dataset.eq);
+  renderCustom();
+  $("#eqAdd").addEventListener("click", addTyped);
+  $("#eqText").addEventListener("keydown", e => {
+    if(e.key === "Enter" && (e.metaKey || e.ctrlKey)) addTyped();
+  });
+  $("#eqPhoto").addEventListener("change", onPhoto);
+  const cl = $("#eqPhotoClear");
+  if(cl) cl.addEventListener("click", () => { state.gymPhoto = null; save(); renderKit(); });
+  $("#eqPrompt").addEventListener("click", copyPrompt);
+  updateCount();
+}
+function renderCustom(){
+  const wrap = $("#customWrap");
+  wrap.hidden = !state.customEquip.length;
+  $("#customChips").innerHTML = state.customEquip.map((c,i) =>
+    `<button class="chip sm custom" type="button" data-ci="${i}" aria-pressed="true"
+       title="Remove">${esc(c)} <span aria-hidden="true">×</span></button>`).join("");
+  $$("#customChips .chip").forEach(b => b.addEventListener("click", () => {
+    state.customEquip.splice(+b.dataset.ci, 1); save(); renderCustom(); updateCount();
+  }));
+}
+function updateCount(){
+  const el2 = $("#eqCount");
+  if(el2) el2.textContent = state.equip.length + " on hand";
+}
+function afterKitChange(){
   if(!state.equip.includes("bw")) state.equip.push("bw");
   state.cfg.compounds = state.cfg.compounds.filter(id => XMAP[id].eq.every(t => state.equip.includes(t)));
-  syncControls(); save();
-  toast("Kit saved", state.equip.length+" pieces on hand. Future sessions will respect it.", "");
-});
+  save(); syncControls(); updateCount();
+}
+function addTyped(){
+  const box = $("#eqText"), res = $("#eqResult");
+  const {found, unknown} = parseEquipment(box.value);
+  if(!found.length && !unknown.length){ res.textContent = "Nothing to add yet — type what you've got."; return; }
+  const added = found.filter(id => !state.equip.includes(id));
+  state.equip = state.equip.concat(added);
+  const newCustom = unknown.filter(u => !state.customEquip.some(c => norm(c) === norm(u)));
+  state.customEquip = state.customEquip.concat(newCustom);
+  afterKitChange();
+  $$("#eqBody .chip[data-eq]").forEach(b =>
+    b.setAttribute("aria-pressed", String(state.equip.includes(b.dataset.eq))));
+  renderCustom();
+  box.value = "";
+  const bits = [];
+  if(added.length)      bits.push("Added "+added.map(id => EQUIP[id].n).join(", "));
+  if(found.length - added.length) bits.push((found.length-added.length)+" already on your list");
+  if(newCustom.length)  bits.push("Kept as-is: "+newCustom.join(", "));
+  res.textContent = bits.join(" · ") || "All of that was already on your list.";
+}
+function onPhoto(e){
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  if(!/^image\//.test(f.type)){ toast("Not an image", "Pick a photo file.", ""); return; }
+  const fr = new FileReader();
+  fr.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      /* downscale so it survives in local storage */
+      const max = 1000, sc = Math.min(1, max/Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width*sc); c.height = Math.round(img.height*sc);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      try{
+        state.gymPhoto = c.toDataURL("image/jpeg", 0.72);
+        save(); renderKit();
+        toast("Photo saved", "Tick off what you can see, or send it to Claude and paste the answer back.", "");
+      }catch(err){
+        toast("Photo too large", "Try a smaller image — it has to fit in this device's storage.", "");
+      }
+    };
+    img.onerror = () => toast("Couldn't read that", "The file didn't open as an image.", "");
+    img.src = fr.result;
+  };
+  fr.onerror = () => toast("Couldn't read that", "The file didn't open as an image.", "");
+  fr.readAsDataURL(f);
+}
+function copyPrompt(){
+  const write = navigator.clipboard && navigator.clipboard.writeText
+    ? navigator.clipboard.writeText(PHOTO_PROMPT)
+    : Promise.reject();
+  write.then(
+    () => toast("Prompt copied", "Send it to Claude with your gym photo, then paste the reply into the box above.", ""),
+    () => { const t = $("#eqText"); t.value = PHOTO_PROMPT; t.select();
+            toast("Copy it from the box", "Your browser blocked the clipboard, so the prompt is in the text box.", ""); }
+  );
+}
+$("#editEquip").addEventListener("click", () => { renderKit(); dlg.showModal(); });
 
 /* ------------------------------------------------------------------ toast */
 let toastT = null;
@@ -2134,7 +2865,7 @@ function renderSession(animate){
       <div class="top">
         <div>
           <h2>${esc(s.title)}</h2>
-          <div class="sub">${EFFORT_N[s.cfg.effort]} · ${s.cfg.loc === "basement" ? "Basement kit" : "Public gym"} · ${s.moves.length} movements${s.cardio ? " + "+esc(s.cardio.styleName.toLowerCase()) : ""}</div>
+          <div class="sub">${EFFORT_N[s.cfg.effort]} · ${s.cfg.loc === "home" ? "Home gym" : "Public gym"} · ${s.moves.length} movements${s.cardio ? " + "+esc(s.cardio.styleName.toLowerCase()) : ""}</div>
         </div>
         <div class="actions">
           <button class="btn" id="rerollBtn" type="button">Re-roll</button>
@@ -2245,7 +2976,7 @@ function wireSession(){
     toast("Re-rolled", "Same criteria, different session.", "");
   });
   $("#clearBtn").addEventListener("click", () => {
-    state.session = null; save(); RIGS.clear(); renderSession(); $("#setupPanel").scrollIntoView({behavior:"smooth"});
+    state.session = null; save(); unmountAll(); renderSession(); $("#setupPanel").scrollIntoView({behavior:"smooth"});
   });
   $("#finishBtn").addEventListener("click", finishSession);
 
@@ -2298,6 +3029,12 @@ function buildDrawer(row, m){
             </button>
             <input type="range" min="20" max="180" value="62" data-speed aria-label="Demonstration speed">
             <span class="sp" data-sp>1.0×</span>
+            <span class="viewbtns" role="group" aria-label="Camera angle">
+              <button type="button" data-view="side">Side</button>
+              <button type="button" data-view="three" aria-pressed="true">3⁄4</button>
+              <button type="button" data-view="front">Front</button>
+              <button type="button" data-view="orbit">Orbit</button>
+            </span>
           </div>
         </div>
         <div class="cuebox">
@@ -2347,6 +3084,23 @@ function buildDrawer(row, m){
   const sp = d.querySelector("[data-speed]"), spL = d.querySelector("[data-sp]");
   sp.addEventListener("input", () => { inst.speed = +sp.value/100; spL.textContent = (inst.speed/0.62).toFixed(1)+"×"; });
 
+  /* camera presets — "side" and "front" mean the plane the lift happens in */
+  const YAW = {side:0, three:(x.arch && ARCH[x.arch] && ARCH[x.arch].v === "front") ? 0.24 : 0.52, front:Math.PI/2};
+  const vb = d.querySelectorAll("[data-view]");
+  vb.forEach(b => b.addEventListener("click", () => {
+    const v = b.dataset.view;
+    vb.forEach(o => o.setAttribute("aria-pressed", String(o === b)));
+    if(v === "orbit"){ inst.orbit = true; return; }
+    inst.orbit = false;
+    /* a front-plane movement is authored face-on, so its "front" is yaw 0 */
+    const faceOn = ARCH[x.arch] && ARCH[x.arch].v === "front";
+    inst.rig.setView(v === "three" ? YAW.three : v === "side" ? (faceOn ? Math.PI/2 : 0) : (faceOn ? 0 : Math.PI/2));
+  }));
+  const hint = document.createElement("span");
+  hint.className = "drag-hint"; hint.textContent = "Drag to rotate";
+  d.querySelector(".rig3d").appendChild(hint);
+  d.querySelector(".rig3d").addEventListener("pointerdown", function(){ this.classList.add("touched"); }, {once:true});
+
   d.querySelectorAll(".setbtn").forEach(b => b.addEventListener("click", () => {
     const i = +b.dataset.set;
     m.doneSets[i] = !m.doneSets[i];
@@ -2372,7 +3126,7 @@ function phaseWord(x, i){
 }
 function swapMove(m){
   const s = state.session;
-  const avail = s.cfg.loc === "basement" ? state.equip : PUBLIC_SET;
+  const avail = s.cfg.loc === "home" ? state.equip : PUBLIC_SET;
   const others = s.moves.filter(o => o !== m);
   const act = activationOf(others);
   const rnd = mulberry((Math.random()*1e9)|0);
@@ -2399,7 +3153,7 @@ function swapMove(m){
     reason:"Swapped in for "+m.x.n+" — closest fit for the muscles this session still needs."});
   s.act = activationOf(s.moves.concat(s.cardio ? [{x:s.cardio.x}] : []));
   s.coverage = coverageOf(s.act);
-  RIGS.clear(); save(); renderSession(false);
+  unmountAll(); save(); renderSession(false);
   toast("Swapped", best.n+" takes that slot.", "");
 }
 function updateProgress(){
@@ -2430,7 +3184,7 @@ function finishSession(){
   const newBadges = checkBadges();
   state.session = null;
   save();
-  RIGS.clear();
+  unmountAll();
   renderSession(); renderHUD(); renderLog();
 
   let msg = st.already ? "Second session today — points still count, streak already banked."
@@ -2466,11 +3220,11 @@ function renderLog(){
     : "Top rank reached";
 }
 $("#resetBtn").addEventListener("click", () => {
-  if(!confirm("Wipe all points, streaks, history and your saved kit?")) return;
-  state = {equip:BASEMENT_DEFAULT.slice(), xp:0, streak:0, freezes:0, lastDay:null,
-           history:[], badges:[], theme:state.theme, cfg:Object.assign({}, DEFAULT_CFG), session:null};
-  save(); RIGS.clear(); renderPresets(); renderFocus(); renderCardioChips(); syncControls();
-  renderSession(); renderHUD(); renderLog();
+  if(!confirm("Wipe “"+state.name+"” — points, streak, history and saved kit? Other profiles are untouched.")) return;
+  const keep = {name:state.name, color:state.color};
+  vault.profiles[vault.active] = state = blankProfile(keep.name, keep.color);
+  save(); unmountAll(); renderPresets(); renderFocus(); renderCardioChips(); syncControls();
+  renderSession(); renderHUD(); renderLog(); renderProfileBtn();
   toast("Reset", "Back to an empty bar.", "");
 });
 
@@ -2478,8 +3232,16 @@ $("#resetBtn").addEventListener("click", () => {
 load();
 applyTheme();
 renderPresets(); renderFocus(); renderCardioChips(); syncControls();
-renderHUD(); renderLog(); renderSession(false);
+renderHUD(); renderLog(); renderSession(false); renderProfileBtn();
 window.addEventListener("beforeunload", save);
+
+/* Installed-app plumbing. Absent over file:// and inside the artifact frame,
+   where there is no service-worker scope to claim — failing there is fine. */
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
 
 })();
 </script>
