@@ -128,12 +128,27 @@ holds nothing and a loaded one holds dumbbells.
 
 ## Design
 
-The palette is the IWF competition plate colours used as an actual coding
+The layout and typography follow the [SkiLens](https://skilens.framer.website/)
+Framer template: wide geometric display type set uppercase with tight negative
+tracking, corner-bracket eyebrow labels, 80px pill buttons with a circular
+accent badge, cards with one corner blown out to 48px, layered soft shadows,
+and a hero built from perspective-transformed cards floating in 3D. A
+handwritten face appears once or twice as an aside, as it does in the template.
+
+The palette stays the IWF competition plate colours, used as an actual coding
 system rather than decoration — red 25 kg for Killer, blue 20 kg for Cardio,
-yellow 15 kg for Medium, green 10 kg for Easy. Type is Avenir Next Condensed
-for display, Avenir Next for text, and a monospace face for every number, so
-sets, reps, points and timers stay in tabular columns. Both light and dark
-themes are first-class; the toggle overrides your system preference.
+yellow 15 kg for Medium, green 10 kg for Easy. Red carries the brand because
+that is what the mark is built from; the template's acid lime would have fought
+it. Every number is set in a monospace face so sets, reps, points and timers
+stay in tabular columns. Both light and dark themes are first-class; the toggle
+overrides your system preference.
+
+### The mark
+
+A hexagon frame with circuit traces and a flexed arm, drawn as vector so it
+holds from a 16px favicon to a 512px store icon. `logoMark(size)` renders it
+inline and drops the hairline detail below 40px; the same paths generate
+`icons/` and the favicon, so there is one source for the identity.
 
 ## Where this is going
 
