@@ -513,6 +513,79 @@ input[type=range]::-moz-range-thumb{
 .interval .ik{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--p20);width:76px;flex:none}
 .interval .iv{flex:1}
 
+/* ---------- failure mode ---------- */
+.badge.fail{color:var(--accent);border-color:var(--accent);background:var(--accent-wash)}
+.badge.wt{color:var(--ink-2);border-color:var(--line-hard)}
+.move.tofail{background:linear-gradient(90deg,var(--accent-wash),transparent 42%)}
+.move.tofail .mnum{border-color:var(--accent);color:var(--accent)}
+.rigbox.tofail{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent-wash),var(--sh-1)}
+.rigbox.tofail::after{
+  content:"TO FAILURE";position:absolute;left:50%;bottom:52px;transform:translateX(-50%);
+  font-family:var(--f-mono);font-size:9px;letter-spacing:.24em;color:var(--accent);
+  pointer-events:none;animation:failpulse 1.5s ease-in-out infinite;
+}
+@keyframes failpulse{0%,100%{opacity:.45}50%{opacity:1}}
+.failsw{margin-top:12px;font-size:13px;color:var(--ink-2)}
+@media (prefers-reduced-motion: reduce){.rigbox.tofail::after{animation:none;opacity:.8}}
+
+/* ---------- load & PR logging ---------- */
+.loadrow{display:flex;align-items:center;gap:7px;margin-top:12px;flex-wrap:wrap}
+.loadrow .lbl{font-family:var(--f-mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+.loadrow .times{color:var(--ink-3);font-size:13px}
+.wt.reps{width:56px}
+.unitpick{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-pill);overflow:hidden}
+.unitpick button{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.08em;padding:6px 9px;border:0;
+  background:var(--surface-2);color:var(--ink-3);cursor:pointer}
+.unitpick button + button{border-left:1px solid var(--line)}
+.unitpick button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.prnote{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.prnote.up{color:var(--p10)}
+
+/* ---------- personal bests ---------- */
+.prbig{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:14px}
+.prtile{border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface-2);padding:11px 12px}
+.prtile.has{border-color:var(--line-hard);background:var(--surface)}
+.prtile small{display:block;font-family:var(--f-mono);font-size:8.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-3);margin-bottom:3px}
+.prtile b{font-family:var(--f-mono);font-size:22px;font-weight:600;line-height:1;display:block}
+.prtile b i{font-style:normal;font-size:11px;color:var(--ink-3)}
+.prtile span{font-family:var(--f-mono);font-size:9.5px;color:var(--ink-3)}
+.prtile.has b{color:var(--accent)}
+.pradd{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.pradd input{font:inherit;font-size:13px;padding:9px 11px;border-radius:var(--r-sm);
+  border:1px solid var(--line-hard);background:var(--surface-2);color:var(--ink)}
+.pradd #prName{flex:1;min-width:150px}
+.pradd #prW{width:86px} .pradd #prR{width:64px}
+.prpick{margin-bottom:12px}
+.prchart{position:relative;border:1px solid var(--line);border-radius:var(--r-card);
+  background:var(--bg-sunk);padding:12px 12px 6px;margin-bottom:12px}
+.prchart svg{display:block;width:100%;height:auto;overflow:visible}
+.prchart .grid{stroke:var(--line);stroke-width:1}
+.prchart .axis{font-family:var(--f-mono);font-size:9px;fill:var(--ink-3)}
+.prchart .prline{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.prchart .prarea{fill:var(--accent);opacity:.10}
+.prchart .prdot{fill:var(--accent);stroke:var(--bg-sunk);stroke-width:2}
+.prchart .lastdot{stroke-width:2.5}
+.prchart .crosshair{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3}
+.prchart .prhover[hidden]{display:none}
+.prchart .hdot{fill:none;stroke:var(--accent);stroke-width:2}
+.prtip{position:absolute;top:8px;pointer-events:none;background:var(--ink);color:var(--bg);
+  border-radius:var(--r-sm);padding:7px 10px;font-size:11.5px;line-height:1.35;box-shadow:var(--sh-2);width:140px}
+.prtip b{display:block;font-family:var(--f-mono);font-size:13px}
+.prtip span{display:block;font-family:var(--f-mono);font-size:10px;opacity:.75}
+.prtip small{display:block;font-size:9.5px;opacity:.6;margin-top:2px}
+.prcap{margin:8px 0 4px;font-size:12px;color:var(--ink-3)}
+.prcap b{color:var(--ink-2);font-weight:600}
+.prtable{display:grid;gap:5px}
+.prtable .eyebrow{margin-bottom:4px}
+.prrow{display:flex;align-items:center;gap:10px;padding:7px 12px;border:1px solid var(--line);
+  border-radius:var(--r-pill);font-size:12.5px;position:relative}
+.prrow .hn{flex:1;font-family:var(--f-mono);font-size:13px}
+.prE{font-family:var(--f-mono);font-size:10.5px;color:var(--ink-3)}
+.prrow .rewdel{position:static;width:20px;height:20px;font-size:12px}
+.prempty{padding:18px;text-align:center;color:var(--ink-3);border:1px dashed var(--line);
+  border-radius:var(--r-card);font-size:13px}
+
 /* ---------- claim ---------- */
 .claimrow{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
 .claimbtn[disabled]{opacity:.42;cursor:not-allowed;filter:grayscale(.5)}
@@ -625,6 +698,7 @@ dialog{
   border:1px solid var(--line-hard);border-radius:var(--r-card);background:var(--surface);color:var(--ink);
   padding:0;max-width:min(560px,94vw);width:100%;box-shadow:var(--shadow);
 }
+#profileDlg{max-width:min(780px,94vw)}
 dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 .dlg-hd{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
 .dlg-hd h3{font-size:24px;text-transform:uppercase;letter-spacing:-.028em}
@@ -840,6 +914,16 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
         <p class="eyebrow">Compound lifts to include</p>
         <p class="sub">These get slotted first, while you're fresh. Greyed lifts need gear you don't have here.</p>
         <div class="chips" id="compoundChips"></div>
+      </div>
+
+      <div class="field">
+        <p class="eyebrow">Failure mode</p>
+        <div class="locrow">
+          <label class="switch"><input type="checkbox" id="failureOn"><i></i><span>Train the last movements to failure</span></label>
+          <div class="locnote">Drops the rep target on isolation and accessory work — you go until the
+            set stops. Compounds keep their numbers; taking a heavy squat to failure is how people get hurt.
+            You can switch it on or off per movement once the session is built.</div>
+        </div>
       </div>
 
       <div class="field">
@@ -1458,19 +1542,35 @@ function makeRig(host, archKey, opts){
   if(ro) ro.observe(wrap);
 
   let curT = 0;
+  const fx = {failure:false, pulse:0};
   function set(t){ curT = t; draw(); }
+
+  function poseAt(t){
+    const sol = solve(lerpArr(arch.a.j, arch.b.j, t), arch.root || "ankle",
+      (arch.a.l2&&arch.b.l2) ? lerpArr(arch.a.l2, arch.b.l2, t) : null,
+      (arch.a.a2&&arch.b.a2) ? lerpArr(arch.a.a2, arch.b.a2, t) : null);
+    const J3 = pose3(sol, arch.v);
+    const S = {};
+    for(const k in J3) S[k] = project(J3[k], cam, fit);
+    return {J3, S};
+  }
 
   function draw(){
     if(!W) return;
     const {ink, dim, line, acc, sunk} = palette();
     ctx.clearRect(0,0,W,H);
 
-    const sol = solve(lerpArr(arch.a.j, arch.b.j, curT), arch.root || "ankle",
-      (arch.a.l2&&arch.b.l2) ? lerpArr(arch.a.l2, arch.b.l2, curT) : null,
-      (arch.a.a2&&arch.b.a2) ? lerpArr(arch.a.a2, arch.b.a2, curT) : null);
-    const J3 = pose3(sol, arch.v);
-    const S = {};
-    for(const k in J3) S[k] = project(J3[k], cam, fit);
+    /* failure mode: a hot pulse behind the figure and motion trails off the rep */
+    if(fx.failure){
+      fx.pulse += 0.06;
+      const g = ctx.createRadialGradient(W/2, H*0.52, 4, W/2, H*0.52, Math.max(W,H)*0.55);
+      const a0 = 0.20 + 0.09*Math.sin(fx.pulse);
+      g.addColorStop(0, "rgba(232,80,63,"+a0.toFixed(3)+")");
+      g.addColorStop(1, "rgba(232,80,63,0)");
+      ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+    }
+
+    const {J3, S} = poseAt(curT);
 
     /* floor grid, drawn first — it is what makes the rotation legible */
     ctx.save();
@@ -1511,6 +1611,24 @@ function makeRig(host, archKey, opts){
     drawProps3(items, props, J3, S, cam, fit, ctx, acc, line, curT);
 
     items.sort((a,b)=> b.z - a.z);
+
+    /* trails go down first so the live figure reads on top of them */
+    if(fx.failure){
+      for(const [d,al] of [[0.16,0.10],[0.08,0.19]]){
+        const gt = Math.max(0, Math.min(1, curT - d));
+        const gp = poseAt(gt);
+        ctx.save(); ctx.globalAlpha = al; ctx.strokeStyle = acc; ctx.lineCap = "round";
+        for(const [A,B,w] of BONES){
+          const p = gp.S[A], q2 = gp.S[B];
+          if(!p || !q2) continue;
+          ctx.lineWidth = w * fit.s * ((p[3]+q2[3])/2) * 0.9;
+          ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(q2[0],q2[1]); ctx.stroke();
+        }
+        ctx.fillStyle = acc;
+        ctx.beginPath(); ctx.arc(gp.S.head[0], gp.S.head[1], 12*fit.s*gp.S.head[3], 0, 7); ctx.fill();
+        ctx.restore();
+      }
+    }
     for(const it of items) it.f();
   }
 
@@ -1540,7 +1658,7 @@ function makeRig(host, archKey, opts){
     if(e.key === "ArrowDown"){ cam.pitch = Math.min(.7, cam.pitch+.09); draw(); e.preventDefault(); }
   });
 
-  return {set, cam, draw, view:arch.v,
+  return {set, cam, draw, fx, view:arch.v,
           setView(v){ cam.yaw = v; cam.pitch = .10; draw(); },
           destroy(){ if(ro) ro.disconnect(); window.removeEventListener("mousemove",move); window.removeEventListener("mouseup",up); }};
 }
@@ -1713,7 +1831,7 @@ function tick(ts){
   for(const r of RIGS){
     if(r.orbit){ r.rig.cam.yaw += dt/1000 * 0.42; if(!r.playing) r.rig.draw(); }
     if(!r.playing){ continue; }
-    r.phase += dt/1000 * r.speed;
+    r.phase += dt/1000 * r.speed * (r.rig.fx && r.rig.fx.failure ? 1.9 : 1);
     const cyc = r.phase % 2;
     const raw = cyc < 1 ? cyc : 2-cyc;
     const t = 0.5 - 0.5*Math.cos(raw*Math.PI);
@@ -2094,7 +2212,7 @@ const PRESETS = {
            cardio:false, cstyle:"intervals",
            d:"The default. Two compounds, broad coverage, in and out in about an hour."},
   killer: {n:"Killer",    plate:"25 KG", c:"var(--p25)", count:7, effort:4, focus:["full"], comps:3,
-           cardio:true,  cstyle:"finisher",
+           cardio:true,  cstyle:"finisher", failure:true,
            d:"Heavy compounds, real volume, a finisher that hurts. Plan your next day around it."},
   cardio: {n:"Cardio",    plate:"20 KG", c:"var(--p20)", count:3, effort:2, focus:["legs","core"], comps:1,
            cardio:true,  cstyle:"intervals",
@@ -2295,6 +2413,8 @@ function generate(cfg){
       i:i+1, id:x.id, x, reason:pk.reason,
       sets:sch.s, reps:sch.r, rest:sch.rest, rpe:sch.rpe, tempo:sch.tempo, note:sch.note,
       unit:x.unit||"reps", each:!!x.uni,
+      /* to-failure belongs on isolation and accessory work, not heavy compounds */
+      failure: !!cfg.failureOn && (x.cls === "iso" || x.cls === "acc") && x.unit !== "sec",
       doneSets:[], weight:"", claimed:false
     };
   });
@@ -2363,7 +2483,7 @@ function rankFor(xp){
 function perClass(x){ return x.cls === "comp" ? 15 : x.cls === "acc" ? 11 : x.cls === "core" ? 8 : 9; }
 function movePoints(m, effort){
   const em = [0,.85,1,1.15,1.35][effort];
-  return Math.round(m.sets * perClass(m.x) * (m.each ? 1.15 : 1) * em);
+  return Math.round(m.sets * perClass(m.x) * (m.each ? 1.15 : 1) * (m.failure ? 1.25 : 1) * em);
 }
 function claimedTotal(s){
   return s.moves.reduce((a,m) => a + (m.claimed ? movePoints(m, s.cfg.effort) : 0), 0);
@@ -2371,7 +2491,7 @@ function claimedTotal(s){
 function scoreSession(s, streak){
   const em = [0,.85,1,1.15,1.35][s.cfg.effort];
   let base = 0;
-  for(const m of s.moves) base += m.sets * perClass(m.x) * (m.each ? 1.15 : 1);
+  for(const m of s.moves) base += m.sets * perClass(m.x) * (m.each ? 1.15 : 1) * (m.failure ? 1.25 : 1);
   if(s.cardio) base += s.cardio.mins * 4 * (s.cardio.style === "intervals" ? 1.25 : s.cardio.style === "finisher" ? 1.3 : 1);
   base *= em;
   const covBonus = Math.round(s.coverage * 0.85);
@@ -2424,15 +2544,16 @@ function checkBadges(){
 const KEY = "liftedai.v2", OLD_KEY = "liftedai.v1";
 const PROFILE_FIELDS = ["name","color","equip","customEquip","gymPhoto","xp","streak",
                         "freezes","lastDay","history","badges","cfg","session",
-                        "rewards","redeemed","calView"];
+                        "rewards","redeemed","calView","prs","prPick","unit","lastWeight"];
 const PROFILE_COLORS = ["var(--p25)","var(--p20)","var(--p15)","var(--p10)"];
-const DEFAULT_CFG = {loc:"home", count:5, effort:2, focus:["full"], compounds:[], cardioOn:false, cstyle:"intervals", preset:null};
+const DEFAULT_CFG = {loc:"home", count:5, effort:2, focus:["full"], compounds:[], cardioOn:false, cstyle:"intervals", failureOn:false, preset:null};
 
 function blankProfile(name, color){
   return {name:name||"You", color:color||PROFILE_COLORS[0],
           equip:HOME_DEFAULT.slice(), customEquip:[], gymPhoto:null,
           xp:0, streak:0, freezes:0, lastDay:null, history:[], badges:[],
           rewards:[], redeemed:[], calView:"month",
+          prs:[], prPick:null, unit:"lb", lastWeight:{},
           cfg:Object.assign({}, DEFAULT_CFG), session:null};
 }
 let vault = {v:2, active:"p1", theme:null, profiles:{}};
@@ -2470,6 +2591,9 @@ function migrateProfile(p){
   if(!Array.isArray(out.rewards)) out.rewards = [];
   if(!Array.isArray(out.redeemed)) out.redeemed = [];
   if(!out.calView) out.calView = "month";
+  if(!Array.isArray(out.prs)) out.prs = [];
+  if(!out.unit) out.unit = "lb";
+  if(!out.lastWeight || typeof out.lastWeight !== "object") out.lastWeight = {};
   out.session = unpackSession(out.session);
   return out;
 }
@@ -2602,6 +2726,188 @@ function saveBackup(){
   }
 }
 
+/* -------------------------------------------------------------------- PRs
+   A PR is a load × reps on a date. Comparing a heavy triple to a light set of
+   twelve needs a common yardstick, so everything is ranked by estimated 1RM
+   (Epley). The raw lift is what gets displayed — the estimate only sorts. */
+const BIG_LIFTS = [
+  {id:"backsquat", n:"Back Squat"}, {id:"bench", n:"Bench Press"},
+  {id:"deadlift", n:"Deadlift"},    {id:"ohp", n:"Overhead Press"},
+  {id:"bbrow", n:"Barbell Row"},    {id:"pullup", n:"Pull-Up"}
+];
+const epley = (w, r) => Math.round(w * (1 + (Math.max(1, r) - 1) / 30));
+function prList(){ return state.prs = state.prs || []; }
+function prsFor(id){ return prList().filter(p => p.ex === id).sort((a,b) => new Date(a.date) - new Date(b.date)); }
+function bestFor(id){
+  let best = null;
+  for(const p of prsFor(id)) if(!best || p.e1 > best.e1) best = p;
+  return best;
+}
+function fmtPr(p){ return p ? p.w + " " + (p.unit || "lb") + " × " + p.r : "—"; }
+function addPr(ex, name, w, r){
+  prList().unshift({ex, n:name, w, r, unit:state.unit || "lb", e1:epley(w, r), date:new Date().toISOString()});
+  state.prs = prList().slice(0, 400);
+  save(); renderProfileBtn();
+  if($("#pBody") && $("#prSection")) renderPRs();
+}
+function lastWeightFor(id){ return (state.lastWeight || {})[id] || ""; }
+function setLastWeight(id, w){
+  state.lastWeight = state.lastWeight || {};
+  if(w) state.lastWeight[id] = w; else delete state.lastWeight[id];
+}
+
+/* ---- the chart: one lift at a time.
+   A deadlift and a curl cannot share a y-axis, and a second axis is never the
+   answer, so the lift picker is the honest way to show "each PR over time". */
+function prChart(id){
+  const rows = prsFor(id);
+  const W = 640, H = 200, PADL = 46, PADR = 16, PADT = 16, PADB = 30;
+  if(rows.length < 2){
+    return `<div class="prempty">${rows.length ? "One entry so far — log another to see the line move."
+      : "No entries for this lift yet."}</div>`;
+  }
+  const xs = rows.map(p => new Date(p.date).getTime());
+  const ys = rows.map(p => p.e1);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs);
+  const lo = Math.min(...ys), hi = Math.max(...ys);
+  const pad = Math.max(4, (hi - lo) * 0.18);
+  const yLo = Math.max(0, Math.floor((lo - pad) / 5) * 5), yHi = Math.ceil((hi + pad) / 5) * 5;
+  const px = t => PADL + ((x1 === x0) ? (W - PADL - PADR) / 2 : (t - x0) / (x1 - x0) * (W - PADL - PADR));
+  const py = v => PADT + (1 - (v - yLo) / (yHi - yLo || 1)) * (H - PADT - PADB);
+
+  const ticks = [];
+  for(let i = 0; i <= 3; i++) ticks.push(Math.round(yLo + (yHi - yLo) * i / 3));
+  const pts = rows.map((p, i) => ({x:px(xs[i]), y:py(p.e1), p}));
+  const line = pts.map((q, i) => (i ? "L" : "M") + q.x.toFixed(1) + " " + q.y.toFixed(1)).join(" ");
+  const area = line + ` L${pts[pts.length-1].x.toFixed(1)} ${py(yLo)} L${pts[0].x.toFixed(1)} ${py(yLo)} Z`;
+  const last = pts[pts.length - 1];
+  const unit = rows[rows.length-1].unit || "lb";
+
+  return `<div class="prchart" data-prchart>
+    <svg viewBox="0 0 ${W} ${H}" role="img"
+         aria-label="Estimated one-rep max over time">
+      ${ticks.map(t => `<line class="grid" x1="${PADL}" y1="${py(t)}" x2="${W-PADR}" y2="${py(t)}"/>
+        <text class="axis" x="${PADL-8}" y="${py(t)+3.5}" text-anchor="end">${t}</text>`).join("")}
+      <path class="prarea" d="${area}"/>
+      <path class="prline" d="${line}"/>
+      ${pts.map((q,i) => `<circle class="prdot${i===pts.length-1?" lastdot":""}" cx="${q.x.toFixed(1)}"
+        cy="${q.y.toFixed(1)}" r="${i===pts.length-1?5:3.6}"/>`).join("")}
+      <text class="axis" x="${PADL}" y="${H-10}" text-anchor="start">${new Date(x0).toLocaleDateString([], {month:"short", year:"2-digit"})}</text>
+      <text class="axis" x="${W-PADR}" y="${H-10}" text-anchor="end">${new Date(x1).toLocaleDateString([], {month:"short", year:"2-digit"})}</text>
+      <g class="prhover" hidden><line class="crosshair"/><circle class="hdot" r="6"/></g>
+    </svg>
+    <div class="prtip" hidden></div>
+    <p class="prcap"><b class="num">${last.p.e1} ${unit}</b> estimated 1RM ·
+      best lift <b class="num">${fmtPr(bestFor(id))}</b> ·
+      ${rows.length} entr${rows.length===1?"y":"ies"}</p>
+  </div>`;
+}
+function wirePrChart(host, id){
+  const box = host.querySelector("[data-prchart]");
+  if(!box) return;
+  const rows = prsFor(id), svg = box.querySelector("svg"),
+        tip = box.querySelector(".prtip"), hov = box.querySelector(".prhover"),
+        cross = box.querySelector(".crosshair"), hdot = box.querySelector(".hdot");
+  const dots = [...box.querySelectorAll(".prdot")];
+  function at(ev){
+    const r = svg.getBoundingClientRect();
+    const vx = (ev.clientX - r.left) / r.width * 640;
+    let best = 0, bd = 1e9;
+    dots.forEach((d, i) => { const dx = Math.abs(+d.getAttribute("cx") - vx); if(dx < bd){ bd = dx; best = i; } });
+    const d = dots[best], p = rows[best];
+    hov.hidden = false;
+    cross.setAttribute("x1", d.getAttribute("cx")); cross.setAttribute("x2", d.getAttribute("cx"));
+    cross.setAttribute("y1", 16); cross.setAttribute("y2", 170);
+    hdot.setAttribute("cx", d.getAttribute("cx")); hdot.setAttribute("cy", d.getAttribute("cy"));
+    tip.hidden = false;
+    tip.innerHTML = `<b>${p.w} ${p.unit||"lb"} × ${p.r}</b><span>est. 1RM ${p.e1}</span>
+      <small>${new Date(p.date).toLocaleDateString([], {month:"short", day:"numeric", year:"numeric"})}</small>`;
+    const left = (+d.getAttribute("cx")) / 640 * r.width;
+    tip.style.left = Math.max(4, Math.min(r.width - 150, left - 70)) + "px";
+  }
+  svg.addEventListener("pointermove", at);
+  svg.addEventListener("pointerdown", at);
+  svg.addEventListener("pointerleave", () => { hov.hidden = true; tip.hidden = true; });
+}
+
+function renderPRs(){
+  const host = $("#prSection");
+  if(!host) return;
+  const withEntries = [...new Set(prList().map(p => p.ex))];
+  const options = withEntries.map(id => ({id, n:(prList().find(p => p.ex === id) || {}).n || id}));
+  if(!state.prPick || !withEntries.includes(state.prPick)) state.prPick = withEntries[0] || null;
+  const unit = state.unit || "lb";
+
+  host.innerHTML = `
+    <p class="eyebrow">Personal bests</p>
+    <p class="sub">Logged straight off the session sheet, or added here. Ranked by estimated
+      1RM so a heavy triple and a set of ten can be compared.</p>
+
+    <div class="prbig">
+      ${BIG_LIFTS.map(l => {
+        const b = bestFor(l.id);
+        return `<div class="prtile ${b?"has":""}">
+          <small>${l.n}</small>
+          <b class="num">${b ? b.w : "—"}<i>${b ? " "+(b.unit||unit) : ""}</i></b>
+          <span class="num">${b ? "× "+b.r+" · e1RM "+b.e1 : "not set"}</span>
+        </div>`;
+      }).join("")}
+    </div>
+
+    <form class="pradd" id="prAdd">
+      <input id="prName" list="prLifts" placeholder="Movement" maxlength="40" aria-label="Movement" required>
+      <datalist id="prLifts">${X.map(x => `<option value="${esc(x.n)}"></option>`).join("")}</datalist>
+      <input id="prW" type="number" min="1" step="any" placeholder="Load" inputmode="decimal" aria-label="Load" required>
+      <span class="unitpick" role="group" aria-label="Unit">
+        <button type="button" data-punit="lb" aria-pressed="${unit==="lb"}">lb</button>
+        <button type="button" data-punit="kg" aria-pressed="${unit==="kg"}">kg</button>
+      </span>
+      <span class="times">×</span>
+      <input id="prR" type="number" min="1" max="30" step="1" value="5" inputmode="numeric" aria-label="Reps" required>
+      <button class="btn primary" type="submit">Add PR</button>
+    </form>
+
+    ${options.length ? `
+      <div class="prpick chips">
+        ${options.map(o => `<button class="chip sm" type="button" data-prpick="${esc(o.id)}"
+          aria-pressed="${o.id===state.prPick}">${esc(o.n)}</button>`).join("")}
+      </div>
+      ${prChart(state.prPick)}
+      <div class="prtable">
+        <p class="eyebrow">Every entry</p>
+        ${prsFor(state.prPick).slice().reverse().map((p,i) => `<div class="prrow">
+          <span class="hd">${new Date(p.date).toLocaleDateString([], {month:"short", day:"numeric", year:"2-digit"})}</span>
+          <span class="hn">${p.w} ${p.unit||unit} × ${p.r}</span>
+          <span class="num prE">e1RM ${p.e1}</span>
+          <button class="rewdel" type="button" data-prdel="${esc(p.date)}" aria-label="Delete entry">×</button>
+        </div>`).join("")}
+      </div>` : `<div class="prempty">Nothing logged yet. Add one above, or hit Save PR on a movement mid-session.</div>`}`;
+
+  wirePrChart(host, state.prPick);
+  $$("#prSection [data-prpick]").forEach(b => b.addEventListener("click", () => {
+    state.prPick = b.dataset.prpick; save(); renderPRs();
+  }));
+  $$("#prSection [data-punit]").forEach(b => b.addEventListener("click", () => {
+    state.unit = b.dataset.punit; save(); renderPRs();
+  }));
+  $$("#prSection [data-prdel]").forEach(b => b.addEventListener("click", () => {
+    state.prs = prList().filter(p => p.date !== b.dataset.prdel);
+    save(); renderPRs();
+  }));
+  const f = $("#prAdd");
+  if(f) f.addEventListener("submit", ev => {
+    ev.preventDefault();
+    const nm = $("#prName").value.trim(), w = parseFloat($("#prW").value), r = parseInt($("#prR").value) || 1;
+    if(!nm || !w) return;
+    const known = X.find(x => x.n.toLowerCase() === nm.toLowerCase());
+    addPr(known ? known.id : "custom:" + nm.toLowerCase(), known ? known.n : nm, w, r);
+    $("#prW").value = ""; $("#prName").value = "";
+    state.prPick = known ? known.id : "custom:" + nm.toLowerCase();
+    renderPRs();
+    toast("PR logged", nm + " · " + w + " " + (state.unit||"lb") + " × " + r, "");
+  });
+}
+
 /* ------------------------------------------------------------ profile UI */
 const pdlg = $("#profileDlg");
 function initials(n){
@@ -2641,6 +2947,8 @@ function renderProfileDlg(){
       </div>
     </div>
 
+    <div class="eqsec" id="prSection"></div>
+
     <div class="eqsec">
       <p class="eyebrow">Carry it to another device</p>
       <p class="sub">Lifted.AI keeps everything on the device it runs on — there's no server to
@@ -2668,6 +2976,7 @@ function renderProfileDlg(){
       <p class="eqresult" id="pResult"></p>
     </div>`;
 
+  renderPRs();
   $$("#pBody [data-switch]").forEach(b => b.addEventListener("click", () => {
     switchProfile(b.dataset.switch); renderProfileDlg(); renderProfileBtn();
   }));
@@ -2781,7 +3090,7 @@ function applyPreset(k){
   const p = PRESETS[k];
   const c = state.cfg;
   c.preset = k; c.count = p.count; c.effort = p.effort;
-  c.focus = p.focus.slice(); c.cardioOn = p.cardio; c.cstyle = p.cstyle;
+  c.focus = p.focus.slice(); c.cardioOn = p.cardio; c.cstyle = p.cstyle; c.failureOn = !!p.failure;
   /* auto-pick the compounds this kit can actually support */
   const avail = c.loc === "home" ? state.equip : PUBLIC_SET;
   const bigs = X.filter(x => x.big && x.eq.every(t => avail.includes(t)));
@@ -2845,6 +3154,7 @@ function syncControls(){
   $("#effortLabel").textContent = EFFORT_N[c.effort];
   $("#effortNote").textContent = EFFORT_NOTE[c.effort];
   $("#cardioOn").checked = c.cardioOn;
+  $("#failureOn").checked = !!c.failureOn;
   $("#editEquip").style.display = c.loc === "home" ? "" : "none";
   const avail = c.loc === "home" ? state.equip : PUBLIC_SET;
   $("#locNote").textContent = c.loc === "home"
@@ -2858,7 +3168,7 @@ function syncControls(){
     ? PRESETS[c.preset].n+" loaded<br><span style=\"color:var(--ink-3)\">tune anything below</span>"
     : "Custom criteria";
   const foc = c.focus.map(k => FOCUS[k].n).join(" + ");
-  $("#forgeMeta").innerHTML = esc(foc)+" · "+c.count+" movements<br>"+EFFORT_N[c.effort]+(c.cardioOn?" · + "+CSTYLE[c.cstyle].n:"");
+  $("#forgeMeta").innerHTML = esc(foc)+" · "+c.count+" movements<br>"+EFFORT_N[c.effort]+(c.cardioOn?" · + "+CSTYLE[c.cstyle].n:"")+(c.failureOn?" · to failure":"");
   renderCompounds();
 }
 
@@ -2873,6 +3183,7 @@ $("#mUp").addEventListener("click",   () => { state.cfg.count = Math.min(10, sta
 $("#mDown").addEventListener("click", () => { state.cfg.count = Math.max(Math.max(1,state.cfg.compounds.length), state.cfg.count-1); state.cfg.preset=null; syncControls(); save(); });
 $("#effort").addEventListener("input", e => { state.cfg.effort = +e.target.value; state.cfg.preset=null; syncControls(); save(); });
 $("#cardioOn").addEventListener("change", e => { state.cfg.cardioOn = e.target.checked; state.cfg.preset=null; syncControls(); save(); });
+$("#failureOn").addEventListener("change", e => { state.cfg.failureOn = e.target.checked; state.cfg.preset=null; syncControls(); save(); });
 
 /* ------------------------------------------------------- equipment parsing
    People write "dumbells", "power cage", "concept 2". Match generously, and
@@ -3198,10 +3509,14 @@ function coverageLine(s, ranked){
   else if(missed.length) t += ` ${missed.length} more sit this one out.`;
   return t;
 }
+function repsLabel(m){
+  if(m.failure) return "AMRAP";
+  return m.unit === "sec" ? m.reps : m.reps + (m.each ? " each" : "");
+}
 function moveRow(m){
   const x = m.x;
-  const reps = m.unit === "sec" ? m.reps : m.reps + (m.each ? " each" : "");
-  return `<div class="move" data-mid="${m.id}" data-open="0">
+  const reps = repsLabel(m);
+  return `<div class="move${m.failure ? " tofail" : ""}${m.claimed ? " claimed" : ""}" data-mid="${m.id}" data-open="0">
     <button class="move-row" type="button">
       <span class="mnum num">${m.i}</span>
       <span class="mbody">
@@ -3210,10 +3525,12 @@ function moveRow(m){
           ${x.cls === "comp" ? '<span class="badge compound">Compound</span>' : ""}
           ${x.uni ? '<span class="badge uni">Unilateral</span>' : ""}
           ${x.fin ? '<span class="badge finisher">Finisher</span>' : ""}
+          ${m.failure ? '<span class="badge fail">To failure</span>' : ""}
+          ${m.weight ? `<span class="badge wt">${esc(m.weight)} ${esc(state.unit||"lb")}</span>` : ""}
           <span>${esc(x.pri.map(p => M[p].n).join(" · "))}</span>
         </span>
       </span>
-      <span class="mscheme num">${m.sets} × ${esc(reps)}<small>${esc(m.rpe)} · ${m.rest}s rest</small></span>
+      <span class="mscheme num">${m.sets} × ${esc(reps)}<small>${m.failure ? "to failure" : esc(m.rpe)} · ${m.rest}s rest</small></span>
       <span class="chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></span>
     </button>
     <div class="drawer"></div>
@@ -3330,9 +3647,24 @@ function buildDrawer(row, m){
           ${Array.from({length:m.sets}, (_,i) =>
             `<button class="setbtn" type="button" data-set="${i}" aria-pressed="${!!m.doneSets[i]}"
               title="Set ${i+1}">${i+1}</button>`).join("")}
-          <input class="wt" data-wt placeholder="weight" value="${esc(m.weight||"")}" inputmode="decimal" aria-label="Weight used">
           <button class="btn ghost swapbtn" type="button" data-swap>Swap</button>
         </div>
+        <div class="loadrow">
+          <span class="lbl">Load</span>
+          <input class="wt" data-wt placeholder="${esc(String(lastWeightFor(m.id) || "weight"))}"
+                 value="${esc(m.weight||"")}" inputmode="decimal" aria-label="Weight used">
+          <span class="unitpick" role="group" aria-label="Unit">
+            <button type="button" data-unit="lb" aria-pressed="${(state.unit||"lb")==="lb"}">lb</button>
+            <button type="button" data-unit="kg" aria-pressed="${(state.unit||"lb")==="kg"}">kg</button>
+          </span>
+          <span class="times">×</span>
+          <input class="wt reps" data-reps placeholder="${esc(String(parseInt(m.reps)||8))}"
+                 value="${esc(m.logReps||"")}" inputmode="numeric" aria-label="Reps hit">
+          <button class="btn ghost" type="button" data-pr>Save PR</button>
+          <span class="prnote" data-prnote></span>
+        </div>
+        <label class="switch failsw"><input type="checkbox" data-fail ${m.failure?"checked":""}><i></i>
+          <span>Take this one to failure</span></label>
         <div class="claimrow">
           <button class="btn primary claimbtn" type="button" data-claim>Claim ${movePoints(m, state.session.cfg.effort)} pts</button>
           <span class="claimnote" data-claimnote></span>
@@ -3347,11 +3679,13 @@ function buildDrawer(row, m){
 
   const host = d.querySelector(".rig-host");
   const phaseEl = d.querySelector("[data-phase]");
+  if(m.failure) d.querySelector(".rigbox").classList.add("tofail");
   const inst = mountRig(host, x.arch, {h:250, speed:.62, x:x, onPhase:(down) => {
     const t = down ? phaseWord(x, 0) : phaseWord(x, 1);
     if(phaseEl.textContent !== t) phaseEl.textContent = t;
   }});
   row._rig = inst;
+  if(inst.rig.fx) inst.rig.fx.failure = !!m.failure;
   paintAnatomy(d.querySelector("#map_"+m.id), act);
 
   d.querySelector("[data-play]").addEventListener("click", ev => {
@@ -3388,8 +3722,64 @@ function buildDrawer(row, m){
     if(row._paintClaim) row._paintClaim();
     updateProgress(); save();
   }));
-  d.querySelector("[data-wt]").addEventListener("input", ev => { m.weight = ev.target.value; save(); });
   d.querySelector("[data-swap]").addEventListener("click", () => swapMove(m));
+
+  const wtEl = d.querySelector("[data-wt]"), repsEl = d.querySelector("[data-reps]"),
+        prNote = d.querySelector("[data-prnote]");
+  function paintPr(){
+    const best = bestFor(m.id);
+    const w = parseFloat(wtEl.value), r = parseInt(repsEl.value) || parseInt(m.reps) || 8;
+    if(!w){ prNote.textContent = best ? "Best " + fmtPr(best) : "No PR on file"; prNote.className = "prnote"; return; }
+    const e1 = epley(w, r);
+    prNote.textContent = !best ? "First one on file"
+      : e1 > best.e1 ? "Beats " + fmtPr(best) : "Best " + fmtPr(best);
+    prNote.className = "prnote" + ((!best || e1 > best.e1) ? " up" : "");
+  }
+  wtEl.addEventListener("input", () => {
+    m.weight = wtEl.value; setLastWeight(m.id, wtEl.value); save(); paintPr();
+    let chip = row.querySelector(".badge.wt");
+    if(m.weight && !chip){
+      chip = document.createElement("span"); chip.className = "badge wt";
+      const meta = row.querySelector(".mmeta");
+      meta.insertBefore(chip, meta.querySelector("span:not(.badge)"));
+    }
+    if(chip){
+      if(m.weight) chip.textContent = m.weight + " " + (state.unit||"lb");
+      else chip.remove();
+    }
+  });
+  repsEl.addEventListener("input", () => { m.logReps = repsEl.value; save(); paintPr(); });
+  d.querySelectorAll("[data-unit]").forEach(b2 => b2.addEventListener("click", () => {
+    state.unit = b2.dataset.unit; save();
+    d.querySelectorAll("[data-unit]").forEach(o => o.setAttribute("aria-pressed", String(o === b2)));
+    paintPr();
+  }));
+  d.querySelector("[data-pr]").addEventListener("click", () => {
+    const w = parseFloat(wtEl.value);
+    if(!w){ prNote.textContent = "Enter a load first"; prNote.className = "prnote"; wtEl.focus(); return; }
+    const r = parseInt(repsEl.value) || parseInt(m.reps) || 8;
+    addPr(m.id, x.n, w, r);
+    paintPr();
+    toast("PR logged", x.n + " · " + w + " " + (state.unit||"lb") + " × " + r +
+          " (est. 1RM " + epley(w,r) + ")", "");
+  });
+  paintPr();
+
+  d.querySelector("[data-fail]").addEventListener("change", ev => {
+    m.failure = ev.target.checked;
+    if(inst && inst.rig.fx) inst.rig.fx.failure = m.failure;
+    d.querySelector(".rigbox").classList.toggle("tofail", m.failure);
+    row.classList.toggle("tofail", m.failure);
+    const sch = row.querySelector(".mscheme");
+    if(sch) sch.innerHTML = m.sets + " × " + esc(repsLabel(m)) +
+      "<small>" + (m.failure ? "to failure" : esc(m.rpe)) + " · " + m.rest + "s rest</small>";
+    let badge = row.querySelector(".badge.fail");
+    if(m.failure && !badge){
+      const b3 = document.createElement("span"); b3.className = "badge fail"; b3.textContent = "To failure";
+      row.querySelector(".mmeta").prepend(b3);
+    }else if(!m.failure && badge){ badge.remove(); }
+    save();
+  });
 
   const claimBtn = d.querySelector("[data-claim]"), claimNote = d.querySelector("[data-claimnote]");
   function paintClaim(){

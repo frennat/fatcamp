@@ -29,6 +29,18 @@ drag to orbit it, snap to side / three-quarter / front, or set it spinning.
 Equipment is drawn in 3D too, so a barbell is a bar with plates on both ends
 rather than a line. Beside it, a muscle map shades what the movement works.
 
+**Personal bests.** Log a lift's load and reps from the session sheet or from
+your profile, for the big lifts or any movement you name. Entries are ranked by
+estimated 1RM (Epley) so a heavy triple and a set of ten can be compared, and
+each lift gets its own chart over time — one lift at a time, because a deadlift
+and a curl have no business sharing a y-axis.
+
+**Failure mode.** Switch it on for the session and isolation and accessory work
+drops its rep target — you go until the set stops. Compounds keep their numbers
+on purpose. Per movement you can toggle it either way; when it's on the figure
+runs the rep faster, trails behind itself, and the frame glows. Those sets are
+worth more.
+
 **Points, claimed as you go.** Finish a movement's sets and claim its points
 right there — the balance moves while you're still in the gym. Whatever you
 don't claim is settled when you bank the session, so the total is the same
@@ -115,6 +127,7 @@ only to make it installable.
 | `generate()` | The session builder: seeded compounds, greedy coverage fill, pattern balance, prescription. On a focused day only movements that mostly train the focus are eligible, so a chest day stays a chest day |
 | `parseEquipment()` | Free-text and pasted-list equipment matching |
 | `movePoints()` / `scoreSession()` | Per-movement claims and the session settlement that nets them off |
+| `epley()` / `prChart()` | Personal bests, estimated 1RM, and the per-lift chart |
 | `bumpStreak()` / `trainingDays()` | Streak rules, rest-day passes, and the calendar behind them |
 | profile vault | Multiple profiles, v1→v2 migration, transfer codes, backup files |
 
