@@ -29,10 +29,19 @@ drag to orbit it, snap to side / three-quarter / front, or set it spinning.
 Equipment is drawn in 3D too, so a barbell is a bar with plates on both ends
 rather than a line. Beside it, a muscle map shades what the movement works.
 
-**Points and streaks.** Sets and effort earn points, coverage pays a bonus, and
-a streak multiplier compounds it. Ranks go from Empty Bar to Cast Iron.
-Training at least every other day keeps a streak alive, and every seventh day
-banks a rest-day pass that will cover one longer gap.
+**Points, claimed as you go.** Finish a movement's sets and claim its points
+right there — the balance moves while you're still in the gym. Whatever you
+don't claim is settled when you bank the session, so the total is the same
+either way and nothing pays twice.
+
+**Streaks you can see.** The log keeps a calendar over a week, a month or the
+last twelve months, each day coloured by how hard that session was. Ranks go
+from Empty Bar to Cast Iron. Training at least every other day keeps a streak
+alive, and every seventh day banks a rest-day pass that covers one longer gap.
+
+**Somewhere for the points to go.** Redeem them for rest-day passes — a real
+mechanic, they protect the streak — or add your own rewards with your own
+prices, and cash them in when you've earned them.
 
 ## Install it on your phone
 
@@ -97,15 +106,16 @@ only to make it installable.
 
 | Part | What it does |
 | --- | --- |
-| `M` / `GEO` | 19 muscle regions and the shapes that draw them on a front/back body |
+| `M` / `GEO` | 23 muscle regions, each drawn from several shapes so the chart reads as an anatomy plate |
 | `ARCH` | 49 movement archetypes — two authored poses each, plus the equipment to draw |
 | `solve()` | Re-solves every frame against one canonical skeleton, so joint *angles* come from the pose and limb *lengths* never do |
 | `pose3()` | Extrudes a solved 2D pose into 3D — sagittal archetypes gain left/right depth, frontal ones mirror in place |
 | `makeRig()` | Canvas renderer: orbit camera, perspective projection, painter's-algorithm depth sort, depth-shaded capsule bones |
 | `X` | The exercise library — muscles worked, equipment needed, movement pattern, coaching cue |
-| `generate()` | The session builder: seeded compounds, greedy coverage fill, pattern balance, prescription |
+| `generate()` | The session builder: seeded compounds, greedy coverage fill, pattern balance, prescription. On a focused day only movements that mostly train the focus are eligible, so a chest day stays a chest day |
 | `parseEquipment()` | Free-text and pasted-list equipment matching |
-| `scoreSession()` / `bumpStreak()` | Points, ranks, streaks and rest-day passes |
+| `movePoints()` / `scoreSession()` | Per-movement claims and the session settlement that nets them off |
+| `bumpStreak()` / `trainingDays()` | Streak rules, rest-day passes, and the calendar behind them |
 | profile vault | Multiple profiles, v1→v2 migration, transfer codes, backup files |
 
 Exercises reference archetypes rather than owning poses, so adding a lift is a

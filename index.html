@@ -186,7 +186,7 @@ h1,h2,h3,h4{font-family:var(--f-display);font-weight:800;margin:0;text-wrap:bala
   font-size:clamp(40px,9.2vw,82px);line-height:.9;text-transform:uppercase;letter-spacing:-.032em;
   margin:16px 0 16px;
 }
-.hero h1 em{font-style:normal;color:var(--accent);display:block}
+.hero h1 em{font-style:normal;color:var(--accent);display:block;font-size:.82em;line-height:.94;margin-top:.1em}
 .hero .lede{max-width:50ch;color:var(--ink-2);font-size:16px;line-height:1.6;margin:0}
 .hero .tagline{display:flex;gap:6px;flex-wrap:wrap;margin-top:20px}
 .tag{
@@ -513,6 +513,94 @@ input[type=range]::-moz-range-thumb{
 .interval .ik{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--p20);width:76px;flex:none}
 .interval .iv{flex:1}
 
+/* ---------- claim ---------- */
+.claimrow{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
+.claimbtn[disabled]{opacity:.42;cursor:not-allowed;filter:grayscale(.5)}
+.claimbtn.claimed{background:var(--p10);border-color:var(--p10);color:#fff}
+.claimbtn.claimed::after{background:#fff}
+.claimnote{font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.move.claimed .mnum{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+/* ---------- log ---------- */
+.logtop{display:grid;gap:12px;grid-template-columns:1fr;margin-bottom:14px}
+@media(min-width:760px){.logtop{grid-template-columns:minmax(0,260px) minmax(0,1fr)}}
+.rankcard{border:1px solid var(--line-hard);border-radius:var(--r-card);background:var(--surface);
+  padding:18px;box-shadow:var(--sh-1);display:flex;flex-direction:column;gap:8px;justify-content:center}
+.rankcard b{font-family:var(--f-display);font-weight:800;font-size:30px;text-transform:uppercase;
+  letter-spacing:-.03em;line-height:1}
+.rankcard small{font-size:11.5px;color:var(--ink-3)}
+.rankbar{height:6px;border-radius:3px;background:var(--bg-sunk);overflow:hidden;border:1px solid var(--line)}
+.rankbar i{display:block;height:100%;background:var(--accent);transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px}
+.tile{border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface);padding:13px 14px;
+  box-shadow:var(--sh-1)}
+.tile b{display:block;font-family:var(--f-mono);font-size:22px;font-weight:600;line-height:1.05;
+  font-variant-numeric:tabular-nums}
+.tile small{font-family:var(--f-mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+
+.calcard{border:1px solid var(--line-hard);border-radius:var(--r-card);background:var(--surface);
+  padding:16px var(--pad);box-shadow:var(--sh-1);margin-bottom:14px}
+.calhd{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.calseg{margin-left:auto}
+.calseg button{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.12em;padding:6px 12px}
+.cal-week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;max-width:620px}
+.wk{border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface-2);padding:9px 4px;
+  text-align:center;min-height:66px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.wk small{font-family:var(--f-mono);font-size:8.5px;letter-spacing:.1em;color:var(--ink-3)}
+.wk b{font-family:var(--f-mono);font-size:15px;font-weight:600}
+.wk i{font-family:var(--f-mono);font-size:9px;font-style:normal;color:var(--accent-ink);opacity:.9}
+.wk.on{background:var(--c);border-color:var(--c)}
+.wk.on small,.wk.on b,.wk.on i{color:#fff;mix-blend-mode:normal}
+.wk.fut{opacity:.35}
+.cal-month{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;max-width:400px}
+.cal-month .dow{font-family:var(--f-mono);font-size:8.5px;letter-spacing:.1em;color:var(--ink-3);
+  text-align:center;padding-bottom:2px}
+.mo{aspect-ratio:1;max-height:50px;display:grid;place-items:center;border-radius:7px;border:1px solid var(--line);
+  background:var(--surface-2);font-family:var(--f-mono);font-size:11px;color:var(--ink-3);
+  font-variant-numeric:tabular-nums}
+.mo.pad{border:0;background:none}
+.mo.on{background:var(--c);border-color:var(--c);color:#fff;font-weight:600}
+.mo.today{outline:2px solid var(--accent);outline-offset:1px}
+.cal-year-wrap{overflow-x:auto;padding-bottom:4px}
+.cal-year{display:flex;gap:3px;min-width:660px}
+.ycol{display:flex;flex-direction:column;gap:3px}
+.yd{width:10px;height:10px;border-radius:2px;background:var(--bg-sunk);border:1px solid var(--line);display:block}
+.yd.on{background:var(--c);border-color:var(--c)}
+.yd.pad{opacity:0}
+.cal-ylabs{display:flex;gap:3px;min-width:660px;margin-top:5px}
+.ylab{width:10px;font-family:var(--f-mono);font-size:8px;color:var(--ink-3);white-space:nowrap;overflow:visible}
+.callegend{display:flex;align-items:center;gap:6px;margin-top:12px;
+  font-family:var(--f-mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.callegend i{width:11px;height:11px;border-radius:2px;display:block}
+.calnote{margin-left:auto;color:var(--ink-2)}
+
+/* ---------- rewards ---------- */
+.rewintro{max-width:62ch;margin:0 0 16px;color:var(--ink-3);font-size:13.5px;line-height:1.6}
+.rewgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.rew{position:relative;border:1px solid var(--line);border-radius:var(--r-card);background:var(--surface);
+  padding:16px;box-shadow:var(--sh-1);display:flex;flex-direction:column;gap:7px}
+.rew.ok{border-color:var(--accent)}
+.rew b{font-family:var(--f-display);font-weight:800;font-size:19px;text-transform:uppercase;letter-spacing:-.02em;line-height:1.05}
+.rew p{margin:0;font-size:12.5px;color:var(--ink-3);line-height:1.5;flex:1}
+.rewtag{font-family:var(--f-mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+.rew.ok .rewtag{color:var(--accent)}
+.rewfoot{display:flex;align-items:center;gap:10px;margin-top:4px}
+.rewcost{font-size:13px;font-weight:600;color:var(--ink-2)}
+.rewfoot .btn{margin-left:auto;font-size:12px;padding:5px 5px 5px 14px}
+.rewfoot .btn::after{width:22px;height:22px}
+.rewdel{position:absolute;right:8px;top:8px;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);
+  background:var(--surface-2);color:var(--ink-3);cursor:pointer;font-size:14px;line-height:1;padding:0}
+.rewdel:hover{color:var(--accent);border-color:var(--accent)}
+.rewnew{border-style:dashed;gap:9px}
+.rewnew input{font:inherit;font-size:13px;padding:9px 11px;border-radius:var(--r-sm);
+  border:1px solid var(--line-hard);background:var(--surface-2);color:var(--ink);width:100%}
+.redlist{margin-top:18px;display:grid;gap:6px}
+.redrow{display:flex;gap:12px;align-items:center;padding:9px 16px;border:1px dashed var(--line);
+  border-radius:var(--r-pill);font-size:13px}
+.redrow .hx{color:var(--ink-3)}
+.hdot{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+.hmeta{font-size:11px;color:var(--ink-3)}
+
 /* ---------- history / badges ---------- */
 .hist{display:grid;gap:8px}
 .histrow{
@@ -673,7 +761,7 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
   <section class="hero">
     <div class="hero-copy">
       <p class="eyebrow">Built for the session in front of you</p>
-      <h1>Tell it what you've got.<em>Get the session.</em></h1>
+      <h1>Confusion in the gym?<em>Not anymore with Lifted.AI</em></h1>
       <p class="lede">Lifted.AI reads your equipment, your target muscles, and how much you've got in
         the tank — then builds a session that covers the most ground in the fewest movements.
         Every lift comes with the motion, the muscles, and the numbers.</p>
@@ -683,8 +771,7 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
         <span class="tag">Points &amp; streaks</span>
         <span class="tag">Works offline</span>
       </div>
-      <p class="scribble">no signal required &#8600;</p>
-    </div>
+          </div>
     <div class="hero-stage" aria-hidden="true">
       <div class="hcard c1"><div class="hc-rig" id="heroRig"></div></div>
       <div class="hcard c2">
@@ -701,13 +788,13 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 
   <section class="panel" id="setupPanel">
     <div class="panel-head">
-      <h2>1 · Load a plate</h2>
+      <h2>1 · Get in the slot</h2>
       <div class="hint">One tap fills everything below.<br>Tune it after, or don't.</div>
     </div>
     <div class="presets" id="presets"></div>
 
     <div class="panel-head" style="margin-top:28px">
-      <h2>2 · The criteria</h2>
+      <h2>2 · Workload</h2>
       <div class="hint" id="criteriaHint">Nothing loaded yet</div>
     </div>
 
@@ -774,11 +861,18 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 
   <section class="panel" id="logPanel">
     <div class="panel-head">
-      <h2>The log</h2>
-      <div class="hint" id="logHint"></div>
+      <h2>4 · The log</h2>
+      <div class="hint">Every session you bank, and the streak it feeds.</div>
     </div>
-    <div class="badges" id="badges"></div>
-    <div class="hist" id="hist" style="margin-top:12px"></div>
+    <div id="logBody"></div>
+  </section>
+
+  <section class="panel" id="rewardsPanel">
+    <div class="panel-head">
+      <h2>5 · Cash it in</h2>
+      <div class="hint">What the points are actually for.</div>
+    </div>
+    <div id="rewardsBody"></div>
   </section>
 
   <footer style="margin-top:44px;padding-top:16px;border-top:1px solid var(--line);display:flex;gap:14px;flex-wrap:wrap;align-items:center">
@@ -881,25 +975,29 @@ function logoMark(size, opts){
 /* Stylized muscle chart. Each region is a set of primitives placed on a
    100x240 body; the back view is drawn in the same space, translated. */
 const M = {
-  traps:    {n:"Traps",        grp:"back"},
-  delt_f:   {n:"Front Delts",  grp:"push"},
-  delt_s:   {n:"Side Delts",   grp:"push"},
-  delt_r:   {n:"Rear Delts",   grp:"back"},
-  chest:    {n:"Chest",        grp:"push"},
-  lats:     {n:"Lats",         grp:"back"},
-  upperback:{n:"Upper Back",   grp:"back"},
-  lowerback:{n:"Lower Back",   grp:"back"},
-  biceps:   {n:"Biceps",       grp:"arms"},
-  triceps:  {n:"Triceps",      grp:"arms"},
-  forearms: {n:"Forearms",     grp:"arms"},
-  abs:      {n:"Abs",          grp:"core"},
-  obliques: {n:"Obliques",     grp:"core"},
-  glutes:   {n:"Glutes",       grp:"legs"},
-  quads:    {n:"Quads",        grp:"legs"},
-  hams:     {n:"Hamstrings",   grp:"legs"},
-  adductors:{n:"Adductors",    grp:"legs"},
-  calves:   {n:"Calves",       grp:"legs"},
-  hipflex:  {n:"Hip Flexors",  grp:"core"}
+  neck:     {n:"Neck",          grp:"back"},
+  traps:    {n:"Traps",         grp:"back"},
+  delt_f:   {n:"Front Delts",   grp:"push"},
+  delt_s:   {n:"Side Delts",    grp:"push"},
+  delt_r:   {n:"Rear Delts",    grp:"back"},
+  chest_up: {n:"Upper Chest",   grp:"push"},
+  chest:    {n:"Chest",         grp:"push"},
+  serratus: {n:"Serratus",      grp:"core"},
+  lats:     {n:"Lats",          grp:"back"},
+  upperback:{n:"Upper Back",    grp:"back"},
+  lowerback:{n:"Lower Back",    grp:"back"},
+  biceps:   {n:"Biceps",        grp:"arms"},
+  triceps:  {n:"Triceps",       grp:"arms"},
+  forearms: {n:"Forearms",      grp:"arms"},
+  abs:      {n:"Abs",           grp:"core"},
+  obliques: {n:"Obliques",      grp:"core"},
+  glutes:   {n:"Glutes",        grp:"legs"},
+  quads:    {n:"Quads",         grp:"legs"},
+  hams:     {n:"Hamstrings",    grp:"legs"},
+  adductors:{n:"Adductors",     grp:"legs"},
+  calves:   {n:"Calves",        grp:"legs"},
+  tibialis: {n:"Shins",         grp:"legs"},
+  hipflex:  {n:"Hip Flexors",   grp:"core"}
 };
 const MUSCLE_IDS = Object.keys(M);
 
@@ -909,31 +1007,45 @@ const p = d => ({t:"p",d});
 const mir = s => s.t==="e" ? e(100-s.cx,s.cy,s.rx,s.ry,-s.rot)
                            : p(s.d.replace(/(-?\d+(?:\.\d+)?)(,)(-?\d+(?:\.\d+)?)/g,(m,x,c,y)=>(100-parseFloat(x))+c+y));
 const both = s => [s, mir(s)];
+const allOf = (...ss) => ss.reduce((a,s) => a.concat(both(s)), []);
 
-/* front + back geometry per muscle */
+/* Front and back geometry. Each muscle is several shapes rather than one blob,
+   so the chart reads as an anatomy plate instead of a heat blob. */
 const GEO = {
-  traps:     {f:[...both(e(40,37,11,4.6,-24))],
-              b:[p("M50,29 L64,41 L59,74 L50,84 L41,74 L36,41 Z")]},
-  delt_f:    {f:[...both(e(30,46,7,9,10))], b:[]},
-  delt_s:    {f:[...both(e(25.5,46,5.2,8,4))], b:[...both(e(25.5,45,5,7.6,4))]},
-  delt_r:    {f:[], b:[...both(e(29,45,7,8.4,-8))]},
-  chest:     {f:[...both(e(41,55,11.5,9,-6))], b:[]},
-  lats:      {f:[], b:[...both(p("M34,52 L27.5,62 L31,88 L45,99 L46.5,70 Z"))]},
-  upperback: {f:[], b:[...both(e(44,63,6,10.5,6))]},
-  lowerback: {f:[], b:[...both(e(45.6,95,4.2,14,2))]},
-  biceps:    {f:[...both(e(24,65,5.4,11,8))], b:[]},
-  triceps:   {f:[], b:[...both(e(25,65,5.6,12,6))]},
-  forearms:  {f:[...both(e(19.5,91,4.9,14,7))], b:[...both(e(19.5,91,4.9,14,7))]},
-  abs:       {f:[p("M43,64 h6 v9 h-6 z"),p("M51,64 h6 v9 h-6 z"),
-                 p("M43,75 h6 v9 h-6 z"),p("M51,75 h6 v9 h-6 z"),
-                 p("M43,86 h6 v9 h-6 z"),p("M51,86 h6 v9 h-6 z")], b:[]},
-  obliques:  {f:[...both(e(38.2,84,4.4,13,3))], b:[]},
-  glutes:    {f:[], b:[...both(e(42,120,10,11.5,0))]},
-  quads:     {f:[...both(e(42,143,8.6,23,1))], b:[]},
-  hams:      {f:[], b:[...both(e(42,152,8.6,20,1))]},
-  adductors: {f:[...both(e(47.6,138,3.6,17,2))], b:[]},
-  calves:    {f:[...both(e(40,190,4.6,15,0))], b:[...both(e(41,188,6.4,17,0))]},
-  hipflex:   {f:[...both(e(44,119,5,7,-20))], b:[]}
+  neck:      {f:allOf(e(45.5,30,2.3,5.2,16)), b:allOf(e(45.8,29.5,2.8,5,8))},
+  traps:     {f:allOf(e(40,37.5,10.5,4.2,-22)),
+              b:[p("M50,28 L63,40 L58.5,72 L50,80 L41.5,72 L37,40 Z"), ...both(e(38,45,5,7,-32))]},
+  delt_f:    {f:[...both(e(30,45.5,6.4,8.2,10)), ...both(e(32,40.5,4.6,3.6,-8))], b:[]},
+  delt_s:    {f:allOf(e(25.6,46,5,7.8,4)), b:allOf(e(25.6,45,4.8,7.4,4))},
+  delt_r:    {f:[], b:[...both(e(29,45,6.8,8,-8)), ...both(e(32,51,4.4,3.4,-14))]},
+  chest_up:  {f:allOf(e(43,47.5,8.4,3.5,-9)), b:[]},
+  chest:     {f:[...both(e(41.5,56,10.6,7.4,-5)), ...both(e(43,62.5,8.4,3.2,-7))], b:[]},
+  serratus:  {f:[...both(e(34.5,63,3.3,1.7,-20)), ...both(e(35.5,67.5,3.1,1.6,-18)),
+                 ...both(e(36.5,72,2.8,1.5,-16))], b:[]},
+  lats:      {f:[], b:[...both(p("M34,52 L27.5,62 L30.5,88 L45,99 L46.5,70 Z")),
+                       ...both(e(35,58,3.6,3,-22))]},
+  upperback: {f:[], b:[...both(e(43.5,62,5.4,9,6)), ...both(e(37,57,3.8,3.2,-20))]},
+  lowerback: {f:[], b:allOf(e(45.6,95,3.8,14,2))},
+  biceps:    {f:[...both(e(24,64,4.4,10,8)), ...both(e(27.6,66.5,2.9,8.4,8))], b:[]},
+  triceps:   {f:[], b:[...both(e(25.4,62,4.1,10,6)), ...both(e(22.2,69,3.2,7,4)),
+                       ...both(e(28.4,72,2.6,5.6,6))]},
+  forearms:  {f:[...both(e(19.6,88,4.8,11.5,7)), ...both(e(17.6,101,3,7,5))],
+              b:[...both(e(19.6,88,4.8,11.5,7)), ...both(e(17.6,101,3,7,5))]},
+  abs:       {f:[p("M43.4,63 h5.4 v8 h-5.4 z"),p("M51.2,63 h5.4 v8 h-5.4 z"),
+                 p("M43.4,72.5 h5.4 v8 h-5.4 z"),p("M51.2,72.5 h5.4 v8 h-5.4 z"),
+                 p("M43.6,82 h5.2 v8 h-5.2 z"),p("M51.2,82 h5.2 v8 h-5.2 z"),
+                 p("M44,91.5 h4.8 v7 h-4.8 z"),p("M51.2,91.5 h4.8 v7 h-4.8 z"),
+                 p("M45,100 L50,111 L55,100 Z")], b:[]},
+  obliques:  {f:allOf(e(38.4,82,4.2,12,3)), b:[]},
+  glutes:    {f:[], b:[...both(e(42,119,9.6,11,0)), ...both(e(36.5,113,4.2,5,-18))]},
+  quads:     {f:[...both(e(43,140,4.7,21,1)), ...both(e(38.4,134,3.9,16,4)),
+                 ...both(e(45.6,158,3.7,8,-6))], b:[]},
+  hams:      {f:[], b:[...both(e(38.6,150,4,18,2)), ...both(e(44.6,150,3.8,18,-1))]},
+  adductors: {f:allOf(e(47.4,136,3.4,16,2)), b:[]},
+  calves:    {f:allOf(e(36.6,186,2.8,11,0)),
+              b:[...both(e(43,183,4,12,0)), ...both(e(38,181,3.6,11,0)), ...both(e(40.6,198,4.2,9,0))]},
+  tibialis:  {f:allOf(e(41,190,3.4,14,2)), b:[]},
+  hipflex:   {f:allOf(e(44,118,4.6,6.5,-22)), b:[]}
 };
 
 /* body outline, drawn under the muscles */
@@ -1682,10 +1794,10 @@ const X = [
 
 /* --- hinge --- */
 {id:"deadlift",n:"Deadlift",arch:"hinge",eq:["barbell"],cls:"comp",pat:"hinge",big:1,
- pri:["glutes","hams","lowerback"],sec:["traps","lats","forearms","quads","upperback"],
+ pri:["glutes","hams","lowerback"],sec:["traps","lats","forearms","quads","upperback","neck"],
  cue:"Pull the slack out of the bar first, then push the floor away — chest and hips rise together."},
 {id:"trapbardl",n:"Trap Bar Deadlift",arch:"hinge",eq:["trapbar"],cls:"comp",pat:"hinge",big:1,
- pri:["glutes","quads","lowerback"],sec:["hams","traps","forearms"],
+ pri:["glutes","quads","lowerback"],sec:["hams","traps","forearms","neck"],
  cue:"Easier on the back than a straight bar — stand tall, don't hitch it up your thighs."},
 {id:"rdl",n:"Romanian Deadlift",arch:"rdl",eq:["barbell"],cls:"comp",pat:"hinge",big:1,
  pri:["hams","glutes"],sec:["lowerback","forearms","upperback"],
@@ -1708,45 +1820,45 @@ const X = [
 
 /* --- horizontal push --- */
 {id:"bench",n:"Bench Press",arch:"bench",eq:["barbell","bench","rack"],cls:"comp",pat:"push_h",big:1,
- pri:["chest","triceps"],sec:["delt_f","upperback"],
+ pri:["chest","triceps"],sec:["delt_f","upperback","chest_up","serratus"],
  cue:"Shoulder blades pinned down and back, bar to the lower chest, drive your feet into the floor."},
 {id:"dbbench",n:"Dumbbell Bench Press",arch:"bench",eq:["dumbbell","bench"],cls:"comp",pat:"push_h",big:1,
- pri:["chest","triceps"],sec:["delt_f"],
+ pri:["chest","triceps"],sec:["delt_f","chest_up","serratus"],
  cue:"Lower until your elbows are just past your torso — more stretch than a bar, so respect the bottom."},
 {id:"inclinebb",n:"Incline Bench Press",arch:"inclinebench",eq:["barbell","incline"],cls:"comp",pat:"push_h",big:1,
- pri:["chest","delt_f"],sec:["triceps"],
+ pri:["chest","delt_f","chest_up"],sec:["triceps"],
  cue:"Thirty degrees is plenty. Higher and it turns into a shoulder press."},
 {id:"inclinedb",n:"Incline Dumbbell Press",arch:"inclinebench",eq:["dumbbell","incline"],cls:"acc",pat:"push_h",
- pri:["chest","delt_f"],sec:["triceps"],
+ pri:["chest","delt_f","chest_up"],sec:["triceps"],
  cue:"Press the bells slightly together at the top to finish the contraction."},
 {id:"pushup",n:"Push-Up",arch:"pushup",eq:["bw"],cls:"acc",pat:"push_h",
- pri:["chest","triceps"],sec:["delt_f","abs"],
+ pri:["chest","triceps"],sec:["delt_f","abs","serratus","chest_up"],
  cue:"Body is one rigid line. Elbows at 45°, chest to the floor, push the ground away."},
 {id:"dip",n:"Dip",arch:"dip",eq:["dipbar"],cls:"comp",pat:"push_h",big:1,
- pri:["chest","triceps"],sec:["delt_f"],
+ pri:["chest","triceps"],sec:["delt_f","serratus"],
  cue:"Lean forward for chest, stay upright for triceps. Stop when your shoulders reach elbow height."},
 {id:"fly",n:"Dumbbell Fly",arch:"fly",eq:["dumbbell","bench"],cls:"iso",pat:"push_h",
- pri:["chest"],sec:["delt_f"],
+ pri:["chest"],sec:["delt_f","chest_up"],
  cue:"Wide arc, soft elbow, think about hugging a barrel. Light weight wins here."},
 {id:"cablefly",n:"Cable Fly",arch:"rearfly",eq:["cable"],cls:"iso",pat:"push_h",
- pri:["chest"],sec:["delt_f"],
+ pri:["chest"],sec:["delt_f","chest_up"],
  cue:"Constant tension is the point — pause where the hands meet and squeeze."},
 {id:"machinepress",n:"Chest Press Machine",arch:"bench",eq:["machine"],cls:"acc",pat:"push_h",
- pri:["chest","triceps"],sec:["delt_f"],
+ pri:["chest","triceps"],sec:["delt_f","chest_up"],
  cue:"Set the seat so the handles line up with your mid-chest."},
 
 /* --- vertical push --- */
 {id:"ohp",n:"Overhead Press",arch:"ohp",eq:["barbell","rack"],cls:"comp",pat:"push_v",big:1,
- pri:["delt_f","triceps"],sec:["delt_s","abs","upperback","traps"],
+ pri:["delt_f","triceps"],sec:["delt_s","abs","upperback","traps","serratus"],
  cue:"Squeeze glutes and abs so you press the bar, not your lower back. Head through at the top."},
 {id:"dbohp",n:"Dumbbell Shoulder Press",arch:"ohp",eq:["dumbbell"],cls:"comp",pat:"push_v",big:1,
- pri:["delt_f","triceps"],sec:["delt_s","abs"],
+ pri:["delt_f","triceps"],sec:["delt_s","abs","serratus"],
  cue:"Start at ear height, press until the bells nearly touch overhead."},
 {id:"pushpress",n:"Push Press",arch:"pushpress",eq:["barbell","rack"],cls:"comp",pat:"push_v",big:1,
  pri:["delt_f","triceps","quads"],sec:["glutes","abs","traps"],
  cue:"Short dip, violent drive, then punch the bar up. Legs start it, shoulders finish it."},
 {id:"pikepush",n:"Pike Push-Up",arch:"pushup",eq:["bw"],cls:"acc",pat:"push_v",
- pri:["delt_f","triceps"],sec:["delt_s","abs"],
+ pri:["delt_f","triceps"],sec:["delt_s","abs","serratus"],
  cue:"Hips high, crown of the head toward the floor between your hands."},
 {id:"thruster",n:"Thruster",arch:"pushpress",eq:["dumbbell"],cls:"comp",pat:"push_v",big:1,fin:1,
  pri:["quads","delt_f","glutes"],sec:["triceps","abs","upperback"],
@@ -1754,10 +1866,10 @@ const X = [
 
 /* --- horizontal pull --- */
 {id:"bbrow",n:"Barbell Row",arch:"row",eq:["barbell"],cls:"comp",pat:"pull_h",big:1,
- pri:["lats","upperback"],sec:["delt_r","biceps","lowerback","forearms","traps"],
+ pri:["lats","upperback"],sec:["delt_r","biceps","lowerback","forearms","traps","neck"],
  cue:"Torso near 45°, pull to the belly button, don't let your chest drop as you row."},
 {id:"pendlay",n:"Pendlay Row",arch:"row",eq:["barbell"],cls:"comp",pat:"pull_h",big:1,
- pri:["upperback","lats"],sec:["delt_r","biceps","traps"],
+ pri:["upperback","lats"],sec:["delt_r","biceps","traps","neck"],
  cue:"Bar starts dead on the floor every rep. Explode it to the sternum, reset."},
 {id:"dbrow",n:"One-Arm Dumbbell Row",arch:"dbrow",eq:["dumbbell","bench"],cls:"acc",pat:"pull_h",uni:1,
  pri:["lats","upperback"],sec:["biceps","delt_r","forearms"],
@@ -1829,10 +1941,10 @@ const X = [
  pri:["quads"],sec:[],
  cue:"Pause at full lockout for a beat. It's the one place the quads are fully shortened."},
 {id:"calfraise",n:"Standing Calf Raise",arch:"calf",eq:["dumbbell"],cls:"iso",pat:"iso_leg",
- pri:["calves"],sec:[],
+ pri:["calves"],sec:["tibialis"],
  cue:"Full stretch at the bottom, full contraction at the top, and don't bounce."},
 {id:"bwcalf",n:"Bodyweight Calf Raise",arch:"calf",eq:["bw"],cls:"iso",pat:"iso_leg",
- pri:["calves"],sec:[],
+ pri:["calves"],sec:["tibialis"],
  cue:"Off a step for extra range. Twenty-plus reps and slow — calves are stubborn."},
 
 /* --- shoulders / arms isolation --- */
@@ -1858,7 +1970,7 @@ const X = [
  pri:["delt_f"],sec:["chest"],
  cue:"Only worth it when your pressing volume is low. Stop at eye level."},
 {id:"shrug",n:"Shrug",arch:"shrug",eq:["dumbbell"],cls:"iso",pat:"iso_delt",
- pri:["traps"],sec:["forearms"],
+ pri:["traps"],sec:["forearms","neck"],
  cue:"Straight up toward your ears, pause, down slow. No rolling."},
 {id:"uprightrow",n:"Upright Row",arch:"uprightrow",eq:["barbell"],cls:"acc",pat:"iso_delt",
  pri:["delt_s","traps"],sec:["biceps","upperback"],
@@ -1891,18 +2003,18 @@ const X = [
  pri:["triceps","chest"],sec:["delt_f"],
  cue:"Shoulder-width grip, elbows tucked. Heaviest triceps work you can do."},
 {id:"farmerwalk",n:"Farmer's Carry",arch:"carry",eq:["dumbbell"],cls:"acc",pat:"carry",fin:1,
- pri:["forearms","traps"],sec:["abs","obliques","upperback","glutes","calves"],
+ pri:["forearms","traps"],sec:["abs","obliques","upperback","glutes","calves","neck"],
  cue:"Stand tall, walk like you're not carrying anything, don't let the ribs flare."},
 {id:"suitcase",n:"Suitcase Carry",arch:"carry",eq:["kettlebell"],cls:"acc",pat:"carry",uni:1,
- pri:["obliques","forearms"],sec:["abs","traps","glutes"],
+ pri:["obliques","forearms"],sec:["abs","traps","glutes","neck"],
  cue:"Load one side only and refuse to lean. That's the exercise."},
 
 /* --- core --- */
 {id:"plank",n:"Plank",arch:"plank",eq:["bw"],cls:"core",pat:"core",unit:"sec",
- pri:["abs"],sec:["obliques","delt_f","glutes"],
+ pri:["abs"],sec:["obliques","delt_f","glutes","serratus"],
  cue:"Squeeze glutes, tuck the ribs, and brace hard. Thirty quality seconds beats three lazy minutes."},
 {id:"abwheel",n:"Ab Wheel Rollout",arch:"abwheel",eq:["abwheel"],cls:"core",pat:"core",
- pri:["abs"],sec:["obliques","lats","lowerback","delt_f"],
+ pri:["abs"],sec:["obliques","lats","lowerback","delt_f","serratus"],
  cue:"Roll out only as far as you can keep the lower back from arching. That's your range."},
 {id:"hanglegraise",n:"Hanging Leg Raise",arch:"hanglegraise",eq:["pullupbar"],cls:"core",pat:"core",
  pri:["abs","hipflex"],sec:["obliques","forearms","lats"],
@@ -1931,10 +2043,10 @@ const X = [
 
 /* --- conditioning --- */
 {id:"run_int",n:"Treadmill Intervals",arch:"run",eq:["treadmill"],cls:"cardio",pat:"cardio",
- pri:["quads","calves"],sec:["hams","glutes","abs"],
+ pri:["quads","calves"],sec:["hams","glutes","abs","tibialis"],
  cue:"Hard efforts should feel like a 8/10 — you can say a word, not a sentence."},
 {id:"run_steady",n:"Steady Run",arch:"run",eq:["treadmill"],cls:"cardio",pat:"cardio",
- pri:["calves","quads"],sec:["hams","glutes"],
+ pri:["calves","quads"],sec:["hams","glutes","tibialis"],
  cue:"Conversational pace. If you can't talk, you're going too hard for this one."},
 {id:"bike_int",n:"Bike Intervals",arch:"bike",eq:["bike"],cls:"cardio",pat:"cardio",
  pri:["quads","glutes"],sec:["calves","hams","abs"],
@@ -1943,10 +2055,10 @@ const X = [
  pri:["lats","quads"],sec:["upperback","glutes","hams","biceps","lowerback"],
  cue:"Legs, then back, then arms. Reverse it on the recovery. Never all at once."},
 {id:"rope",n:"Jump Rope",arch:"jumprope",eq:["jumprope"],cls:"cardio",pat:"cardio",
- pri:["calves"],sec:["delt_s","forearms","abs","quads"],
+ pri:["calves"],sec:["delt_s","forearms","abs","quads","tibialis"],
  cue:"Wrists turn the rope, not the arms. Barely leave the floor."},
 {id:"burpee",n:"Burpees",arch:"burpee",eq:["bw"],cls:"cardio",pat:"cardio",
- pri:["quads","chest"],sec:["abs","delt_f","triceps","glutes","calves"],
+ pri:["quads","chest"],sec:["abs","delt_f","triceps","glutes","calves","tibialis"],
  cue:"Chest to the floor, full stand at the top. Pace it — the first ten always lie."},
 {id:"sledpush",n:"Sled Push",arch:"sled",eq:["sled"],cls:"cardio",pat:"cardio",
  pri:["quads","glutes"],sec:["calves","abs","delt_f","hams"],
@@ -1955,7 +2067,7 @@ const X = [
  pri:["glutes","hams"],sec:["lowerback","abs","delt_f","forearms","traps"],
  cue:"Thirty on, thirty off. Hinge hard and breathe at the top."},
 {id:"shadowrun",n:"High Knees / Shadow Run",arch:"run",eq:["bw"],cls:"cardio",pat:"cardio",
- pri:["hipflex","calves"],sec:["quads","abs"],
+ pri:["hipflex","calves"],sec:["quads","abs","tibialis"],
  cue:"Knees to hip height, quick feet, arms driving. No treadmill required."}
 ];
 const XMAP = Object.fromEntries(X.map(x=>[x.id,x]));
@@ -2082,9 +2194,11 @@ function activationOf(list){
   for(const m of MUSCLE_IDS) out[m] = Math.min(1, act[m]);
   return out;
 }
-function coverageOf(act){
-  let s=0; for(const m of MUSCLE_IDS) s += Math.min(1, act[m]);
-  return Math.round(100 * s / MUSCLE_IDS.length);
+function coverageOf(act, scope){
+  const ids = scope ? MUSCLE_IDS.filter(m => scope.has(m)) : MUSCLE_IDS;
+  if(!ids.length) return 0;
+  let s=0; for(const m of ids) s += Math.min(1, act[m]);
+  return Math.round(100 * s / ids.length);
 }
 
 function generate(cfg){
@@ -2096,6 +2210,13 @@ function generate(cfg){
   const targets = new Set();
   const focusKeys = cfg.focus.length ? cfg.focus : ["full"];
   focusKeys.forEach(k => FOCUS[k].m.forEach(m => targets.add(m)));
+  const wholeBody = focusKeys.includes("full");
+  /* On a focused day, only movements that actually train the focus are eligible.
+     Core is always allowed through as a finisher. */
+  const onFocus = x => wholeBody || x.pat === "core" ||
+    x.pri.filter(m => targets.has(m)).length >= Math.ceil(x.pri.length / 2);
+  const eligible = pool.filter(onFocus);
+  const usePool = eligible.length >= Math.max(4, cfg.count) ? eligible : pool;
 
   const picked = [];
   const usedArch = new Set();
@@ -2130,11 +2251,15 @@ function generate(cfg){
   const half = Math.max(1, Math.ceil(cfg.count * 0.45));
   while(picked.length < cfg.count){
     let best = null, bestScore = -1e9, bestGot = null;
-    for(const x of pool){
+    for(const x of usePool){
       if(picked.some(pk => pk.x.id === x.id)) continue;
       let s = 0;
-      for(const m of x.pri) s += (targets.has(m) ? 11 : 3.2) * (1 - Math.min(1, act[m]));
-      for(const m of x.sec) s += (targets.has(m) ? 4.4 : 1.3) * (1 - Math.min(1, act[m]));
+      const off = wholeBody ? 3.2 : 0.5;
+      for(const m of x.pri){
+        s += (targets.has(m) ? 11 : off) * (1 - Math.min(1, act[m]));
+        if(!wholeBody && !targets.has(m)) s -= 5.5;    /* off-target mass costs you the slot */
+      }
+      for(const m of x.sec) s += (targets.has(m) ? 4.4 : off*0.4) * (1 - Math.min(1, act[m]));
       s -= (patCount[x.pat]||0) * 8;
       if(usedArch.has(x.arch)) s -= 5;
       /* compounds early, isolation late */
@@ -2170,14 +2295,14 @@ function generate(cfg){
       i:i+1, id:x.id, x, reason:pk.reason,
       sets:sch.s, reps:sch.r, rest:sch.rest, rpe:sch.rpe, tempo:sch.tempo, note:sch.note,
       unit:x.unit||"reps", each:!!x.uni,
-      doneSets:[], weight:""
+      doneSets:[], weight:"", claimed:false
     };
   });
 
   const cardio = cfg.cardioOn ? buildCardio(avail, cfg.cstyle, cfg.effort, rnd) : null;
   const all = cardio ? moves.concat([{x:cardio.x}]) : moves;
   const actMap = activationOf(all);
-  const cov = coverageOf(actMap);
+  const cov = coverageOf(actMap, wholeBody ? null : targets);
 
   let mins = 8;
   for(const m of moves){
@@ -2235,13 +2360,18 @@ function rankFor(xp){
   const pct = next ? Math.round(100*(xp - r.xp)/(next.xp - r.xp)) : 100;
   return {r, next, pct};
 }
+function perClass(x){ return x.cls === "comp" ? 15 : x.cls === "acc" ? 11 : x.cls === "core" ? 8 : 9; }
+function movePoints(m, effort){
+  const em = [0,.85,1,1.15,1.35][effort];
+  return Math.round(m.sets * perClass(m.x) * (m.each ? 1.15 : 1) * em);
+}
+function claimedTotal(s){
+  return s.moves.reduce((a,m) => a + (m.claimed ? movePoints(m, s.cfg.effort) : 0), 0);
+}
 function scoreSession(s, streak){
   const em = [0,.85,1,1.15,1.35][s.cfg.effort];
   let base = 0;
-  for(const m of s.moves){
-    const per = m.x.cls === "comp" ? 15 : m.x.cls === "acc" ? 11 : m.x.cls === "core" ? 8 : 9;
-    base += m.sets * per * (m.each ? 1.15 : 1);
-  }
+  for(const m of s.moves) base += m.sets * perClass(m.x) * (m.each ? 1.15 : 1);
   if(s.cardio) base += s.cardio.mins * 4 * (s.cardio.style === "intervals" ? 1.25 : s.cardio.style === "finisher" ? 1.3 : 1);
   base *= em;
   const covBonus = Math.round(s.coverage * 0.85);
@@ -2293,7 +2423,8 @@ function checkBadges(){
    by code or by backup file. */
 const KEY = "liftedai.v2", OLD_KEY = "liftedai.v1";
 const PROFILE_FIELDS = ["name","color","equip","customEquip","gymPhoto","xp","streak",
-                        "freezes","lastDay","history","badges","cfg","session"];
+                        "freezes","lastDay","history","badges","cfg","session",
+                        "rewards","redeemed","calView"];
 const PROFILE_COLORS = ["var(--p25)","var(--p20)","var(--p15)","var(--p10)"];
 const DEFAULT_CFG = {loc:"home", count:5, effort:2, focus:["full"], compounds:[], cardioOn:false, cstyle:"intervals", preset:null};
 
@@ -2301,6 +2432,7 @@ function blankProfile(name, color){
   return {name:name||"You", color:color||PROFILE_COLORS[0],
           equip:HOME_DEFAULT.slice(), customEquip:[], gymPhoto:null,
           xp:0, streak:0, freezes:0, lastDay:null, history:[], badges:[],
+          rewards:[], redeemed:[], calView:"month",
           cfg:Object.assign({}, DEFAULT_CFG), session:null};
 }
 let vault = {v:2, active:"p1", theme:null, profiles:{}};
@@ -2335,6 +2467,9 @@ function migrateProfile(p){
   if(!Array.isArray(out.equip) || !out.equip.length) out.equip = HOME_DEFAULT.slice();
   if(!Array.isArray(out.history)) out.history = [];
   if(!Array.isArray(out.badges)) out.badges = [];
+  if(!Array.isArray(out.rewards)) out.rewards = [];
+  if(!Array.isArray(out.redeemed)) out.redeemed = [];
+  if(!out.calView) out.calView = "month";
   out.session = unpackSession(out.session);
   return out;
 }
@@ -2994,7 +3129,7 @@ function renderSession(animate){
   const ranked = Object.entries(s.act).sort((a,b) => b[1]-a[1]);
 
   panel.innerHTML = `
-    <div class="panel-head"><h2>3 · The session</h2>
+    <div class="panel-head"><h2>3 · Today's lift</h2>
       <div class="hint">${s.cardio ? "Strength then conditioning" : "Strength only"} · generated ${new Date(s.date).toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}</div></div>
     <div class="sessionhead${animate ? " reveal" : ""}">
       <div class="top">
@@ -3010,7 +3145,7 @@ function renderSession(animate){
       <div class="statrow">
         <div class="stat"><b class="num">${s.minutes}<small style="font-size:11px"> min</small></b><small>Est. time</small></div>
         <div class="stat"><b class="num">${totalSets}</b><small>Work sets</small></div>
-        <div class="stat"><b class="num">${s.coverage}<small style="font-size:11px">%</small></b><small>Coverage</small></div>
+        <div class="stat"><b class="num">${s.coverage}<small style="font-size:11px">%</small></b><small>${(s.cfg.focus.length?s.cfg.focus:["full"]).includes("full")?"Body covered":"Target covered"}</small></div>
         <div class="stat"><b class="num" style="color:var(--accent)">${proj.total}</b><small>Points on offer</small></div>
       </div>
       <div class="coverwrap">
@@ -3050,12 +3185,17 @@ function renderSession(animate){
   wireSession();
 }
 function coverageLine(s, ranked){
-  const hit = ranked.filter(([m,v]) => v >= .75).length;
-  const light = ranked.filter(([m,v]) => v >= .35 && v < .75).length;
-  const missed = ranked.filter(([m,v]) => v < .35).map(([m]) => M[m].n.toLowerCase());
-  let t = `<b>${hit}</b> muscle group${hit===1?"":"s"} worked hard, <b>${light}</b> picking up secondary work.`;
+  const keys = s.cfg.focus.length ? s.cfg.focus : ["full"];
+  const wholeBody = keys.includes("full");
+  const targets = new Set(); keys.forEach(k => FOCUS[k].m.forEach(m => targets.add(m)));
+  const scope = wholeBody ? ranked : ranked.filter(([m]) => targets.has(m));
+  const hit = scope.filter(([m,v]) => v >= .75).length;
+  const light = scope.filter(([m,v]) => v >= .35 && v < .75).length;
+  const missed = scope.filter(([m,v]) => v < .35).map(([m]) => M[m].n.toLowerCase());
+  const what = wholeBody ? "" : " of your " + keys.map(k => FOCUS[k].n.toLowerCase()).join(" + ") + " target";
+  let t = `<b>${hit}</b> muscle group${hit===1?"":"s"}${what} worked hard, <b>${light}</b> picking up secondary work.`;
   if(missed.length && missed.length <= 5) t += ` Untouched: ${esc(missed.join(", "))} — add a movement or come back for them tomorrow.`;
-  else if(missed.length) t += ` ${missed.length} groups sit this one out.`;
+  else if(missed.length) t += ` ${missed.length} more sit this one out.`;
   return t;
 }
 function moveRow(m){
@@ -3193,6 +3333,10 @@ function buildDrawer(row, m){
           <input class="wt" data-wt placeholder="weight" value="${esc(m.weight||"")}" inputmode="decimal" aria-label="Weight used">
           <button class="btn ghost swapbtn" type="button" data-swap>Swap</button>
         </div>
+        <div class="claimrow">
+          <button class="btn primary claimbtn" type="button" data-claim>Claim ${movePoints(m, state.session.cfg.effort)} pts</button>
+          <span class="claimnote" data-claimnote></span>
+        </div>
         ${m.note ? `<p style="font-size:12.5px;color:var(--p15);margin:10px 0 0">${esc(m.note)}</p>` : ""}
         <p style="font-size:12px;color:var(--ink-3);margin:10px 0 0">
           ${m.sets} sets of ${esc(m.reps)}${m.each ? " per side" : ""} · ${esc(m.rpe)} · rest ${m.rest} seconds ·
@@ -3241,10 +3385,39 @@ function buildDrawer(row, m){
     m.doneSets[i] = !m.doneSets[i];
     b.setAttribute("aria-pressed", String(!!m.doneSets[i]));
     row.classList.toggle("done", m.doneSets.filter(Boolean).length === m.sets);
+    if(row._paintClaim) row._paintClaim();
     updateProgress(); save();
   }));
   d.querySelector("[data-wt]").addEventListener("input", ev => { m.weight = ev.target.value; save(); });
   d.querySelector("[data-swap]").addEventListener("click", () => swapMove(m));
+
+  const claimBtn = d.querySelector("[data-claim]"), claimNote = d.querySelector("[data-claimnote]");
+  function paintClaim(){
+    const done = m.doneSets.filter(Boolean).length, all = m.sets;
+    if(m.claimed){
+      claimBtn.disabled = true;
+      claimBtn.textContent = "Claimed";
+      claimBtn.classList.add("claimed");
+      claimNote.textContent = "+" + movePoints(m, state.session.cfg.effort) + " already in the bank";
+    }else if(done < all){
+      claimBtn.disabled = true;
+      claimNote.textContent = (all - done) + " set" + (all-done===1?"":"s") + " to go";
+    }else{
+      claimBtn.disabled = false;
+      claimNote.textContent = "Ready";
+    }
+  }
+  claimBtn.addEventListener("click", () => {
+    if(m.claimed || m.doneSets.filter(Boolean).length < m.sets) return;
+    const pts = movePoints(m, state.session.cfg.effort);
+    m.claimed = true;
+    state.xp += pts;
+    save(); renderHUD(); paintClaim(); updateProgress();
+    row.classList.add("claimed");
+    toast(m.x.n + " banked", "Point balance is now " + state.xp.toLocaleString() + ".", "+" + pts);
+  });
+  paintClaim();
+  row._paintClaim = paintClaim;
 }
 function phaseWord(x, i){
   const p = {squat:["Descend","Drive"],hinge:["Set & pull","Lock out"],rdl:["Lower","Stand"],
@@ -3267,14 +3440,18 @@ function swapMove(m){
   const rnd = mulberry((Math.random()*1e9)|0);
   const targets = new Set();
   (s.cfg.focus.length ? s.cfg.focus : ["full"]).forEach(k => FOCUS[k].m.forEach(t => targets.add(t)));
+  const wholeBody = (s.cfg.focus.length ? s.cfg.focus : ["full"]).includes("full");
+  const off = wholeBody ? 3.2 : 0.5;
   let best = null, bs = -1e9;
   for(const x of X){
     if(x.cls === "cardio" || x.id === m.id) continue;
     if(!x.eq.every(t => avail.includes(t))) continue;
     if(s.moves.some(o => o.id === x.id)) continue;
+    if(!wholeBody && x.pat !== "core" &&
+       x.pri.filter(k => targets.has(k)).length < Math.ceil(x.pri.length / 2)) continue;
     let sc = 0;
-    for(const k of x.pri) sc += (targets.has(k) ? 11 : 3.2) * (1 - Math.min(1, act[k]));
-    for(const k of x.sec) sc += (targets.has(k) ? 4.4 : 1.3) * (1 - Math.min(1, act[k]));
+    for(const k of x.pri) sc += (targets.has(k) ? 11 : off)       * (1 - Math.min(1, act[k]));
+    for(const k of x.sec) sc += (targets.has(k) ? 4.4 : off*0.4) * (1 - Math.min(1, act[k]));
     if(x.cls !== m.x.cls) sc -= 6;
     if(x.pat !== m.x.pat) sc -= 3;
     sc += rnd() * 6;
@@ -3284,10 +3461,10 @@ function swapMove(m){
   const sec = best.unit === "sec";
   const sch = Object.assign({}, SCHEME[best.cls][s.cfg.effort], sec ? CORE_SEC[s.cfg.effort] : {});
   Object.assign(m, {id:best.id, x:best, sets:sch.s, reps:sch.r, rest:sch.rest, rpe:sch.rpe,
-    tempo:sch.tempo, note:sch.note, unit:best.unit||"reps", each:!!best.uni, doneSets:[], weight:"",
+    tempo:sch.tempo, note:sch.note, unit:best.unit||"reps", each:!!best.uni, doneSets:[], weight:"", claimed:false,
     reason:"Swapped in for "+m.x.n+" — closest fit for the muscles this session still needs."});
   s.act = activationOf(s.moves.concat(s.cardio ? [{x:s.cardio.x}] : []));
-  s.coverage = coverageOf(s.act);
+  s.coverage = coverageOf(s.act, wholeBody ? null : targets);
   unmountAll(); save(); renderSession(false);
   toast("Swapped", best.n+" takes that slot.", "");
 }
@@ -3310,11 +3487,13 @@ function finishSession(){
 
   const st = bumpStreak();
   const sc = scoreSession(s, state.streak);
-  const earned = Math.round(sc.total * (0.4 + 0.6*ratio));
+  const already = claimedTotal(s);
+  const full = Math.round(sc.total * (0.4 + 0.6*ratio));
+  const earned = Math.max(0, full - already);          /* claimed points already landed */
   state.xp += earned;
-  state.history.unshift({date:s.date, title:s.title, xp:earned, moves:s.moves.length,
+  state.history.unshift({date:s.date, title:s.title, xp:Math.max(full, already), moves:s.moves.length,
                          coverage:s.coverage, minutes:s.minutes, effort:s.cfg.effort,
-                         sets:done+"/"+total});
+                         focus:(s.cfg.focus||["full"]).slice(), sets:done+"/"+total});
   state.history = state.history.slice(0, 40);
   const newBadges = checkBadges();
   state.session = null;
@@ -3327,33 +3506,236 @@ function finishSession(){
           : st.reset   ? "Streak restarted at 1. Train again within two days to build it."
                        : "Streak now "+state.streak+" · ×"+sc.mult+" multiplier applied";
   if(newBadges.length) msg += " · Unlocked "+newBadges.map(b => b.n).join(", ");
-  toast("Banked", msg, "+"+earned);
+  toast("Banked", msg, "+"+earned + (already ? " (+"+already+" claimed)" : ""));
   $("#logPanel").scrollIntoView({behavior:"smooth", block:"start"});
 }
 
 /* -------------------------------------------------------------------- log */
-function renderLog(){
-  $("#badges").innerHTML = BADGES.map(b => {
-    const on = state.badges.includes(b.id);
-    return `<div class="bdg ${on ? "on" : ""}"><div class="bi">${b.i}</div><b>${b.n}</b><small>${b.s}</small></div>`;
-  }).join("");
-  const h = $("#hist");
-  if(!state.history.length){
-    h.innerHTML = `<div class="empty">No sessions banked yet. Load a plate, forge a session, tick the sets off as you go.</div>`;
-  }else{
-    h.innerHTML = state.history.map(r => `
-      <div class="histrow">
-        <span class="hd">${new Date(r.date).toLocaleDateString([], {month:"short", day:"numeric"})}</span>
-        <span class="hn">${esc(r.title)}</span>
-        <span style="font-size:11.5px;color:var(--ink-3)" class="num">${r.sets||""} sets · ${r.coverage}% · ${r.minutes}m</span>
-        <span class="hx num">+${r.xp}</span>
-      </div>`).join("");
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DOW = ["M","T","W","T","F","S","S"];
+
+/* dayKey -> the hardest session logged that day, for colouring the calendar */
+function trainingDays(){
+  const map = {};
+  for(const h of state.history){
+    const k = dayKey(new Date(h.date));
+    const e = h.effort || 2;
+    if(!map[k] || e > map[k].effort) map[k] = {effort:e, xp:0, n:0};
+    map[k].xp += h.xp; map[k].n += 1;
   }
-  const {r, next} = rankFor(state.xp);
-  $("#logHint").innerHTML = next
-    ? `<span class="num">${(next.xp - state.xp).toLocaleString()}</span> points to <b>${next.n}</b>`
-    : "Top rank reached";
+  return map;
 }
+const EFFORT_COLOR = ["","var(--p10)","var(--p15)","color-mix(in srgb,var(--p15) 45%,var(--accent))","var(--accent)"];
+
+function longestStreak(){
+  const days = Object.keys(trainingDays()).sort();
+  if(!days.length) return 0;
+  let best = 1, run = 1;
+  for(let i=1;i<days.length;i++){
+    const gap = daysApart(days[i-1], days[i]);
+    if(gap <= 2) run += 1; else run = 1;      /* same rule as the live streak */
+    best = Math.max(best, run);
+  }
+  return best;
+}
+function addDays(d, k){ const z = new Date(d); z.setDate(z.getDate()+k); return z; }
+function mondayOf(d){ const z = new Date(d); const w = (z.getDay()+6)%7; return addDays(z, -w); }
+
+function calWeek(days){
+  const start = mondayOf(new Date());
+  let cells = "";
+  for(let i=0;i<7;i++){
+    const d = addDays(start, i), k = dayKey(d), hit = days[k];
+    const future = d > new Date();
+    cells += `<div class="wk ${hit?"on":""} ${future?"fut":""}" ${hit?`style="--c:${EFFORT_COLOR[hit.effort]}"`:""}
+      title="${k}${hit?" · "+hit.xp+" pts":""}">
+      <small>${DOW[i]}</small><b>${d.getDate()}</b>${hit?`<i class="num">${hit.xp}</i>`:""}</div>`;
+  }
+  return `<div class="cal-week">${cells}</div>`;
+}
+function calMonth(days, ref){
+  const first = new Date(ref.getFullYear(), ref.getMonth(), 1);
+  const lead = (first.getDay()+6)%7;
+  const len = new Date(ref.getFullYear(), ref.getMonth()+1, 0).getDate();
+  let cells = DOW.map(d => `<span class="dow">${d}</span>`).join("");
+  for(let i=0;i<lead;i++) cells += `<span class="mo pad"></span>`;
+  for(let d=1;d<=len;d++){
+    const dt = new Date(ref.getFullYear(), ref.getMonth(), d), k = dayKey(dt), hit = days[k];
+    const today = k === dayKey(new Date());
+    cells += `<span class="mo ${hit?"on":""} ${today?"today":""}" ${hit?`style="--c:${EFFORT_COLOR[hit.effort]}"`:""}
+      title="${k}${hit?" · "+hit.xp+" pts":""}">${d}</span>`;
+  }
+  return `<div class="cal-month">${cells}</div>`;
+}
+function calYear(days, ref){
+  const end = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate());
+  const start = mondayOf(addDays(end, -363));
+  let cols = "", labels = "", lastMonth = -1;
+  for(let w=0; w<53; w++){
+    let col = "";
+    for(let i=0;i<7;i++){
+      const d = addDays(start, w*7+i);
+      if(d > end){ col += `<i class="yd pad"></i>`; continue; }
+      const k = dayKey(d), hit = days[k];
+      col += `<i class="yd ${hit?"on":""}" ${hit?`style="--c:${EFFORT_COLOR[hit.effort]}"`:""}
+        title="${k}${hit?" · "+hit.xp+" pts":""}"></i>`;
+    }
+    cols += `<div class="ycol">${col}</div>`;
+    const m = addDays(start, w*7).getMonth();
+    labels += `<span class="ylab">${m !== lastMonth ? MONTHS[m] : ""}</span>`;
+    lastMonth = m;
+  }
+  return `<div class="cal-year-wrap"><div class="cal-year">${cols}</div>
+    <div class="cal-ylabs">${labels}</div></div>`;
+}
+
+function renderLog(){
+  const days = trainingDays();
+  const {r, next, pct} = rankFor(state.xp);
+  const thisWeek = Object.keys(days).filter(k => daysApart(k, dayKey(new Date())) < 7 && daysApart(k, dayKey(new Date())) >= 0).length;
+  const view = state.calView || "month";
+  const ref = new Date();
+
+  $("#logBody").innerHTML = `
+    <div class="logtop">
+      <div class="rankcard">
+        <p class="eyebrow">Rank</p>
+        <b>${r.n}</b>
+        <div class="rankbar"><i style="width:${pct}%"></i></div>
+        <small>${next ? (next.xp - state.xp).toLocaleString()+" points to "+next.n : "Top rank reached"}</small>
+      </div>
+      <div class="tiles">
+        <div class="tile"><b class="num">${state.xp.toLocaleString()}</b><small>Points</small></div>
+        <div class="tile"><b class="num">${state.streak}</b><small>Streak</small></div>
+        <div class="tile"><b class="num">${longestStreak()}</b><small>Best streak</small></div>
+        <div class="tile"><b class="num">${state.history.length}</b><small>Sessions</small></div>
+        <div class="tile"><b class="num">${thisWeek}</b><small>This week</small></div>
+        <div class="tile"><b class="num">${state.freezes}</b><small>Rest passes</small></div>
+      </div>
+    </div>
+
+    <div class="calcard">
+      <div class="calhd">
+        <p class="eyebrow">Streak calendar</p>
+        <span class="seg calseg" role="group" aria-label="Calendar range">
+          <button type="button" data-cal="week"  aria-pressed="${view==="week"}">Week</button>
+          <button type="button" data-cal="month" aria-pressed="${view==="month"}">Month</button>
+          <button type="button" data-cal="year"  aria-pressed="${view==="year"}">Year</button>
+        </span>
+      </div>
+      ${view === "week" ? calWeek(days) : view === "month" ? calMonth(days, ref) : calYear(days, ref)}
+      <div class="callegend">
+        <span>Lighter</span>
+        ${[1,2,3,4].map(i => `<i style="background:${EFFORT_COLOR[i]}"></i>`).join("")}
+        <span>Harder</span>
+        <span class="calnote">${view==="month" ? ref.toLocaleDateString([], {month:"long", year:"numeric"}) : view==="year" ? "Last 12 months" : "This week"}</span>
+      </div>
+    </div>
+
+    <div class="badges">${BADGES.map(b => {
+      const on = state.badges.includes(b.id);
+      return `<div class="bdg ${on ? "on" : ""}"><div class="bi">${b.i}</div><b>${b.n}</b><small>${b.s}</small></div>`;
+    }).join("")}</div>
+
+    <div class="hist">${
+      !state.history.length
+        ? `<div class="empty">No sessions banked yet. Get in the slot, forge a session, tick the sets off as you go.</div>`
+        : state.history.map(h => `
+      <div class="histrow">
+        <span class="hdot" style="--c:${EFFORT_COLOR[h.effort||2]}"></span>
+        <span class="hd">${new Date(h.date).toLocaleDateString([], {month:"short", day:"numeric"})}</span>
+        <span class="hn">${esc(h.title)}</span>
+        <span class="hmeta num">${h.sets||""} sets · ${h.coverage}% · ${h.minutes}m</span>
+        <span class="hx num">+${h.xp}</span>
+      </div>`).join("")}</div>`;
+
+  $$("#logBody [data-cal]").forEach(b => b.addEventListener("click", () => {
+    state.calView = b.dataset.cal; save(); renderLog();
+  }));
+  renderRewards();
+}
+
+/* ---------------------------------------------------------------- rewards */
+const BUILTIN_REWARDS = [
+  {id:"freeze", n:"Rest-day pass", cost:400,
+   d:"Banks one pass. If a gap would break your streak, a pass covers it automatically."},
+];
+function renderRewards(){
+  const el2 = $("#rewardsBody");
+  if(!el2) return;
+  const custom = state.rewards || [];
+  el2.innerHTML = `
+    <p class="sub rewintro">Points are yours to spend. The rest-day pass is wired into the streak
+      rules; everything else is a promise you make to yourself — add whatever actually motivates you.</p>
+    <div class="rewgrid">
+      ${BUILTIN_REWARDS.map(r => `
+        <div class="rew ${state.xp >= r.cost ? "ok" : ""}">
+          <span class="rewtag">Built in</span>
+          <b>${r.n}</b>
+          <p>${r.d}</p>
+          <div class="rewfoot">
+            <span class="num rewcost">${r.cost.toLocaleString()} pts</span>
+            <button class="btn primary" type="button" data-buy="${r.id}" ${state.xp >= r.cost ? "" : "disabled"}>Redeem</button>
+          </div>
+        </div>`).join("")}
+      ${custom.map((r,i) => `
+        <div class="rew ${state.xp >= r.cost ? "ok" : ""}">
+          <button class="rewdel" type="button" data-del="${i}" aria-label="Remove reward">×</button>
+          <span class="rewtag">Yours</span>
+          <b>${esc(r.n)}</b>
+          <p>${state.xp >= r.cost ? "Earned it." : (r.cost - state.xp).toLocaleString()+" points to go."}</p>
+          <div class="rewfoot">
+            <span class="num rewcost">${r.cost.toLocaleString()} pts</span>
+            <button class="btn primary" type="button" data-buyc="${i}" ${state.xp >= r.cost ? "" : "disabled"}>Redeem</button>
+          </div>
+        </div>`).join("")}
+      <form class="rew rewnew" id="rewNew">
+        <span class="rewtag">Add one</span>
+        <input id="rewName" placeholder="New lifting shoes" maxlength="40" aria-label="Reward name">
+        <input id="rewCost" type="number" min="50" step="50" value="2500" inputmode="numeric" aria-label="Point cost">
+        <button class="btn" type="submit">Add reward</button>
+      </form>
+    </div>
+    ${(state.redeemed||[]).length ? `<div class="redlist">
+      <p class="eyebrow">Redeemed</p>
+      ${state.redeemed.slice(0,8).map(x => `<div class="redrow">
+        <span class="hd">${new Date(x.date).toLocaleDateString([], {month:"short", day:"numeric"})}</span>
+        <span class="hn">${esc(x.n)}</span><span class="hx num">−${x.cost.toLocaleString()}</span></div>`).join("")}
+    </div>` : ""}`;
+
+  $$("#rewardsBody [data-buy]").forEach(b => b.addEventListener("click", () => {
+    const r = BUILTIN_REWARDS.find(x => x.id === b.dataset.buy);
+    if(!r || state.xp < r.cost) return;
+    state.xp -= r.cost;
+    if(r.id === "freeze") state.freezes += 1;
+    (state.redeemed = state.redeemed || []).unshift({n:r.n, cost:r.cost, date:new Date().toISOString()});
+    save(); renderHUD(); renderLog();
+    toast("Redeemed", r.id === "freeze" ? "You now have "+state.freezes+" rest-day pass"+(state.freezes>1?"es":"")+"." : r.n, "−"+r.cost);
+  }));
+  $$("#rewardsBody [data-buyc]").forEach(b => b.addEventListener("click", () => {
+    const r = (state.rewards||[])[+b.dataset.buyc];
+    if(!r || state.xp < r.cost) return;
+    if(!confirm("Redeem “"+r.n+"” for "+r.cost.toLocaleString()+" points?")) return;
+    state.xp -= r.cost;
+    state.rewards.splice(+b.dataset.buyc, 1);
+    (state.redeemed = state.redeemed || []).unshift({n:r.n, cost:r.cost, date:new Date().toISOString()});
+    save(); renderHUD(); renderLog();
+    toast("Redeemed", r.n + " — go and get it.", "−"+r.cost);
+  }));
+  $$("#rewardsBody [data-del]").forEach(b => b.addEventListener("click", () => {
+    state.rewards.splice(+b.dataset.del, 1); save(); renderRewards();
+  }));
+  const f = $("#rewNew");
+  if(f) f.addEventListener("submit", ev => {
+    ev.preventDefault();
+    const nm = $("#rewName").value.trim(), c = Math.max(50, +$("#rewCost").value || 0);
+    if(!nm) return;
+    (state.rewards = state.rewards || []).push({n:nm, cost:c});
+    save(); renderRewards();
+    toast("Reward added", nm + " at " + c.toLocaleString() + " points.", "");
+  });
+}
+
 $("#resetBtn").addEventListener("click", () => {
   if(!confirm("Wipe “"+state.name+"” — points, streak, history and saved kit? Other profiles are untouched.")) return;
   const keep = {name:state.name, color:state.color};
