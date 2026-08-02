@@ -739,6 +739,29 @@ input[type=range]::-moz-range-thumb{
 .tip p{margin:0;font-size:12px;color:var(--ink-3);line-height:1.45;flex:1}
 .tipval{font-family:var(--f-mono);font-size:11px;color:var(--accent);letter-spacing:.04em}
 
+.signin{border:1px dashed var(--line);border-radius:var(--r-sm);padding:18px}
+.signin b{display:block;font-family:var(--f-display);font-weight:800;font-size:17px;
+  text-transform:uppercase;letter-spacing:-.02em;margin-bottom:6px}
+.signin p{margin:0 0 12px;max-width:60ch;font-size:12.5px;color:var(--ink-3);line-height:1.6}
+.signrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.signrow input,.signrow select{font:inherit;font-size:13px;padding:9px 12px;border-radius:var(--r-sm);
+  border:1px solid var(--line-hard);background:var(--surface-2);color:var(--ink);min-width:0}
+.signrow #signEmail{flex:1;min-width:200px}
+.signnote{margin:10px 0 0;font-size:12px;color:var(--ink-3);min-height:1em}
+.myrank{margin:0 0 12px;font-size:13.5px;color:var(--ink-2)}
+.myrank b{color:var(--accent);font-size:16px}
+.board{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.brow{display:flex;align-items:center;gap:12px;padding:9px 14px;border:1px solid var(--line);
+  border-radius:var(--r-pill);background:var(--surface);font-size:13px}
+.brow.me{border-color:var(--accent);background:var(--accent-wash)}
+.bpos{width:26px;font-size:12px;color:var(--ink-3);font-weight:600}
+.bhandle{flex:1;font-family:var(--f-display);font-weight:800;font-size:15px;text-transform:uppercase;
+  letter-spacing:-.015em}
+.bmeta{font-size:10.5px;color:var(--ink-3)}
+.bxp{font-size:14px;font-weight:600;color:var(--accent)}
+.boardseg{opacity:1}
+.boardseg button{cursor:pointer}
+
 /* ---------- rewards ---------- */
 .rewintro{max-width:62ch;margin:0 0 16px;color:var(--ink-3);font-size:13.5px;line-height:1.6}
 .rewgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
@@ -3010,7 +3033,7 @@ const KEY = "liftedai.v2", OLD_KEY = "liftedai.v1";
 const PROFILE_FIELDS = ["name","color","equip","customEquip","gymPhoto","xp","streak",
                         "freezes","lastDay","history","badges","cfg","session",
                         "rewards","redeemed","calView","prs","prPick","unit","lastWeight",
-                        "week","savedSplits"];
+                        "week","savedSplits","boardScope"];
 const PROFILE_COLORS = ["var(--p25)","var(--p20)","var(--p15)","var(--p10)"];
 const DEFAULT_CFG = {loc:"home", count:5, effort:2, focus:["full"], compounds:[], cardioOn:false, cstyle:"intervals", failureOn:false, preset:null};
 
@@ -3019,10 +3042,10 @@ function blankProfile(name, color){
           equip:HOME_DEFAULT.slice(), customEquip:[], gymPhoto:null,
           xp:0, streak:0, freezes:0, lastDay:null, history:[], badges:[],
           rewards:[], redeemed:[], calView:"month",
-          prs:[], prPick:null, unit:"lb", lastWeight:{}, week:null, savedSplits:[],
+          prs:[], prPick:null, unit:"lb", lastWeight:{}, week:null, savedSplits:[], boardScope:"global",
           cfg:Object.assign({}, DEFAULT_CFG), session:null};
 }
-let vault = {v:2, active:"p1", theme:null, plan:null, firstUse:null, profiles:{}};
+let vault = {v:2, active:"p1", theme:null, plan:null, firstUse:null, auth:null, cloud:null, profiles:{}};
 let state = blankProfile();
 
 const store = {
@@ -3094,7 +3117,8 @@ function load(){
       const v = JSON.parse(rawV2);
       if(v && v.profiles && Object.keys(v.profiles).length){
         vault = {v:2, active:v.active, theme:v.theme || null, plan:v.plan || null,
-                 firstUse:v.firstUse || new Date().toISOString(), profiles:{}};
+                 firstUse:v.firstUse || new Date().toISOString(),
+                 auth:v.auth || null, cloud:v.cloud || null, profiles:{}};
         for(const id in v.profiles) vault.profiles[id] = migrateProfile(v.profiles[id]);
         if(!vault.profiles[vault.active]) vault.active = Object.keys(vault.profiles)[0];
         state = vault.profiles[vault.active];
@@ -3107,7 +3131,8 @@ function load(){
     try{
       const d = JSON.parse(rawV1);
       const id = newId();
-      vault = {v:2, active:id, theme:d.theme || null, plan:null, firstUse:new Date().toISOString(), profiles:{}};
+      vault = {v:2, active:id, theme:d.theme || null, plan:null, firstUse:new Date().toISOString(),
+               auth:null, cloud:null, profiles:{}};
       vault.profiles[id] = migrateProfile(Object.assign(blankProfile("You"), d));
       state = vault.profiles[id];
       save();
@@ -3115,13 +3140,15 @@ function load(){
     }catch(e){}
   }
   const id = newId();
-  vault = {v:2, active:id, theme:null, plan:null, firstUse:new Date().toISOString(), profiles:{}};
+  vault = {v:2, active:id, theme:null, plan:null, firstUse:new Date().toISOString(),
+           auth:null, cloud:null, profiles:{}};
   vault.profiles[id] = state = blankProfile("You");
 }
 function save(){
   vault.profiles[vault.active] = state;
   const packed = {v:2, active:vault.active, theme:vault.theme,
-                  plan:vault.plan || null, firstUse:vault.firstUse || null, profiles:{}};
+                  plan:vault.plan || null, firstUse:vault.firstUse || null,
+                  auth:vault.auth || null, cloud:vault.cloud || null, profiles:{}};
   for(const id in vault.profiles){
     const p = vault.profiles[id];
     const o = {};
@@ -4493,6 +4520,7 @@ function finishSession(){
                        : "Streak now "+state.streak+" · ×"+sc.mult+" multiplier applied";
   if(newBadges.length) msg += " · Unlocked "+newBadges.map(b => b.n).join(", ");
   toast("Banked", msg, "+"+earned + (already ? " (+"+already+" claimed)" : ""));
+  if(signedIn()) syncNow(true);
   $("#logPanel").scrollIntoView({behavior:"smooth", block:"start"});
 }
 
@@ -4872,6 +4900,146 @@ function openPlannedDay(i){
   $("#sessionPanel").scrollIntoView({behavior:"smooth", block:"start"});
 }
 
+/* ------------------------------------------------------------------ cloud
+   Supabase over plain fetch — no SDK, so the app stays one file with no CDN
+   and keeps working with a blocked network. Everything here is additive: if
+   the user never signs in, or the network is gone, the app behaves exactly as
+   it did before. Nothing in the training flow waits on the server. */
+const SUPA = {
+  url: "https://chghvwnytjlakuvkkluv.supabase.co",
+  key: "sb_publishable_H69bdgZ5FdZIojX5LHK3aQ_2Vz2CZif"
+};
+const REGIONS = ["Northeast","Southeast","Midwest","Southwest","West","Other"];
+
+function auth(){ return vault.auth || null; }
+function signedIn(){ const a = auth(); return !!(a && a.token && a.uid); }
+
+async function sbRaw(path, opts){
+  opts = opts || {};
+  const h = Object.assign({
+    "apikey": SUPA.key,
+    "Content-Type": "application/json"
+  }, opts.headers || {});
+  const a = auth();
+  if(a && a.token && !opts.noAuth) h["Authorization"] = "Bearer " + a.token;
+  const res = await fetch(SUPA.url + path, {
+    method: opts.method || "GET", headers: h,
+    body: opts.body ? JSON.stringify(opts.body) : undefined
+  });
+  const txt = await res.text();
+  let data = null;
+  try{ data = txt ? JSON.parse(txt) : null; }catch(e){ data = txt; }
+  if(!res.ok){
+    const err = new Error((data && (data.msg || data.message || data.error_description)) || ("HTTP " + res.status));
+    err.status = res.status; err.data = data;
+    throw err;
+  }
+  return {data, headers:res.headers};
+}
+/* one retry after refreshing an expired token */
+async function sb(path, opts){
+  try{ return await sbRaw(path, opts); }
+  catch(e){
+    if(e.status !== 401 || !auth() || !auth().refresh) throw e;
+    await refreshToken();
+    return sbRaw(path, opts);
+  }
+}
+async function refreshToken(){
+  const a = auth();
+  const {data} = await sbRaw("/auth/v1/token?grant_type=refresh_token",
+    {method:"POST", noAuth:true, body:{refresh_token:a.refresh}});
+  vault.auth = Object.assign({}, a, {
+    token:data.access_token, refresh:data.refresh_token,
+    exp: Date.now() + (data.expires_in || 3600)*1000
+  });
+  save();
+}
+
+/* ---- auth: a six digit code, so there is no password anywhere ---- */
+async function sendCode(email){
+  await sbRaw("/auth/v1/otp", {method:"POST", noAuth:true,
+    body:{email, create_user:true}});
+}
+async function verifyCode(email, token){
+  const {data} = await sbRaw("/auth/v1/verify", {method:"POST", noAuth:true,
+    body:{email, token, type:"email"}});
+  vault.auth = {token:data.access_token, refresh:data.refresh_token,
+                exp:Date.now() + (data.expires_in || 3600)*1000,
+                uid:data.user.id, email:data.user.email};
+  save();
+  return data.user;
+}
+function signOut(){
+  vault.auth = null; vault.cloud = null;
+  save(); renderRewards(); renderProfileDlg && $("#pBody") && renderProfileDlg();
+  toast("Signed out", "Your training stays on this device.", "");
+}
+
+/* ---- profile row ---- */
+async function loadLifter(){
+  const {data} = await sb("/rest/v1/lifters?select=handle,region,country&id=eq." + auth().uid);
+  return (data && data[0]) || null;
+}
+async function saveLifter(handle, region, country){
+  await sb("/rest/v1/lifters", {method:"POST",
+    headers:{"Prefer":"resolution=merge-duplicates,return=minimal"},
+    body:[{id:auth().uid, handle, region, country}]});
+}
+
+/* ---- push the log, pull the board ---- */
+async function pushSessions(){
+  if(!signedIn()) return 0;
+  const rows = (state.history || []).slice(0, 200).map(h => ({
+    lifter: auth().uid,
+    done_at: new Date(h.date).toISOString(),
+    xp: Math.max(0, Math.min(20000, Math.round(h.xp || 0))),
+    title: (h.title || "").slice(0, 60),
+    coverage: Math.max(0, Math.min(100, h.coverage | 0)),
+    minutes: Math.max(0, Math.min(600, h.minutes | 0)),
+    effort: Math.max(1, Math.min(4, h.effort || 2))
+  }));
+  if(!rows.length) return 0;
+  /* the unique key is (lifter, done_at), so re-sending is a no-op */
+  await sb("/rest/v1/sessions", {method:"POST",
+    headers:{"Prefer":"resolution=ignore-duplicates,return=minimal"}, body:rows});
+  return rows.length;
+}
+async function fetchBoard(scope){
+  const a = auth();
+  const me = vault.cloud && vault.cloud.me;
+  let q = "/rest/v1/standings?select=handle,region,country,total_xp,week_xp,streak,sessions" +
+          "&order=total_xp.desc&limit=25";
+  if(scope === "country" && me && me.country) q += "&country=eq." + encodeURIComponent(me.country);
+  if(scope === "region"  && me && me.region)  q += "&region=eq."  + encodeURIComponent(me.region);
+  const {data} = await sb(q);
+  let rank = 0;
+  try{
+    const r = await sb("/rest/v1/rpc/my_rank", {method:"POST", body:{p_scope:scope}});
+    rank = r.data || 0;
+  }catch(e){}
+  return {rows:data || [], rank};
+}
+async function syncNow(quiet){
+  if(!signedIn()) return;
+  vault.cloud = vault.cloud || {};
+  try{
+    vault.cloud.syncing = true;
+    const me = await loadLifter();
+    vault.cloud.me = me;
+    if(!me){ vault.cloud.syncing = false; save(); renderRewards(); return; }
+    await pushSessions();
+    const board = await fetchBoard(state.boardScope || "global");
+    vault.cloud.board = board.rows; vault.cloud.rank = board.rank;
+    vault.cloud.at = Date.now(); vault.cloud.err = null;
+  }catch(e){
+    vault.cloud.err = e.message || "Could not reach the server";
+  }
+  vault.cloud.syncing = false;
+  save(); renderRewards();
+  if(!quiet && vault.cloud.err) toast("Sync failed", vault.cloud.err, "");
+}
+
 /* -------------------------------------------------------------- standings
    Ranking needs other people, and other people need a server. Until that
    exists this shows your own standing honestly and tells you exactly where
@@ -4901,6 +5069,118 @@ function pointTips(){
   return tips.slice(0, 5);
 }
 
+function boardMarkup(){
+  const scope = state.boardScope || "global";
+  const c = vault.cloud || {};
+  if(!signedIn()){
+    return `<div class="boardhd"><p class="eyebrow">Leaderboards</p></div>
+      <div class="signin">
+        <b>Sign in to compete</b>
+        <p>Everything you have logged stays on this device either way. Signing in publishes
+          only a handle, a region and your point totals — never your sessions, your loads
+          or your email.</p>
+        <form class="signrow" id="signForm">
+          <input id="signEmail" type="email" placeholder="you@example.com" required
+                 autocomplete="email" aria-label="Email">
+          <button class="btn primary" type="submit">Send code</button>
+        </form>
+        <form class="signrow" id="codeForm" hidden>
+          <input id="signCode" inputmode="numeric" placeholder="6-digit code" maxlength="8"
+                 autocomplete="one-time-code" aria-label="Code from your email">
+          <button class="btn primary" type="submit">Sign in</button>
+          <button class="btn ghost" type="button" id="codeBack">Back</button>
+        </form>
+        <p class="signnote" id="signNote"></p>
+      </div>`;
+  }
+  if(!c.me){
+    return `<div class="boardhd"><p class="eyebrow">Pick a handle</p></div>
+      <div class="signin">
+        <b>One more thing</b>
+        <p>Choose the name other lifters see and roughly where you train. Both are public;
+          nothing else is.</p>
+        <form class="signrow" id="handleForm">
+          <input id="hName" placeholder="handle" maxlength="20" pattern="[A-Za-z0-9_]{3,20}"
+                 required aria-label="Handle">
+          <select id="hRegion" aria-label="Region">
+            <option value="">Region…</option>
+            ${REGIONS.map(r => `<option value="${r}">${r}</option>`).join("")}
+          </select>
+          <input id="hCountry" placeholder="US" maxlength="2" aria-label="Country code" style="width:74px">
+          <button class="btn primary" type="submit">Save</button>
+        </form>
+        <p class="signnote" id="signNote"></p>
+      </div>`;
+  }
+  const rows = c.board || [];
+  const meHandle = c.me.handle;
+  return `<div class="boardhd">
+      <p class="eyebrow">Leaderboards</p>
+      <span class="seg boardseg" role="group" aria-label="Leaderboard range">
+        <button type="button" data-scope="region"  aria-pressed="${scope==="region"}">Local</button>
+        <button type="button" data-scope="country" aria-pressed="${scope==="country"}">Country</button>
+        <button type="button" data-scope="global"  aria-pressed="${scope==="global"}">Global</button>
+      </span>
+      <button class="btn ghost" type="button" id="syncBtn">${c.syncing ? "Syncing…" : "Sync"}</button>
+    </div>
+    ${c.err ? `<div class="boardempty"><b>Offline</b><p>${esc(c.err)} — your training is safe on this device and will sync next time.</p></div>` : ""}
+    ${c.rank ? `<p class="myrank">You sit <b class="num">#${c.rank}</b> ${scope==="global"?"worldwide":scope==="country"?"in "+esc(c.me.country||"your country"):"in "+esc(c.me.region||"your area")}.</p>` : ""}
+    ${rows.length ? `<ol class="board">
+      ${rows.map((r,i) => `<li class="brow ${r.handle===meHandle?"me":""}">
+        <span class="bpos num">${i+1}</span>
+        <span class="bhandle">${esc(r.handle)}</span>
+        <span class="bmeta num">${r.streak}d · ${r.sessions} session${r.sessions===1?"":"s"}</span>
+        <span class="bxp num">${(r.total_xp||0).toLocaleString()}</span>
+      </li>`).join("")}
+    </ol>` : `<div class="boardempty"><b>Nobody here yet</b>
+      <p>You are the first in this scope. Bank a session and you will be on the board.</p></div>`}
+    <p class="signnote">Signed in as ${esc(c.me.handle)} · <button class="linkbtn" type="button" id="signOutBtn">Sign out</button></p>`;
+}
+
+function wireBoard(){
+  const f = $("#signForm");
+  if(f) f.addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const email = $("#signEmail").value.trim(); if(!email) return;
+    const note = $("#signNote"); note.textContent = "Sending…";
+    try{
+      await sendCode(email);
+      vault.pendingEmail = email; save();
+      f.hidden = true; $("#codeForm").hidden = false; $("#signCode").focus();
+      note.textContent = "Check " + email + " for a six-digit code.";
+    }catch(e){ note.textContent = e.message || "Could not send the code."; }
+  });
+  const cf = $("#codeForm");
+  if(cf) cf.addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const note = $("#signNote"); note.textContent = "Checking…";
+    try{
+      await verifyCode(vault.pendingEmail, $("#signCode").value.trim());
+      vault.pendingEmail = null; save();
+      await syncNow(true);
+      toast("Signed in", "Your points are on the board.", "");
+    }catch(e){ note.textContent = e.message || "That code did not work."; }
+  });
+  const cb = $("#codeBack");
+  if(cb) cb.addEventListener("click", () => { $("#codeForm").hidden = true; $("#signForm").hidden = false; });
+  const hf = $("#handleForm");
+  if(hf) hf.addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const note = $("#signNote"); note.textContent = "Saving…";
+    try{
+      await saveLifter($("#hName").value.trim(), $("#hRegion").value || null,
+                       ($("#hCountry").value || "").toUpperCase() || null);
+      await syncNow(true);
+    }catch(e){ note.textContent = e.status === 409 ? "That handle is taken." : (e.message || "Could not save."); }
+  });
+  $$("#rewardsBody [data-scope]").forEach(b => b.addEventListener("click", async () => {
+    state.boardScope = b.dataset.scope; save();
+    await syncNow(true);
+  }));
+  const sy = $("#syncBtn"); if(sy) sy.addEventListener("click", () => syncNow());
+  const so = $("#signOutBtn"); if(so) so.addEventListener("click", signOut);
+}
+
 function renderRewards(){
   const el2 = $("#rewardsBody");
   if(!el2) return;
@@ -4924,22 +5204,7 @@ function renderRewards(){
       </div>
     </div>
 
-    <div class="boardwrap">
-      <div class="boardhd">
-        <p class="eyebrow">Leaderboards</p>
-        <span class="seg boardseg" role="group" aria-label="Leaderboard range">
-          <button type="button" aria-pressed="true" disabled>Local</button>
-          <button type="button" disabled>Country</button>
-          <button type="button" disabled>Global</button>
-        </span>
-      </div>
-      <div class="boardempty">
-        <b>Not connected yet</b>
-        <p>Ranking you against other lifters needs a server to hold everyone's points —
-          this build keeps everything on your device, so there is nobody to compare against.
-          Your totals are already being tracked and will carry over the moment accounts go live.</p>
-      </div>
-    </div>
+    <div class="boardwrap">${boardMarkup()}</div>
 
     <div class="tipwrap">
       <p class="eyebrow">Where points come from</p>
@@ -4951,6 +5216,7 @@ function renderRewards(){
         </div>`).join("")}
       </div>
     </div>`;
+  wireBoard();
 }
 
 /* ------------------------------------------------------------------ plans UI */
@@ -5052,6 +5318,7 @@ $("#brand").insertAdjacentHTML("afterbegin", logoMark(30));
   for(const k of hero.sec) a[k] = .5;
   mountAnatomy(map, a, {h:150, yaw:Math.PI/2 - 0.35});
 })();
+if(signedIn()) setTimeout(() => syncNow(true), 400);
 window.addEventListener("beforeunload", save);
 
 /* Installed-app plumbing. Absent over file:// and inside the artifact frame,

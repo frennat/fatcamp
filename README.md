@@ -4,8 +4,10 @@ An agent that builds your training session from three things: what equipment you
 have, what you want to hit, and how much you've got in the tank. Then it shows
 you how to do every movement, in 3D.
 
-No dependencies, no build step, no accounts, no network. Install it to your home
-screen and it works in a basement with no signal.
+No dependencies, no build step, no bundler. Install it to your home screen and
+it trains you in a basement with no signal. Signing in is optional and only ever
+adds a leaderboard — the generator, the 3D body and your whole log work offline
+exactly as before.
 
 ## What it does
 
@@ -70,8 +72,40 @@ what today is.
 
 **Standings.** Points rank you rather than buy things. Your total, your week,
 your best session and your streak multiplier, plus a breakdown of exactly where
-points come from and which lever is worth the most right now. Leaderboards
-against other lifters need a server and are not live in this build.
+points come from and which lever is worth the most right now. Sign in and you
+join local, country and global leaderboards.
+
+## Accounts and leaderboards
+
+Optional, and additive. Signed out, the app is exactly what it was.
+
+Sign-in is a six-digit code by email — no passwords anywhere, which also works
+properly in an installed PWA where magic links bounce you out to a browser.
+
+**What leaves your device:** a handle, a coarse region, and per-session point
+totals. **What never does:** your movements, loads, PRs, gym photo, or email.
+That split is enforced by Postgres row-level security, not by the client:
+
+| Table | Who can read it |
+| --- | --- |
+| `lifters` | only you |
+| `sessions` | only you |
+| `standings` | any signed-in user — handle, region and totals only |
+
+`standings` has **no client write policy at all**. It is maintained by a trigger
+that recomputes totals from `sessions`, so nobody can post a number they did not
+earn. The publishable key in `index.html` is meant to be public; these policies
+are the security boundary.
+
+### Setting it up
+
+1. Paste `supabase/schema.sql` into the Supabase SQL editor and run it once.
+2. Run `supabase/verify.sh` — it uses only the public key and asserts that the
+   tables exist and that an anonymous caller can read and write nothing.
+3. Open the app, go to **Standings**, and sign in.
+
+Sync is best-effort: it runs after you bank a session and on load, never blocks
+the UI, and failures degrade to a quiet "Offline" note.
 
 ## Install it on your phone
 
