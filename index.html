@@ -685,6 +685,23 @@ input[type=range]::-moz-range-thumb{
 .hdot{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
 .hmeta{font-size:11px;color:var(--ink-3)}
 
+/* ---------- plans ---------- */
+.plangrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:12px}
+.plan{position:relative;border:1px solid var(--line);border-radius:var(--r-card);background:var(--surface);
+  padding:20px 18px;box-shadow:var(--sh-1);display:flex;flex-direction:column;gap:8px}
+.plan.current{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent-wash),var(--sh-1)}
+.plan b{font-family:var(--f-display);font-weight:800;font-size:22px;text-transform:uppercase;
+  letter-spacing:-.025em;line-height:1}
+.plan .price{font-family:var(--f-mono);font-size:31px;font-weight:600;line-height:1;
+  font-variant-numeric:tabular-nums}
+.plan .per{font-size:12px;color:var(--ink-3);font-weight:400}
+.plan ul{list-style:none;margin:6px 0 12px;padding:0;display:grid;gap:7px;font-size:13px;
+  color:var(--ink-2);flex:1}
+.plan li{padding-left:20px;position:relative;line-height:1.4}
+.plan li::before{content:"✓";position:absolute;left:0;color:var(--accent);font-weight:700}
+.plan .btn{align-self:flex-start}
+.plannote{margin:14px 0 0;font-size:12.5px;color:var(--ink-3);max-width:72ch;line-height:1.55}
+
 /* ---------- history / badges ---------- */
 .hist{display:grid;gap:8px}
 .histrow{
@@ -970,6 +987,14 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
     <div id="rewardsBody"></div>
   </section>
 
+  <section class="panel" id="planPanel">
+    <div class="panel-head">
+      <h2>The plan</h2>
+      <div class="hint">30 days of everything, free. Then pick your lane.</div>
+    </div>
+    <div id="planBody"></div>
+  </section>
+
   <footer style="margin-top:44px;padding-top:16px;border-top:1px solid var(--line);display:flex;gap:14px;flex-wrap:wrap;align-items:center">
     <span class="tag">Lifted.AI</span>
     <span style="font-size:12px;color:var(--ink-3)">Everything is stored on this device. Not medical advice — warm up, and leave a rep in the tank when the bar says so.</span>
@@ -1204,10 +1229,10 @@ const ARCH = {
     b:POSE(J(90,97, 88,116, 90,124, 104,144, 98,122, 77,175, 78,180, 126,176, 98,212, 112,218))},
   hinge:{v:"side",pr:["bb_hands"],
     a:POSE(J(100,32, 101,52, 99,59, 98,88, 97,116, 100,110, 100,115, 100,166, 98,212, 112,218)),
-    b:POSE(J(120,64, 113,75, 111,81, 109,110, 107,142, 87,119, 87,124, 97,166, 96,212, 110,218))},
+    b:POSE(J(132,102, 118,117, 116,124, 114,152, 112,180, 69,151, 69,156, 118,172, 96,212, 110,218))},
   rdl:{v:"side",pr:["bb_hands"],
     a:POSE(J(100,32, 101,52, 99,59, 98,88, 97,116, 100,110, 100,115, 100,166, 98,212, 112,218)),
-    b:POSE(J(122,58, 114,70, 112,76, 110,106, 108,136, 86,113, 86,118, 92,168, 96,212, 110,218))},
+    b:POSE(J(155,98, 141,105, 139,111, 137,139, 135,167, 82,118, 82,123, 90,168, 96,212, 110,218))},
   swing:{v:"side",pr:["kb_hands"],
     a:POSE(J(118,62, 111,73, 109,79, 107,108, 103,136, 87,118, 87,123, 96,167, 96,212, 110,218)),
     b:POSE(J(100,30, 100,50, 100,58, 112,72, 132,62, 100,110, 100,115, 100,166, 98,212, 112,218))},
@@ -1338,9 +1363,9 @@ const ARCH = {
   erg:{v:"side",root:"pelvis",pr:["erg"],
     a:POSE(J(76,120, 88,130, 92,136, 108,146, 126,150, 100,166, 104,170, 140,150, 156,180, 168,180)),
     b:POSE(J(60,130, 74,138, 78,144, 100,152, 124,154, 92,172, 96,176, 148,178, 160,182, 172,180))},
-  jumprope:{v:"side",pr:["rope"],
-    a:POSE(J(100,34, 100,54, 100,62, 108,84, 116,92, 100,114, 100,119, 100,168, 99,212, 113,218)),
-    b:POSE(J(100,24, 100,44, 100,52, 108,74, 116,82, 100,104, 100,109, 102,152, 100,192, 114,198))},
+  jumprope:{v:"front",pr:["rope"],
+    a:POSE(J(100,26, 100,46, 110,54, 118,80, 126,94, 100,108, 106,114, 108,162, 110,212, 110,220)),
+    b:POSE(J(100,16, 100,36, 110,44, 118,70, 127,82, 100,98, 106,104, 108,150, 110,198, 110,208))},
   burpee:{v:"side",pr:[],
     a:POSE(J(100,22, 100,42, 100,50, 112,36, 120,16, 100,102, 100,107, 100,158, 98,206, 112,212)),
     b:POSE(J(58,156, 74,160, 82,163, 84,186, 82,208, 128,176, 132,178, 158,192, 182,208, 194,212))},
@@ -2624,6 +2649,10 @@ function coverageOf(act, scope){
 /* Rolling read of what recent sessions have actually trained. Muscles that keep
    getting skipped build up a debt, and the generator pays it down. */
 function muscleDebt(){
+  if(!limitsOf().adaptive){
+    const debt = {}; MUSCLE_IDS.forEach(m => debt[m] = 0);
+    return {debt, ready:false};
+  }
   const recent = (state.history || []).slice(0, 14);
   const tally = {}; MUSCLE_IDS.forEach(m => tally[m] = 0);
   let any = false;
@@ -2649,6 +2678,7 @@ function neglected(n){
 }
 
 function generate(cfg){
+  cfg.count = Math.min(cfg.count, limitsOf().moves);
   const rnd = mulberry(cfg.seed);
   const avail = cfg.loc === "home" ? state.equip.slice() : PUBLIC_SET.slice();
   const has = x => x.eq.every(t => avail.includes(t));
@@ -2897,7 +2927,7 @@ function blankProfile(name, color){
           prs:[], prPick:null, unit:"lb", lastWeight:{},
           cfg:Object.assign({}, DEFAULT_CFG), session:null};
 }
-let vault = {v:2, active:"p1", theme:null, profiles:{}};
+let vault = {v:2, active:"p1", theme:null, plan:null, firstUse:null, profiles:{}};
 let state = blankProfile();
 
 const store = {
@@ -2905,6 +2935,27 @@ const store = {
   set(k,v){ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } }
 };
 function newId(){ return "p" + Date.now().toString(36) + Math.floor(Math.random()*1e3).toString(36); }
+
+/* ------------------------------------------------------------------ plans
+   Trial gives 30 days of everything, measured from first open. Billing is not
+   wired up yet — picking a plan applies its limits so each tier can be felt
+   out before any store goes live. */
+const PLANS = {
+  pro:{n:"Pro", moves:10, failure:false, surprise:false, profiles:1, adaptive:false},
+  max:{n:"Max", moves:20, failure:true,  surprise:true,  profiles:99, adaptive:true}
+};
+function trialDaysLeft(){
+  const t0 = new Date(vault.firstUse || Date.now()).getTime();
+  return Math.max(0, 30 - Math.floor((Date.now() - t0) / 86400000));
+}
+function tierOf(){
+  if(vault.plan === "pro" || vault.plan === "max") return vault.plan;
+  return trialDaysLeft() > 0 ? "trial" : "expired";
+}
+function limitsOf(){
+  const t = tierOf();
+  return (t === "max" || t === "trial") ? PLANS.max : PLANS.pro;  /* expired -> Pro limits */
+}
 
 function packSession(sess){
   if(!sess) return null;
@@ -2944,7 +2995,8 @@ function load(){
     try{
       const v = JSON.parse(rawV2);
       if(v && v.profiles && Object.keys(v.profiles).length){
-        vault = {v:2, active:v.active, theme:v.theme || null, profiles:{}};
+        vault = {v:2, active:v.active, theme:v.theme || null, plan:v.plan || null,
+                 firstUse:v.firstUse || new Date().toISOString(), profiles:{}};
         for(const id in v.profiles) vault.profiles[id] = migrateProfile(v.profiles[id]);
         if(!vault.profiles[vault.active]) vault.active = Object.keys(vault.profiles)[0];
         state = vault.profiles[vault.active];
@@ -2957,7 +3009,7 @@ function load(){
     try{
       const d = JSON.parse(rawV1);
       const id = newId();
-      vault = {v:2, active:id, theme:d.theme || null, profiles:{}};
+      vault = {v:2, active:id, theme:d.theme || null, plan:null, firstUse:new Date().toISOString(), profiles:{}};
       vault.profiles[id] = migrateProfile(Object.assign(blankProfile("You"), d));
       state = vault.profiles[id];
       save();
@@ -2965,12 +3017,13 @@ function load(){
     }catch(e){}
   }
   const id = newId();
-  vault = {v:2, active:id, theme:null, profiles:{}};
+  vault = {v:2, active:id, theme:null, plan:null, firstUse:new Date().toISOString(), profiles:{}};
   vault.profiles[id] = state = blankProfile("You");
 }
 function save(){
   vault.profiles[vault.active] = state;
-  const packed = {v:2, active:vault.active, theme:vault.theme, profiles:{}};
+  const packed = {v:2, active:vault.active, theme:vault.theme,
+                  plan:vault.plan || null, firstUse:vault.firstUse || null, profiles:{}};
   for(const id in vault.profiles){
     const p = vault.profiles[id];
     const o = {};
@@ -3327,6 +3380,10 @@ function renderProfileDlg(){
     state.name = v; save(); renderProfileBtn(); renderProfileDlg();
   });
   $("#pNew").addEventListener("click", () => {
+    if(Object.keys(vault.profiles).length >= limitsOf().profiles){
+      toast("Profiles are capped on Pro", "Max allows multiple profiles on one device.", "");
+      return;
+    }
     const id = newId();
     const n = Object.keys(vault.profiles).length;
     vault.profiles[id] = blankProfile("Lifter "+(n+1), PROFILE_COLORS[n % PROFILE_COLORS.length]);
@@ -3431,7 +3488,9 @@ function applyPreset(k){
   const p = PRESETS[k];
   const c = state.cfg;
   c.preset = k; c.count = p.count; c.effort = p.effort;
-  c.focus = p.focus.slice(); c.cardioOn = p.cardio; c.cstyle = p.cstyle; c.failureOn = !!p.failure;
+  c.focus = p.focus.slice(); c.cardioOn = p.cardio; c.cstyle = p.cstyle;
+  c.failureOn = !!p.failure && limitsOf().failure;
+  c.count = Math.min(c.count, limitsOf().moves);
   /* auto-pick the compounds this kit can actually support */
   const avail = c.loc === "home" ? state.equip : PUBLIC_SET;
   const bigs = X.filter(x => x.big && x.eq.every(t => avail.includes(t)));
@@ -3520,11 +3579,25 @@ $$("#locSeg button").forEach(b => b.addEventListener("click", () => {
   state.cfg.compounds = state.cfg.compounds.filter(id => XMAP[id].eq.every(t => avail.includes(t)));
   syncControls(); save();
 }));
-$("#mUp").addEventListener("click",   () => { state.cfg.count = Math.min(20, state.cfg.count+1); state.cfg.preset=null; syncControls(); save(); });
+$("#mUp").addEventListener("click",   () => {
+  const cap = limitsOf().moves;
+  if(state.cfg.count >= cap){
+    if(cap < 20) toast("Pro caps at "+cap+" movements", "Max raises the ceiling to 20 a session.", "");
+    return;
+  }
+  state.cfg.count = Math.min(cap, state.cfg.count+1); state.cfg.preset=null; syncControls(); save();
+});
 $("#mDown").addEventListener("click", () => { state.cfg.count = Math.max(Math.max(1,state.cfg.compounds.length), state.cfg.count-1); state.cfg.preset=null; syncControls(); save(); });
 $("#effort").addEventListener("input", e => { state.cfg.effort = +e.target.value; state.cfg.preset=null; syncControls(); save(); });
 $("#cardioOn").addEventListener("change", e => { state.cfg.cardioOn = e.target.checked; state.cfg.preset=null; syncControls(); save(); });
-$("#failureOn").addEventListener("change", e => { state.cfg.failureOn = e.target.checked; state.cfg.preset=null; syncControls(); save(); });
+$("#failureOn").addEventListener("change", e => {
+  if(e.target.checked && !limitsOf().failure){
+    e.target.checked = false;
+    toast("Failure mode is a Max feature", "Your plan keeps the rep targets on. Upgrade in The Plan, at the bottom.", "");
+    return;
+  }
+  state.cfg.failureOn = e.target.checked; state.cfg.preset=null; syncControls(); save();
+});
 
 /* ------------------------------------------------------- equipment parsing
    People write "dumbells", "power cage", "concept 2". Match generously, and
@@ -4125,6 +4198,11 @@ function buildDrawer(row, m){
   paintPr();
 
   d.querySelector("[data-fail]").addEventListener("change", ev => {
+    if(ev.target.checked && !limitsOf().failure){
+      ev.target.checked = false;
+      toast("Failure mode is a Max feature", "Rep targets stay on for this plan.", "");
+      return;
+    }
     m.failure = ev.target.checked;
     if(inst && inst.rig.fx) inst.rig.fx.failure = m.failure;
     d.querySelector(".rigbox").classList.toggle("tofail", m.failure);
@@ -4220,6 +4298,10 @@ function swapMove(m){
 /* Swap finds the closest fit. Surprise deliberately doesn't — it takes anything
    your kit supports that trains the same job, favouring what you've done least. */
 function surpriseMove(m){
+  if(!limitsOf().surprise){
+    toast("Surprise Me is a Max feature", "Swap still finds the best fit on any plan.", "");
+    return;
+  }
   const s = state.session;
   const avail = s.cfg.loc === "home" ? state.equip : PUBLIC_SET;
   const seen = {};
@@ -4531,6 +4613,69 @@ function renderRewards(){
   });
 }
 
+/* ------------------------------------------------------------------ plans UI */
+function renderPlans(){
+  const host = $("#planBody"); if(!host) return;
+  const tier = tierOf(), days = trialDaysLeft();
+  const cur = t => tier === t;
+  host.innerHTML = `
+    <div class="plangrid">
+      <div class="plan ${cur("trial") ? "current" : ""}">
+        <span class="rewtag">${cur("trial") ? "Current" : tier === "expired" ? "Ended" : "Included"}</span>
+        <b>Founder trial</b>
+        <div class="price">Free<span class="per"> · 30 days</span></div>
+        <ul>
+          <li>Everything in Max, unlocked</li>
+          <li>Starts the first time you open the app</li>
+          <li>${tier === "expired" ? "Your 30 days are up — pick a lane" : days + " day" + (days === 1 ? "" : "s") + " left"}</li>
+        </ul>
+        ${vault.plan && days > 0 ? `<button class="btn ghost" type="button" data-plan="">Back to trial</button>` : ""}
+      </div>
+      <div class="plan ${cur("pro") ? "current" : ""}">
+        <span class="rewtag">${cur("pro") ? "Current" : "Starter"}</span>
+        <b>Pro</b>
+        <div class="price">$10<span class="per"> / month</span></div>
+        <ul>
+          <li>Unlimited sessions &amp; re-rolls</li>
+          <li>Up to 10 movements a session</li>
+          <li>3D movement rig &amp; body heat map</li>
+          <li>Points, streaks, calendar &amp; rewards</li>
+          <li>PR tracking with charts</li>
+          <li>One profile</li>
+        </ul>
+        <button class="btn ${cur("pro") ? "" : "primary"}" type="button" data-plan="pro"
+          ${cur("pro") ? "disabled" : ""}>${cur("pro") ? "Current plan" : "Choose Pro"}</button>
+      </div>
+      <div class="plan ${cur("max") ? "current" : ""}">
+        <span class="rewtag">${cur("max") ? "Current" : "Most complete"}</span>
+        <b>Max</b>
+        <div class="price">$20<span class="per"> / month</span></div>
+        <ul>
+          <li>Everything in Pro</li>
+          <li>Up to 20 movements a session</li>
+          <li>Failure mode</li>
+          <li>Surprise Me picks</li>
+          <li>Adaptive catch-up targeting</li>
+          <li>Unlimited profiles on this device</li>
+        </ul>
+        <button class="btn ${cur("max") ? "" : "primary"}" type="button" data-plan="max"
+          ${cur("max") ? "disabled" : ""}>${cur("max") ? "Current plan" : "Choose Max"}</button>
+      </div>
+    </div>
+    <p class="plannote">Billing isn't wired up yet — this build is the founder period. Picking a plan
+      applies its limits so each tier can be felt out; nothing is charged.</p>`;
+  $$("#planBody [data-plan]").forEach(b => b.addEventListener("click", () => {
+    vault.plan = b.dataset.plan || null;
+    const lim = limitsOf();
+    if(state.cfg.count > lim.moves) state.cfg.count = lim.moves;
+    if(state.cfg.failureOn && !lim.failure) state.cfg.failureOn = false;
+    save(); syncControls(); renderPlans();
+    toast(vault.plan ? PLANS[vault.plan].n + " set" : "Back on trial",
+          vault.plan ? "Limits applied. Billing arrives with the store release — nothing is charged today."
+                     : trialDaysLeft() + " days of everything left.", "");
+  }));
+}
+
 $("#resetBtn").addEventListener("click", () => {
   if(!confirm("Wipe “"+state.name+"” — points, streak, history and saved kit? Other profiles are untouched.")) return;
   const keep = {name:state.name, color:state.color};
@@ -4544,7 +4689,7 @@ $("#resetBtn").addEventListener("click", () => {
 load();
 applyTheme();
 renderPresets(); renderFocus(); renderCardioChips(); syncControls();
-renderHUD(); renderLog(); renderSession(false); renderProfileBtn();
+renderHUD(); renderLog(); renderSession(false); renderProfileBtn(); renderPlans();
 $("#brand").insertAdjacentHTML("afterbegin", logoMark(30));
 (function setFavicon(){
   const svg = logoMark(64, {accent:"#E8503F", accent2:"#FF8A72", ink:"#F0EDE6"})

@@ -186,6 +186,30 @@ holds from a 16px favicon to a 512px store icon. `logoMark(size)` renders it
 inline and drops the hairline detail below 40px; the same paths generate
 `icons/` and the favicon, so there is one source for the identity.
 
+## Plans
+
+Thirty days of everything, free, counted from the first time the app is opened.
+After that:
+
+| | Pro — $10/mo | Max — $20/mo |
+| --- | --- | --- |
+| Sessions per week | unlimited | unlimited |
+| Movements per session | 10 | 20 |
+| 3D rig, heat map, PRs, streaks, rewards | yes | yes |
+| Failure mode | — | yes |
+| Surprise Me | — | yes |
+| Adaptive catch-up targeting | — | yes |
+| Profiles on one device | 1 | unlimited |
+
+Sessions are deliberately **unlimited on both tiers**. Metering how often
+somebody trains is the one limit that would make the app worse at its job; the
+paid line is drawn at depth and automation instead.
+
+Billing is not wired up — there is no payment code in this build. Choosing a
+plan applies its limits so each tier can be lived with before a store release.
+Enforcement is client-side and trivially bypassed, which is fine for a personal
+build; a real release needs StoreKit or Play Billing to validate the purchase.
+
 ## Where this is going
 
 1. **Store builds.** Capacitor or Tauri will wrap this for the App Store or
