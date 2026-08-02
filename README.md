@@ -130,7 +130,7 @@ only to make it installable.
 | --- | --- |
 | `M` | 23 muscle regions |
 | `LIMBS` / `MUSCLE_AT` | The body mesh: lofted tubes with radius profiles, and the rule that decides which muscle owns a surface point from its position along the bone and angle around it |
-| `bodyQuads()` | Builds the shaded figure each frame; the same mesh serves the movement rig and the heat map |
+| `buildMesh()` / `skinMesh()` | Mesh topology is built once and shared by every rig; each frame only skins vertices and projects each one once, then paints faces back-to-front batching runs of like colour. ~6ms a frame, so it holds 60fps |
 | `muscleDebt()` | Rolling read of what recent sessions neglected, fed back into generation |
 | `ARCH` | 49 movement archetypes — two authored poses each, plus the equipment to draw |
 | `solve()` | Re-solves every frame against one canonical skeleton, so joint *angles* come from the pose and limb *lengths* never do |

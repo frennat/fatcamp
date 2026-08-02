@@ -1551,6 +1551,7 @@ function fleshJoints(J){
   const P = Object.assign({}, J);
   const up = v3.norm(v3.sub(J.head, J.neck));
   P.headBase = v3.add(J.neck, v3.mul(up, 8));
+  P.nose = v3.add(J.head, [9.5, 0, 0]);
   const armR = v3.norm(v3.sub(J.wrR, J.elR)), armL = v3.norm(v3.sub(J.wrL, J.elL));
   P.handR = v3.add(J.wrR, v3.mul(armR, 9));
   P.handL = v3.add(J.wrL, v3.mul(armL, 9));
@@ -1594,37 +1595,100 @@ function limbQuads(L, P, out){
   }
 }
 
-/* a sphere, for the head and the joint caps that hide limb seams */
-function ballQuads(c, r, muscle, out, seg, rings, sy){
-  seg = seg || 10; rings = rings || 6; sy = sy || 1;
-  for(let ri=0; ri<rings; ri++){
-    const p0 = (ri/rings)*Math.PI, p1 = ((ri+1)/rings)*Math.PI;
-    for(let i=0;i<seg;i++){
-      const a0 = (i/seg)*Math.PI*2, a1 = ((i+1)/seg)*Math.PI*2;
-      const P = (ph,th) => [c[0]+r*Math.sin(ph)*Math.cos(th), c[1]-r*sy*Math.cos(ph), c[2]+r*Math.sin(ph)*Math.sin(th)];
-      out.push({q:[P(p0,a0),P(p0,a1),P(p1,a1),P(p1,a0)], m:muscle});
+/* Topology is identical for every rig, so it is built once and shared. Per
+   frame we only skin vertices and project each one ONCE — faces index into
+   that buffer instead of re-projecting their four corners. */
+const BALLS = [
+  {j:"head", r:11.2, m:null,      seg:10, rings:7, sy:1.22},
+  {j:"nose", r:3.2,  m:null,      seg:6,  rings:4},
+  {j:"shR",  r:9.8,  m:"delt_s",  seg:8,  rings:5},
+  {j:"shL",  r:9.8,  m:"delt_s",  seg:8,  rings:5},
+  {j:"elR",  r:6.8,  m:"triceps", seg:6,  rings:4},
+  {j:"elL",  r:6.8,  m:"triceps", seg:6,  rings:4},
+  {j:"knR",  r:9.0,  m:"quads",   seg:6,  rings:4},
+  {j:"knL",  r:9.0,  m:"quads",   seg:6,  rings:4},
+  {j:"hipR", r:11.8, m:"glutes",  seg:8,  rings:4},
+  {j:"hipL", r:11.8, m:"glutes",  seg:8,  rings:4},
+  {j:"anR",  r:4.6,  m:"calves",  seg:5,  rings:3},
+  {j:"anL",  r:4.6,  m:"calves",  seg:5,  rings:3}
+];
+
+let MESH = null;
+function buildMesh(){
+  if(MESH) return MESH;
+  const V = [], F = [];
+  LIMBS.forEach((L, li) => {
+    const base = V.length, flat = L.flat || 1;
+    for(let ri=0; ri<=L.rings; ri++){
+      const t = ri/L.rings, r = L.r(t);
+      for(let i=0;i<L.seg;i++){
+        const ang = (i/L.seg)*Math.PI*2 - Math.PI;
+        V.push({li, t, ox:Math.cos(ang)*r*flat, oy:Math.sin(ang)*r});
+      }
     }
-  }
+    const at = MUSCLE_AT[L.k] || (() => null);
+    for(let ri=0; ri<L.rings; ri++){
+      for(let i=0;i<L.seg;i++){
+        const j = (i+1)%L.seg;
+        const ang = ((i+0.5)/L.seg)*Math.PI*2 - Math.PI;
+        F.push({a:base+ri*L.seg+i, b:base+ri*L.seg+j,
+                c:base+(ri+1)*L.seg+j, d:base+(ri+1)*L.seg+i,
+                m:at((ri+0.5)/L.rings, ang, L.side || 1)});
+      }
+    }
+  });
+  BALLS.forEach((B, bi) => {
+    const base = V.length, sy = B.sy || 1;
+    for(let ri=0; ri<=B.rings; ri++){
+      const ph = (ri/B.rings)*Math.PI;
+      for(let i=0;i<B.seg;i++){
+        const th = (i/B.seg)*Math.PI*2;
+        V.push({bi, ox:B.r*Math.sin(ph)*Math.cos(th), oy:-B.r*sy*Math.cos(ph),
+                oz:B.r*Math.sin(ph)*Math.sin(th)});
+      }
+    }
+    for(let ri=0; ri<B.rings; ri++){
+      for(let i=0;i<B.seg;i++){
+        const j = (i+1)%B.seg;
+        F.push({a:base+ri*B.seg+i, b:base+ri*B.seg+j,
+                c:base+(ri+1)*B.seg+j, d:base+(ri+1)*B.seg+i, m:B.m});
+      }
+    }
+  });
+  MESH = {V, F, pos:new Float32Array(V.length*3), scr:new Float32Array(V.length*4),
+          order:F.map((_,i)=>i)};
+  return MESH;
 }
 
-function bodyQuads(J3){
-  const P = fleshJoints(J3), out = [];
-  for(const L of LIMBS) limbQuads(L, P, out);
-  ballQuads(J3.head, 11.2, null, out, 10, 7, 1.22);
-  const noseDir = v3.norm(v3.sub([J3.head[0]+10, J3.head[1], J3.head[2]], J3.head));
-  ballQuads(v3.add(J3.head, v3.mul(noseDir, 9.5)), 3.2, null, out, 6, 4);
-  /* caps at the joints so the tubes read as one body */
-  ballQuads(J3.shR, 9.8, "delt_s", out, 8, 5);
-  ballQuads(J3.shL, 9.8, "delt_s", out, 8, 5);
-  ballQuads(J3.elR, 6.8, "triceps", out, 6, 4);
-  ballQuads(J3.elL, 6.8, "triceps", out, 6, 4);
-  ballQuads(J3.knR, 9.0, "quads", out, 6, 4);
-  ballQuads(J3.knL, 9.0, "quads", out, 6, 4);
-  ballQuads(J3.hipR, 11.8, "glutes", out, 8, 4);
-  ballQuads(J3.hipL, 11.8, "glutes", out, 8, 4);
-  ballQuads(J3.anR, 4.6, "calves", out, 5, 3);
-  ballQuads(J3.anL, 4.6, "calves", out, 5, 3);
-  return out;
+/* limb frames + vertex skinning straight into the shared buffer */
+function skinMesh(J3){
+  const M = buildMesh(), P = fleshJoints(J3), pos = M.pos;
+  const A=[], AX=[], FV=[], SV=[], LEN=[];
+  LIMBS.forEach((L, li) => {
+    const a = P[L.a], b = P[L.b];
+    if(!a || !b){ A[li]=[0,0,0]; AX[li]=[0,1,0]; FV[li]=[1,0,0]; SV[li]=[0,0,1]; LEN[li]=0; return; }
+    const ax = v3.norm(v3.sub(b, a));
+    let ref = FWD;
+    if(Math.abs(v3.dot(ax, ref)) > 0.85) ref = [0,0,1];
+    const f = v3.norm(v3.sub(ref, v3.mul(ax, v3.dot(ax, ref))));
+    A[li]=a; AX[li]=ax; FV[li]=f; SV[li]=v3.cross(ax, f);
+    LEN[li]=Math.hypot(b[0]-a[0], b[1]-a[1], b[2]-a[2]);
+  });
+  const BC = BALLS.map(B => P[B.j] || [0,0,0]);
+  const V = M.V;
+  for(let vi=0; vi<V.length; vi++){
+    const v = V[vi], o = vi*3;
+    if(v.li !== undefined){
+      const a=A[v.li], ax=AX[v.li], f=FV[v.li], s=SV[v.li], d=v.t*LEN[v.li];
+      pos[o]   = a[0] + ax[0]*d + f[0]*v.ox + s[0]*v.oy;
+      pos[o+1] = a[1] + ax[1]*d + f[1]*v.ox + s[1]*v.oy;
+      pos[o+2] = a[2] + ax[2]*d + f[2]*v.ox + s[2]*v.oy;
+    }else{
+      const c = BC[v.bi];
+      pos[o] = c[0]+v.ox; pos[o+1] = c[1]+v.oy; pos[o+2] = c[2]+v.oz;
+    }
+  }
+  return M;
 }
 
 const BONES = [
@@ -1717,7 +1781,11 @@ function makeRig(host, archKey, opts){
   let W = 0, H = 0, fit = {s:1, ox:0, oy:0};
   function resize(){
     const r = wrap.getBoundingClientRect();
-    W = Math.max(200, r.width); H = opts.h || 260;
+    W = Math.max(60, r.width);
+    /* the wrapper is sized BY the canvas, so ask the host, which has the CSS height */
+    const hr = host.getBoundingClientRect();
+    const hostH = Math.round(hr.height);
+    H = hostH > 40 ? Math.min(opts.h || 260, hostH) : (opts.h || 260);
     const dpr = Math.min(2.5, window.devicePixelRatio || 1);
     cv.width = W*dpr; cv.height = H*dpr; cv.style.width = W+"px"; cv.style.height = H+"px";
     ctx.setTransform(dpr,0,0,dpr,0,0);
@@ -1778,25 +1846,47 @@ function makeRig(host, archKey, opts){
     const TISSUE = rgbOf(palette().tissue);
     const HOT = rgbOf(palette().hot);
 
-    for(const face of bodyQuads(J3)){
-      const pr = face.q.map(v => project(v, cam, fit));
-      const z = (pr[0][2]+pr[1][2]+pr[2][2]+pr[3][2])/4;
-      /* world normal for shading */
-      const e1 = v3.sub(face.q[1], face.q[0]), e2 = v3.sub(face.q[3], face.q[0]);
-      const nrm = v3.norm(v3.cross(e1, e2));
-      const lam = Math.abs(v3.dot(nrm, LIGHT));
-      const shade = 0.52 + 0.48*lam;
-      const heat = Math.min(1, act[face.m] || 0);
-      const base = heat > 0 ? mixArr(TISSUE, HOT, 0.25 + 0.75*heat) : TISSUE;
-      const col = "rgb(" + base.map(c => Math.round(c*shade)).join(",") + ")";
-      items.push({z, f:()=>{
-        ctx.beginPath();
-        ctx.moveTo(pr[0][0], pr[0][1]);
-        for(let i=1;i<4;i++) ctx.lineTo(pr[i][0], pr[i][1]);
-        ctx.closePath();
-        ctx.fillStyle = col; ctx.fill();
-      }});
+    const M = skinMesh(J3), pos = M.pos, scr = M.scr;
+    for(let vi=0; vi<M.V.length; vi++){
+      const o = vi*3, q = project([pos[o],pos[o+1],pos[o+2]], cam, fit), k = vi*4;
+      scr[k]=q[0]; scr[k+1]=q[1]; scr[k+2]=q[2]; scr[k+3]=q[3];
     }
+    /* faces carry their own depth + colour, then paint back-to-front in one pass */
+    const FA = M.F, order = M.order, depth = new Float32Array(FA.length), cols = new Array(FA.length);
+    for(let fi=0; fi<FA.length; fi++){
+      const f2 = FA[fi], a4=f2.a*4, b4=f2.b*4, c4=f2.c*4, d4=f2.d*4;
+      depth[fi] = (scr[a4+2]+scr[b4+2]+scr[c4+2]+scr[d4+2])*0.25;
+      const a3=f2.a*3, b3=f2.b*3, d3=f2.d*3;
+      const e1x=pos[b3]-pos[a3], e1y=pos[b3+1]-pos[a3+1], e1z=pos[b3+2]-pos[a3+2];
+      const e2x=pos[d3]-pos[a3], e2y=pos[d3+1]-pos[a3+1], e2z=pos[d3+2]-pos[a3+2];
+      let nx=e1y*e2z-e1z*e2y, ny=e1z*e2x-e1x*e2z, nz=e1x*e2y-e1y*e2x;
+      const nl = Math.hypot(nx,ny,nz) || 1; nx/=nl; ny/=nl; nz/=nl;
+      const lam = Math.abs(nx*LIGHT[0] + ny*LIGHT[1] + nz*LIGHT[2]);
+      const shade = 0.52 + 0.48*lam;
+      const heat = Math.min(1, act[f2.m] || 0);
+      const base = heat > 0 ? mixArr(TISSUE, HOT, 0.25 + 0.75*heat) : TISSUE;
+      /* quantise so runs of like-coloured faces can share one path */
+      cols[fi] = "rgb(" + ((base[0]*shade)|0) + "," + ((base[1]*shade)|0) + "," + ((base[2]*shade)|0) + ")";
+    }
+    order.sort((p1,p2) => depth[p2] - depth[p1]);
+    items.push({z:1e6, f:()=>{
+      let run = null;
+      for(let oi=0; oi<order.length; oi++){
+        const fi = order[oi], col = cols[fi];
+        if(col !== run){
+          if(run !== null){ ctx.fillStyle = run; ctx.fill(); }
+          ctx.beginPath(); run = col;
+        }
+        const f2 = FA[fi];
+        const a4=f2.a*4, b4=f2.b*4, c4=f2.c*4, d4=f2.d*4;
+        ctx.moveTo(scr[a4], scr[a4+1]);
+        ctx.lineTo(scr[b4], scr[b4+1]);
+        ctx.lineTo(scr[c4], scr[c4+1]);
+        ctx.lineTo(scr[d4], scr[d4+1]);
+        ctx.closePath();
+      }
+      if(run !== null){ ctx.fillStyle = run; ctx.fill(); }
+    }});
     drawProps3(items, props, J3, S, cam, fit, ctx, acc, line, curT);
 
     items.sort((a,b)=> b.z - a.z);
@@ -2019,7 +2109,7 @@ function mountAnatomy(host, act, opts){
   ARCH._anat = ARCH._anat || {v:"side", root:"ankle", pr:[],
     a:POSE(ANATOMY_POSE.slice()), b:POSE(ANATOMY_POSE.slice())};
   const rig = makeRig(host, "_anat", {h:opts.h || 260, act});
-  rig.cam.yaw = opts.yaw !== undefined ? opts.yaw : 0.0;
+  rig.cam.yaw = opts.yaw !== undefined ? opts.yaw : Math.PI/2;   /* face-on */
   rig.cam.pitch = 0.06;
   rig.set(0);
   const inst = {rig, phase:0, speed:0, playing:false, orbit:false};
@@ -2032,7 +2122,7 @@ function mountAnatomy(host, act, opts){
 const RIGS = new Set();
 let rafId = null, lastTs = 0;
 const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const FRAME_MS = 45;                      /* ~22fps: plenty for a rep, cheap enough for a phone */
+const FRAME_MS = 16.7;                    /* 60fps — the mesh is cached, so it fits */
 function tick(ts){
   const dt = Math.min(64, ts - (lastTs||ts)); lastTs = ts;
   for(const r of RIGS){
@@ -2056,7 +2146,9 @@ function mountRig(host, archKey, opts){
                 orbit:false, onPhase:opts&&opts.onPhase};
   RIGS.add(inst);
   if(!rafId) rafId = requestAnimationFrame(tick);
-  if(reduced) rig.set(0.5);
+  /* paint once up front: rAF is throttled in background tabs and low-power
+     mode, and a blank figure is worse than a still one */
+  rig.set(reduced ? 0.5 : 0);
   return inst;
 }
 function unmountAll(){ for(const r of RIGS){ if(r.rig.destroy) r.rig.destroy(); } RIGS.clear(); }
@@ -3756,7 +3848,7 @@ function renderSession(animate){
     const v = b2.dataset.map;
     if(v === "spin"){ sessRig.orbit = true; return; }
     sessRig.orbit = false;
-    sessRig.rig.setView(v === "front" ? 0 : v === "side" ? Math.PI/2 : Math.PI);
+    sessRig.rig.setView(v === "front" ? Math.PI/2 : v === "side" ? 0 : -Math.PI/2);
   }));
   wireSession();
 }
@@ -3952,7 +4044,7 @@ function buildDrawer(row, m){
   }});
   row._rig = inst;
   if(inst.rig.fx) inst.rig.fx.failure = !!m.failure;
-  mountAnatomy(d.querySelector(".movemap"), act, {h:210, yaw:0.5});
+  mountAnatomy(d.querySelector(".movemap"), act, {h:210, yaw:Math.PI/2 - 0.45});
 
   d.querySelector("[data-play]").addEventListener("click", ev => {
     inst.playing = !inst.playing;
@@ -4472,7 +4564,7 @@ $("#brand").insertAdjacentHTML("afterbegin", logoMark(30));
   const a = {}; MUSCLE_IDS.forEach(k => a[k] = 0);
   for(const k of hero.pri) a[k] = 1;
   for(const k of hero.sec) a[k] = .5;
-  mountAnatomy(map, a, {h:150, yaw:0.3});
+  mountAnatomy(map, a, {h:150, yaw:Math.PI/2 - 0.35});
 })();
 window.addEventListener("beforeunload", save);
 
