@@ -5008,6 +5008,33 @@ function signOut(){
   toast("Signed out", "Your training stays on this device.", "");
 }
 
+/* Password sign-in. Email delivery is the least reliable part of this stack and
+   it blocks testing entirely when it misbehaves, so this is a route that never
+   touches a mail server. Requires "Confirm email" to be off in Supabase. */
+async function signUpPassword(email, password){
+  const {data} = await sbRaw("/auth/v1/signup", {method:"POST", noAuth:true,
+    body:{email, password}});
+  if(!data.access_token){
+    const e = new Error("Supabase created the account but is holding it for email confirmation. " +
+      "Turn off Confirm email in Authentication → Providers → Email, then sign in.");
+    e.needsConfirm = true; throw e;
+  }
+  adoptSession(data);
+  return data;
+}
+async function signInPassword(email, password){
+  const {data} = await sbRaw("/auth/v1/token?grant_type=password", {method:"POST", noAuth:true,
+    body:{email, password}});
+  adoptSession(data);
+  return data;
+}
+function adoptSession(data){
+  vault.auth = {token:data.access_token, refresh:data.refresh_token,
+                exp:Date.now() + (data.expires_in || 3600)*1000,
+                uid:(data.user||{}).id, email:(data.user||{}).email};
+  save();
+}
+
 /* ---- profile row ---- */
 async function loadLifter(){
   const {data} = await sb("/rest/v1/lifters?select=handle,region,country&id=eq." + auth().uid);
@@ -5116,6 +5143,14 @@ function boardMarkup(){
                  autocomplete="email" aria-label="Email">
           <button class="btn primary" type="submit">Send code</button>
         </form>
+        <form class="signrow" id="pwForm" hidden>
+          <input id="pwEmail" type="email" placeholder="you@example.com" required
+                 autocomplete="email" aria-label="Email">
+          <input id="pwPass" type="password" placeholder="password (8+ characters)" required
+                 minlength="8" autocomplete="current-password" aria-label="Password">
+          <button class="btn primary" type="submit">Sign in</button>
+          <button class="btn ghost" type="button" id="pwSignup">Create account</button>
+        </form>
         <form class="signrow" id="codeForm" hidden>
           <input id="signCode" inputmode="numeric" placeholder="6-digit code" maxlength="8"
                  autocomplete="one-time-code" aria-label="Code from your email">
@@ -5124,6 +5159,7 @@ function boardMarkup(){
         </form>
         <p class="signnote">The email works either way — type the code, or just tap the link in it.</p>
         <p class="signnote" id="signNote"></p>
+        <p class="signnote"><button class="linkbtn" type="button" id="pwToggle">Use a password instead</button></p>
       </div>`;
   }
   if(!c.me){
@@ -5196,6 +5232,32 @@ function wireBoard(){
   });
   const cb = $("#codeBack");
   if(cb) cb.addEventListener("click", () => { $("#codeForm").hidden = true; $("#signForm").hidden = false; });
+
+  const pt = $("#pwToggle");
+  if(pt) pt.addEventListener("click", () => {
+    const on = $("#pwForm").hidden;
+    $("#pwForm").hidden = !on; $("#signForm").hidden = on; $("#codeForm").hidden = true;
+    pt.textContent = on ? "Use an emailed code instead" : "Use a password instead";
+  });
+  const pf = $("#pwForm");
+  async function doPw(create){
+    const note = $("#signNote");
+    const em = $("#pwEmail").value.trim(), pw = $("#pwPass").value;
+    if(!em || pw.length < 8){ note.textContent = "Email, and at least 8 characters."; return; }
+    note.textContent = create ? "Creating…" : "Signing in…";
+    try{
+      if(create) await signUpPassword(em, pw); else await signInPassword(em, pw);
+      await syncNow(true);
+      toast("Signed in", "Your points are on the board.", "");
+    }catch(e){
+      note.textContent = e.needsConfirm ? e.message
+        : (e.message || "").match(/Invalid login/i) ? "Wrong email or password — or the account doesn't exist yet, try Create account."
+        : (e.message || "Could not sign in.");
+    }
+  }
+  if(pf) pf.addEventListener("submit", ev => { ev.preventDefault(); doPw(false); });
+  const su = $("#pwSignup");
+  if(su) su.addEventListener("click", () => doPw(true));
   const hf = $("#handleForm");
   if(hf) hf.addEventListener("submit", async ev => {
     ev.preventDefault();
