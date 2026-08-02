@@ -45,6 +45,8 @@
   --muscle-base:#CFC9BC;
   --rig-lit:rgb(38,36,40);
   --rig-dim:rgb(178,172,161);
+  --tissue:rgb(206,186,176);
+  --tissue-hot:rgb(214,56,43);
 
   /* Clash Grotesk stand-in: wide, geometric, heavy — not condensed */
   --f-display:"Avenir Next","Avenir","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
@@ -84,6 +86,8 @@
     --muscle-base:#3A3740;
     --rig-lit:rgb(243,240,233);
     --rig-dim:rgb(56,54,62);
+    --tissue:rgb(178,164,158);
+    --tissue-hot:rgb(240,86,68);
     --sh-1:0 4px 10px -2px rgba(0,0,0,.5);
     --sh-2:0 14px 24px -8px rgba(0,0,0,.6);
     --sh-3:0 30px 60px -16px rgba(0,0,0,.75);
@@ -97,6 +101,7 @@
   --shadow:0 1px 0 rgba(0,0,0,.4), 0 18px 40px -24px #000;
   --grain:rgba(255,255,255,.035); --muscle-base:#3A3740;
   --rig-lit:rgb(243,240,233); --rig-dim:rgb(56,54,62);
+  --tissue:rgb(178,164,158); --tissue-hot:rgb(240,86,68);
   --sh-1:0 4px 10px -2px rgba(0,0,0,.5);
     --sh-2:0 14px 24px -8px rgba(0,0,0,.6);
     --sh-3:0 30px 60px -16px rgba(0,0,0,.75);
@@ -109,6 +114,7 @@
   --shadow:0 1px 0 rgba(27,26,25,.05), 0 10px 30px -18px rgba(27,26,25,.45);
   --grain:rgba(27,26,25,.045); --muscle-base:#CFC9BC;
   --rig-lit:rgb(38,36,40); --rig-dim:rgb(178,172,161);
+  --tissue:rgb(206,186,176); --tissue-hot:rgb(214,56,43);
 }
 
 *{box-sizing:border-box}
@@ -364,6 +370,8 @@ input[type=range]::-moz-range-thumb{
 }
 .sessionhead h2{font-size:clamp(28px,6.6vw,46px);text-transform:uppercase;line-height:.92;letter-spacing:-.035em}
 .sessionhead .sub{font-size:13px;color:var(--ink-2);margin-top:4px}
+.sessionhead .note{font-size:12.5px;color:var(--ink-3);max-width:62ch}
+.sessionhead .note.up{color:var(--p10)}
 .sessionhead .actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
 .btn{
   font:inherit;font-family:var(--f-display);font-weight:700;text-transform:uppercase;
@@ -479,6 +487,9 @@ input[type=range]::-moz-range-thumb{
 .rig3d.touched .drag-hint{opacity:0}
 .rigctl .sp{font-family:var(--f-mono);font-size:9.5px;color:var(--ink-3);letter-spacing:.1em}
 .anatomybox{border:1px solid var(--line);border-radius:var(--r-card);background:var(--bg-sunk);padding:12px;box-shadow:var(--sh-1)}
+.mapbox{position:relative;border-radius:var(--r-sm);overflow:hidden;background:var(--bg-sunk)}
+.mapviews{margin-top:8px;width:100%}
+.mapviews button{flex:1}
 .cuebox{margin-top:12px;border-left:2px solid var(--accent);padding:2px 0 2px 12px}
 .cuebox p{margin:0;font-size:13.5px;color:var(--ink-2)}
 .cuebox .why{margin-top:6px;font-size:12px;color:var(--ink-3);font-style:italic}
@@ -834,7 +845,7 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 
   <section class="hero">
     <div class="hero-copy">
-      <p class="eyebrow">Built for the session in front of you</p>
+      <p class="eyebrow">Your session built right in front of you</p>
       <h1>Confusion in the gym?<em>Not anymore with Lifted.AI</em></h1>
       <p class="lede">Lifted.AI reads your equipment, your target muscles, and how much you've got in
         the tank — then builds a session that covers the most ground in the fewest movements.
@@ -862,13 +873,13 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 
   <section class="panel" id="setupPanel">
     <div class="panel-head">
-      <h2>1 · Get in the slot</h2>
+      <h2>Get in the slot</h2>
       <div class="hint">One tap fills everything below.<br>Tune it after, or don't.</div>
     </div>
     <div class="presets" id="presets"></div>
 
     <div class="panel-head" style="margin-top:28px">
-      <h2>2 · Workload</h2>
+      <h2>Workload</h2>
       <div class="hint" id="criteriaHint">Nothing loaded yet</div>
     </div>
 
@@ -945,7 +956,7 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 
   <section class="panel" id="logPanel">
     <div class="panel-head">
-      <h2>4 · The log</h2>
+      <h2>The log</h2>
       <div class="hint">Every session you bank, and the streak it feeds.</div>
     </div>
     <div id="logBody"></div>
@@ -953,7 +964,7 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 
   <section class="panel" id="rewardsPanel">
     <div class="panel-head">
-      <h2>5 · Cash it in</h2>
+      <h2>Cash it in</h2>
       <div class="hint">What the points are actually for.</div>
     </div>
     <div id="rewardsBody"></div>
@@ -1397,7 +1408,7 @@ function solve(j, root, l2, a2){
    the plane the lift actually happens in — sagittal for side archetypes,
    frontal for front ones — and limbs extrude off that plane to left and right.
    ====================================================================== */
-const SH_W = 10, HIP_W = 7, SPLAY = 2;
+const SH_W = 18, HIP_W = 10, SPLAY = 2;
 const BODY_CY = 120;
 
 const HAND_POS = {bb_back:"back", bb_front:"hands", bb_hands:"hands", bb_lap:"lap",
@@ -1446,6 +1457,176 @@ function pose3(sol, view){
     hipL:[hp[0],hp[1],-HIP_W], knL:[lk[0],lk[1],-(HIP_W+SPLAY)], anL:[la[0],la[1],-HIP_W], toL:[lt[0],lt[1],-HIP_W]};
 }
 
+/* ===================================================================== body
+   A shaded anatomical figure instead of a stick rig. Each limb is a lofted
+   tube whose radius profile gives it muscle bulk; every quad on the surface
+   knows which muscle it belongs to, from its position along the bone and its
+   angle around it. So the same mesh draws the movement AND the heat map —
+   colour a quad by that muscle's activation and the body itself is the chart.
+
+   This is a procedural figure, not a scanned medical mesh: a real anatomical
+   model is tens of megabytes and licensed, and this app is one offline file. */
+
+const FWD = [1,0,0];                       /* the body faces +X in pose space */
+
+/* radius profile helpers: [t, radius] pairs, linearly interpolated */
+function prof(pairs){
+  return t => {
+    for(let i=0;i<pairs.length-1;i++){
+      const [t0,r0] = pairs[i], [t1,r1] = pairs[i+1];
+      if(t <= t1){ const u = (t-t0)/(t1-t0 || 1); return r0 + (r1-r0)*u; }
+    }
+    return pairs[pairs.length-1][1];
+  };
+}
+const deg = a => a*Math.PI/180;
+const front = a => Math.abs(a) < deg(68);
+const back  = a => Math.abs(Math.abs(a) - Math.PI) < deg(68);
+
+/* which muscle owns a point, given the limb, how far along it and where around */
+const MUSCLE_AT = {
+  torso(t, a, side){
+    if(front(a)){
+      if(t < 0.40) return Math.abs(a) > deg(42) ? "obliques" : "abs";
+      if(t < 0.70) return Math.abs(a) > deg(52) ? "serratus" : "chest";
+      return "chest_up";
+    }
+    if(back(a)){
+      if(t < 0.34) return "lowerback";
+      if(t < 0.66) return "lats";
+      return t > 0.84 ? "traps" : "upperback";
+    }
+    if(t < 0.38) return "obliques";
+    if(t < 0.68) return "lats";
+    return "traps";
+  },
+  uarm(t, a){
+    if(t < 0.20) return front(a) ? "delt_f" : back(a) ? "delt_r" : "delt_s";
+    return front(a) ? "biceps" : back(a) ? "triceps" : (Math.abs(a) < Math.PI/2 ? "biceps" : "triceps");
+  },
+  farm(){ return "forearms"; },
+  thigh(t, a, side){
+    if(back(a) && t < 0.22) return "glutes";
+    if(front(a)) return "quads";
+    if(back(a))  return "hams";
+    const inner = side * Math.sin(a) < 0;
+    return inner ? "adductors" : (t < 0.5 ? "quads" : "hams");
+  },
+  shin(t, a){ return front(a) ? "tibialis" : "calves"; },
+  neck(){ return "neck"; },
+  hand(){ return "forearms"; },
+  foot(){ return "calves"; }
+};
+
+/* limb specs: bone endpoints come from the pose, the profile gives it flesh */
+const LIMBS = [
+  {k:"torso", a:"pelvis", b:"neck", rings:9, seg:14, r:prof([[0,11.8],[.22,11.2],[.45,12.8],[.72,16],[1,14.5]]),
+   flat:0.66},                              /* flat<1 squashes front-to-back */
+  {k:"neck",  a:"neck",   b:"headBase", rings:2, seg:8, r:prof([[0,5.6],[1,5]])},
+  {k:"uarm",  a:"shR", b:"elR", side:1, rings:5, seg:9, r:prof([[0,8.8],[.34,9.4],[1,6.9]])},
+  {k:"farm",  a:"elR", b:"wrR", side:1, rings:4, seg:9, r:prof([[0,6.9],[.22,7.3],[1,4.6]])},
+  {k:"uarm",  a:"shL", b:"elL", side:-1, rings:5, seg:9, r:prof([[0,8.8],[.34,9.4],[1,6.9]])},
+  {k:"farm",  a:"elL", b:"wrL", side:-1, rings:4, seg:9, r:prof([[0,6.9],[.22,7.3],[1,4.6]])},
+  {k:"thigh", a:"hipR", b:"knR", side:1, rings:6, seg:11, r:prof([[0,12.8],[.3,13.2],[1,9.1]])},
+  {k:"shin",  a:"knR", b:"anR", side:1, rings:5, seg:9, r:prof([[0,9.1],[.26,9.8],[1,5]])},
+  {k:"thigh", a:"hipL", b:"knL", side:-1, rings:6, seg:11, r:prof([[0,12.8],[.3,13.2],[1,9.1]])},
+  {k:"shin",  a:"knL", b:"anL", side:-1, rings:5, seg:9, r:prof([[0,9.1],[.26,9.8],[1,5]])},
+  {k:"foot",  a:"anR", b:"toR", side:1, rings:2, seg:7, r:prof([[0,5.2],[1,3.8]])},
+  {k:"foot",  a:"anL", b:"toL", side:-1, rings:2, seg:7, r:prof([[0,5.2],[1,3.8]])},
+  {k:"hand",  a:"wrR", b:"handR", side:1, rings:2, seg:7, r:prof([[0,4.8],[.5,5.2],[1,3]])},
+  {k:"hand",  a:"wrL", b:"handL", side:-1, rings:2, seg:7, r:prof([[0,4.8],[.5,5.2],[1,3]])}
+];
+
+const v3 = {
+  sub:(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],
+  add:(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],
+  mul:(a,k)=>[a[0]*k,a[1]*k,a[2]*k],
+  dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+  cross:(a,b)=>[a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]],
+  norm:a=>{const l=Math.hypot(a[0],a[1],a[2])||1; return [a[0]/l,a[1]/l,a[2]/l];}
+};
+
+/* derived joints the pose doesn't carry */
+function fleshJoints(J){
+  const P = Object.assign({}, J);
+  const up = v3.norm(v3.sub(J.head, J.neck));
+  P.headBase = v3.add(J.neck, v3.mul(up, 8));
+  const armR = v3.norm(v3.sub(J.wrR, J.elR)), armL = v3.norm(v3.sub(J.wrL, J.elL));
+  P.handR = v3.add(J.wrR, v3.mul(armR, 9));
+  P.handL = v3.add(J.wrL, v3.mul(armL, 9));
+  return P;
+}
+
+/* one limb -> quads in world space, each tagged with its muscle */
+function limbQuads(L, P, out){
+  const A = P[L.a], B = P[L.b];
+  if(!A || !B) return;
+  const axis = v3.norm(v3.sub(B, A));
+  const len = Math.hypot(B[0]-A[0], B[1]-A[1], B[2]-A[2]);
+  let ref = FWD;
+  if(Math.abs(v3.dot(axis, ref)) > 0.85) ref = [0,0,1];
+  const f = v3.norm(v3.sub(ref, v3.mul(axis, v3.dot(axis, ref))));
+  const s = v3.cross(axis, f);
+  const flat = L.flat || 1;
+  const at = MUSCLE_AT[L.k] || (() => null);
+
+  const ring = (t) => {
+    const c = v3.add(A, v3.mul(axis, t*len));
+    const r = L.r(t);
+    const pts = [];
+    for(let i=0;i<L.seg;i++){
+      const ang = (i/L.seg)*Math.PI*2 - Math.PI;          /* -PI..PI, 0 = front */
+      const rr = r * (1 - (1-flat)*Math.abs(Math.sin(ang)) * 0);
+      const x = Math.cos(ang)*rr*flat, y = Math.sin(ang)*rr;
+      pts.push(v3.add(c, v3.add(v3.mul(f, x), v3.mul(s, y))));
+    }
+    return pts;
+  };
+  let prev = ring(0);
+  for(let ri=1; ri<=L.rings; ri++){
+    const t = ri/L.rings, cur = ring(t), tm = (ri-0.5)/L.rings;
+    for(let i=0;i<L.seg;i++){
+      const j = (i+1)%L.seg;
+      const ang = ((i+0.5)/L.seg)*Math.PI*2 - Math.PI;
+      out.push({q:[prev[i], prev[j], cur[j], cur[i]], m:at(tm, ang, L.side || 1)});
+    }
+    prev = cur;
+  }
+}
+
+/* a sphere, for the head and the joint caps that hide limb seams */
+function ballQuads(c, r, muscle, out, seg, rings, sy){
+  seg = seg || 10; rings = rings || 6; sy = sy || 1;
+  for(let ri=0; ri<rings; ri++){
+    const p0 = (ri/rings)*Math.PI, p1 = ((ri+1)/rings)*Math.PI;
+    for(let i=0;i<seg;i++){
+      const a0 = (i/seg)*Math.PI*2, a1 = ((i+1)/seg)*Math.PI*2;
+      const P = (ph,th) => [c[0]+r*Math.sin(ph)*Math.cos(th), c[1]-r*sy*Math.cos(ph), c[2]+r*Math.sin(ph)*Math.sin(th)];
+      out.push({q:[P(p0,a0),P(p0,a1),P(p1,a1),P(p1,a0)], m:muscle});
+    }
+  }
+}
+
+function bodyQuads(J3){
+  const P = fleshJoints(J3), out = [];
+  for(const L of LIMBS) limbQuads(L, P, out);
+  ballQuads(J3.head, 11.2, null, out, 10, 7, 1.22);
+  const noseDir = v3.norm(v3.sub([J3.head[0]+10, J3.head[1], J3.head[2]], J3.head));
+  ballQuads(v3.add(J3.head, v3.mul(noseDir, 9.5)), 3.2, null, out, 6, 4);
+  /* caps at the joints so the tubes read as one body */
+  ballQuads(J3.shR, 9.8, "delt_s", out, 8, 5);
+  ballQuads(J3.shL, 9.8, "delt_s", out, 8, 5);
+  ballQuads(J3.elR, 6.8, "triceps", out, 6, 4);
+  ballQuads(J3.elL, 6.8, "triceps", out, 6, 4);
+  ballQuads(J3.knR, 9.0, "quads", out, 6, 4);
+  ballQuads(J3.knL, 9.0, "quads", out, 6, 4);
+  ballQuads(J3.hipR, 11.8, "glutes", out, 8, 4);
+  ballQuads(J3.hipL, 11.8, "glutes", out, 8, 4);
+  ballQuads(J3.anR, 4.6, "calves", out, 5, 3);
+  ballQuads(J3.anL, 4.6, "calves", out, 5, 3);
+  return out;
+}
+
 const BONES = [
   ["neck","pelvis",27],["head","neck",13],["shL","shR",14],["hipL","hipR",16],
   ["shR","elR",10.5],["elR","wrR",8.5],["shL","elL",10.5],["elL","wrL",8.5],
@@ -1486,9 +1667,12 @@ function palette(){
     dim:  rgbOf(cs.getPropertyValue("--rig-dim") || "rgb(60,58,66)"),
     line: cs.getPropertyValue("--line").trim() || "#333",
     acc:  cs.getPropertyValue("--accent").trim() || "#e8503f",
-    sunk: cs.getPropertyValue("--bg-sunk").trim() || "#111"
+    sunk: cs.getPropertyValue("--bg-sunk").trim() || "#111",
+    tissue: cs.getPropertyValue("--tissue").trim() || "rgb(196,188,178)",
+    hot: cs.getPropertyValue("--tissue-hot").trim() || "rgb(226,74,58)"
   });
 }
+const mixArr = (a,b,t) => [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t];
 function mix(a,b,t){ return "rgb("+Math.round(a[0]+(b[0]-a[0])*t)+","+Math.round(a[1]+(b[1]-a[1])*t)+","+Math.round(a[2]+(b[2]-a[2])*t)+")"; }
 
 /* world-space bounds across the whole rep, so the figure fills the frame */
@@ -1507,13 +1691,16 @@ function boundsFor(arch){
       y0=Math.min(y0,p[1]); y1=Math.max(y1,p[1]);
     }
   }
-  return (arch._b3 = {x0:x0-18, x1:x1+18, y0:y0-20, y1:y1+16});
+  return (arch._b3 = {x0:x0-26, x1:x1+26, y0:y0-26, y1:y1+22});
 }
 
 function makeRig(host, archKey, opts){
   opts = opts || {};
   const arch = ARCH[archKey] || ARCH.stretch;
   const props = propsFor(arch, opts.x);
+  if(!opts.act && opts.x){ opts.act = {};
+    for(const k of opts.x.pri) opts.act[k] = 1;
+    for(const k of opts.x.sec) opts.act[k] = 0.55; }
   const cam = makeCam(arch.v);
   const bb = boundsFor(arch);
 
@@ -1585,29 +1772,31 @@ function makeRig(host, archKey, opts){
     ctx.restore();
 
     /* everything else sorts back-to-front together */
-    /* near limbs read bright, far limbs recede but stay visible */
-    const litness = d => Math.max(0.16, Math.min(1, 0.74 - d/80));
     const items = [];
-    for(const [A,B,w] of BONES){
-      const p = S[A], q2 = S[B];
-      if(!p || !q2) continue;
-      items.push({z:(p[2]+q2[2])/2, f:()=>{
-        const lw = w * fit.s * ((p[3]+q2[3])/2);
-        ctx.lineCap = "round";
-        ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(q2[0],q2[1]);
-        ctx.strokeStyle = sunk; ctx.lineWidth = lw + 3.5; ctx.stroke();  /* separates overlaps */
-        ctx.strokeStyle = mix(dim, ink, litness((p[2]+q2[2])/2));
-        ctx.lineWidth = lw; ctx.stroke();
+    const act = opts.act || {};
+    const LIGHT = v3.norm([-0.45, -0.75, 0.5]);
+    const TISSUE = rgbOf(palette().tissue);
+    const HOT = rgbOf(palette().hot);
+
+    for(const face of bodyQuads(J3)){
+      const pr = face.q.map(v => project(v, cam, fit));
+      const z = (pr[0][2]+pr[1][2]+pr[2][2]+pr[3][2])/4;
+      /* world normal for shading */
+      const e1 = v3.sub(face.q[1], face.q[0]), e2 = v3.sub(face.q[3], face.q[0]);
+      const nrm = v3.norm(v3.cross(e1, e2));
+      const lam = Math.abs(v3.dot(nrm, LIGHT));
+      const shade = 0.52 + 0.48*lam;
+      const heat = Math.min(1, act[face.m] || 0);
+      const base = heat > 0 ? mixArr(TISSUE, HOT, 0.25 + 0.75*heat) : TISSUE;
+      const col = "rgb(" + base.map(c => Math.round(c*shade)).join(",") + ")";
+      items.push({z, f:()=>{
+        ctx.beginPath();
+        ctx.moveTo(pr[0][0], pr[0][1]);
+        for(let i=1;i<4;i++) ctx.lineTo(pr[i][0], pr[i][1]);
+        ctx.closePath();
+        ctx.fillStyle = col; ctx.fill();
       }});
     }
-    const hd = S.head;
-    items.push({z:hd[2], f:()=>{
-      const r = 13*fit.s*hd[3];
-      ctx.fillStyle = sunk;
-      ctx.beginPath(); ctx.arc(hd[0], hd[1], r+1.8, 0, 7); ctx.fill();
-      ctx.fillStyle = mix(dim, ink, litness(hd[2]));
-      ctx.beginPath(); ctx.arc(hd[0], hd[1], r, 0, 7); ctx.fill();
-    }});
     drawProps3(items, props, J3, S, cam, fit, ctx, acc, line, curT);
 
     items.sort((a,b)=> b.z - a.z);
@@ -1822,16 +2011,37 @@ function drawProps3(items, list, J3, S, cam, fit, ctx, acc, line, t){
   }
 }
 
+/* The heat map is the same body, standing still. One mesh, two jobs: the rig
+   shows how the movement goes, this shows exactly what it lands on. */
+const ANATOMY_POSE = J(100,26, 100,48, 100,58, 100,92, 100,124, 100,110, 100,116, 100,166, 99,212, 113,218);
+function mountAnatomy(host, act, opts){
+  opts = opts || {};
+  ARCH._anat = ARCH._anat || {v:"side", root:"ankle", pr:[],
+    a:POSE(ANATOMY_POSE.slice()), b:POSE(ANATOMY_POSE.slice())};
+  const rig = makeRig(host, "_anat", {h:opts.h || 260, act});
+  rig.cam.yaw = opts.yaw !== undefined ? opts.yaw : 0.0;
+  rig.cam.pitch = 0.06;
+  rig.set(0);
+  const inst = {rig, phase:0, speed:0, playing:false, orbit:false};
+  RIGS.add(inst);
+  if(!rafId) rafId = requestAnimationFrame(tick);
+  return inst;
+}
+
 /* one animation loop drives every mounted rig */
 const RIGS = new Set();
 let rafId = null, lastTs = 0;
 const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const FRAME_MS = 45;                      /* ~22fps: plenty for a rep, cheap enough for a phone */
 function tick(ts){
   const dt = Math.min(64, ts - (lastTs||ts)); lastTs = ts;
   for(const r of RIGS){
+    r.acc = (r.acc || 0) + dt;
+    if(r.acc < FRAME_MS && !r.orbit){ continue; }
+    r.acc = 0;
     if(r.orbit){ r.rig.cam.yaw += dt/1000 * 0.42; if(!r.playing) r.rig.draw(); }
     if(!r.playing){ continue; }
-    r.phase += dt/1000 * r.speed * (r.rig.fx && r.rig.fx.failure ? 1.9 : 1);
+    r.phase += FRAME_MS/1000 * r.speed * (r.rig.fx && r.rig.fx.failure ? 1.9 : 1);
     const cyc = r.phase % 2;
     const raw = cyc < 1 ? cyc : 2-cyc;
     const t = 0.5 - 0.5*Math.cos(raw*Math.PI);
@@ -2319,6 +2529,33 @@ function coverageOf(act, scope){
   return Math.round(100 * s / ids.length);
 }
 
+/* Rolling read of what recent sessions have actually trained. Muscles that keep
+   getting skipped build up a debt, and the generator pays it down. */
+function muscleDebt(){
+  const recent = (state.history || []).slice(0, 14);
+  const tally = {}; MUSCLE_IDS.forEach(m => tally[m] = 0);
+  let any = false;
+  recent.forEach((h, i) => {
+    const w = 1 - i / (recent.length + 3);          /* the last week counts most */
+    (h.mids || []).forEach(id => {
+      const x = XMAP[id]; if(!x) return;
+      any = true;
+      x.pri.forEach(m => { if(m in tally) tally[m] += 1.0 * w; });
+      x.sec.forEach(m => { if(m in tally) tally[m] += 0.45 * w; });
+    });
+  });
+  const debt = {}; MUSCLE_IDS.forEach(m => debt[m] = 0);
+  if(!any) return {debt, ready:false};
+  const peak = Math.max(1, ...MUSCLE_IDS.map(m => tally[m]));
+  MUSCLE_IDS.forEach(m => { debt[m] = 1 - Math.min(1, tally[m] / (peak * 0.55)); });
+  return {debt, ready:true};
+}
+function neglected(n){
+  const {debt, ready} = muscleDebt();
+  if(!ready) return [];
+  return MUSCLE_IDS.filter(m => debt[m] > 0.7).sort((a,b) => debt[b] - debt[a]).slice(0, n || 3);
+}
+
 function generate(cfg){
   const rnd = mulberry(cfg.seed);
   const avail = cfg.loc === "home" ? state.equip.slice() : PUBLIC_SET.slice();
@@ -2329,13 +2566,21 @@ function generate(cfg){
   const focusKeys = cfg.focus.length ? cfg.focus : ["full"];
   focusKeys.forEach(k => FOCUS[k].m.forEach(m => targets.add(m)));
   const wholeBody = focusKeys.includes("full");
-  /* On a focused day, only movements that actually train the focus are eligible.
-     Core is always allowed through as a finisher. */
-  const onFocus = x => wholeBody || x.pat === "core" ||
-    x.pri.filter(m => targets.has(m)).length >= Math.ceil(x.pri.length / 2);
-  const eligible = pool.filter(onFocus);
-  const usePool = eligible.length >= Math.max(4, cfg.count) ? eligible : pool;
+  /* On a focused day the pool widens in tiers rather than falling back to the
+     whole library — asking for 10 arm movements must not hand you leg day. */
+  const tier1 = x => x.pat === "core" || x.pri.filter(m => targets.has(m)).length >= Math.ceil(x.pri.length / 2);
+  const tier2 = x => x.pri.some(m => targets.has(m));
+  let usePool = pool;
+  if(!wholeBody){
+    usePool = pool.filter(tier1);
+    /* one widening step only. Beyond that the movements stop being on-topic,
+       so the sheet gets shorter rather than wrong — see `trimmed`. */
+    if(usePool.length < cfg.count) usePool = pool.filter(x => tier1(x) || tier2(x));
+  }
+  /* if the focus genuinely cannot fill the sheet, train less rather than train wrong */
+  const trimmedTo = Math.min(cfg.count, Math.max(1, usePool.length));
 
+  const {debt} = muscleDebt();
   const picked = [];
   const usedArch = new Set();
   const patCount = {};
@@ -2366,8 +2611,8 @@ function generate(cfg){
   }
 
   /* 2 — greedy coverage fill */
-  const half = Math.max(1, Math.ceil(cfg.count * 0.45));
-  while(picked.length < cfg.count){
+  const half = Math.max(1, Math.ceil(trimmedTo * 0.45));
+  while(picked.length < trimmedTo){
     let best = null, bestScore = -1e9, bestGot = null;
     for(const x of usePool){
       if(picked.some(pk => pk.x.id === x.id)) continue;
@@ -2375,6 +2620,7 @@ function generate(cfg){
       const off = wholeBody ? 3.2 : 0.5;
       for(const m of x.pri){
         s += (targets.has(m) ? 11 : off) * (1 - Math.min(1, act[m]));
+        s += (debt[m] || 0) * 4.5 * (1 - Math.min(1, act[m]));   /* pay down what's been skipped */
         if(!wholeBody && !targets.has(m)) s -= 5.5;    /* off-target mass costs you the slot */
       }
       for(const m of x.sec) s += (targets.has(m) ? 4.4 : off*0.4) * (1 - Math.min(1, act[m]));
@@ -2439,6 +2685,9 @@ function generate(cfg){
     act: actMap, coverage: cov,
     minutes: Math.round(mins),
     title: sessionTitle(cfg, moves),
+    trimmed: cfg.count - moves.length,
+    caughtUp: picked.map(pk => pk.x).reduce((a2,x) => a2.concat(x.pri.filter(m => (debt[m]||0) > 0.7)), [])
+                .filter((v,i,arr) => arr.indexOf(v) === i).slice(0,4),
     xp: 0
   };
 }
@@ -3179,7 +3428,7 @@ $$("#locSeg button").forEach(b => b.addEventListener("click", () => {
   state.cfg.compounds = state.cfg.compounds.filter(id => XMAP[id].eq.every(t => avail.includes(t)));
   syncControls(); save();
 }));
-$("#mUp").addEventListener("click",   () => { state.cfg.count = Math.min(10, state.cfg.count+1); state.cfg.preset=null; syncControls(); save(); });
+$("#mUp").addEventListener("click",   () => { state.cfg.count = Math.min(20, state.cfg.count+1); state.cfg.preset=null; syncControls(); save(); });
 $("#mDown").addEventListener("click", () => { state.cfg.count = Math.max(Math.max(1,state.cfg.compounds.length), state.cfg.count-1); state.cfg.preset=null; syncControls(); save(); });
 $("#effort").addEventListener("input", e => { state.cfg.effort = +e.target.value; state.cfg.preset=null; syncControls(); save(); });
 $("#cardioOn").addEventListener("change", e => { state.cfg.cardioOn = e.target.checked; state.cfg.preset=null; syncControls(); save(); });
@@ -3440,13 +3689,15 @@ function renderSession(animate){
   const ranked = Object.entries(s.act).sort((a,b) => b[1]-a[1]);
 
   panel.innerHTML = `
-    <div class="panel-head"><h2>3 · Today's lift</h2>
+    <div class="panel-head"><h2>Today's lift</h2>
       <div class="hint">${s.cardio ? "Strength then conditioning" : "Strength only"} · generated ${new Date(s.date).toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}</div></div>
     <div class="sessionhead${animate ? " reveal" : ""}">
       <div class="top">
         <div>
           <h2>${esc(s.title)}</h2>
           <div class="sub">${EFFORT_N[s.cfg.effort]} · ${s.cfg.loc === "home" ? "Home gym" : "Public gym"} · ${s.moves.length} movements${s.cardio ? " + "+esc(s.cardio.styleName.toLowerCase()) : ""}</div>
+          ${s.trimmed > 0 ? `<div class="sub note">Asked for ${s.cfg.count} — your kit and focus only support ${s.moves.length} without repeating or going off-target.</div>` : ""}
+          ${(s.caughtUp||[]).length ? `<div class="sub note up">Catching up on ${esc(musList(s.caughtUp))} — the log says you've been skipping ${s.caughtUp.length>1?"them":"it"}.</div>` : ""}
         </div>
         <div class="actions">
           <button class="btn" id="rerollBtn" type="button">Re-roll</button>
@@ -3472,7 +3723,14 @@ function renderSession(animate){
         </div>
         <div class="covermap">
           <p class="eyebrow">Heat map</p>
-          ${anatomySVG("sessMap", {h:250})}
+          <div class="mapbox"><div id="sessMap3d"></div>
+            <span class="drag-hint">Drag to rotate</span></div>
+          <span class="viewbtns mapviews" role="group" aria-label="Body angle">
+            <button type="button" data-map="front" aria-pressed="true">Front</button>
+            <button type="button" data-map="side">Side</button>
+            <button type="button" data-map="back">Back</button>
+            <button type="button" data-map="spin">Spin</button>
+          </span>
         </div>
       </div>
     </div>
@@ -3492,7 +3750,14 @@ function renderSession(animate){
       <button class="btn primary" id="finishBtn" type="button">Finish &amp; bank it</button>
     </div>`;
 
-  paintAnatomy($("#sessMap"), s.act);
+  const sessRig = mountAnatomy($("#sessMap3d"), s.act, {h:270, yaw:0});
+  $$("#sessionPanel [data-map]").forEach(b2 => b2.addEventListener("click", () => {
+    $$("#sessionPanel [data-map]").forEach(o => o.setAttribute("aria-pressed", String(o === b2)));
+    const v = b2.dataset.map;
+    if(v === "spin"){ sessRig.orbit = true; return; }
+    sessRig.orbit = false;
+    sessRig.rig.setView(v === "front" ? 0 : v === "side" ? Math.PI/2 : Math.PI);
+  }));
   wireSession();
 }
 function coverageLine(s, ranked){
@@ -3637,7 +3902,7 @@ function buildDrawer(row, m){
       <div>
         <div class="anatomybox">
           <p class="eyebrow" style="margin-bottom:6px">Working muscles</p>
-          ${anatomySVG("map_"+m.id, {h:200})}
+          <div class="mapbox sm"><div class="movemap"></div></div>
           <div class="legendrow">
             ${x.pri.map(k => `<span class="mus-pill hit">${M[k].n}</span>`).join("")}
             ${x.sec.map(k => `<span class="mus-pill sec">${M[k].n}</span>`).join("")}
@@ -3648,6 +3913,7 @@ function buildDrawer(row, m){
             `<button class="setbtn" type="button" data-set="${i}" aria-pressed="${!!m.doneSets[i]}"
               title="Set ${i+1}">${i+1}</button>`).join("")}
           <button class="btn ghost swapbtn" type="button" data-swap>Swap</button>
+          <button class="btn ghost" type="button" data-surprise title="Something you haven't done lately">Surprise me</button>
         </div>
         <div class="loadrow">
           <span class="lbl">Load</span>
@@ -3686,7 +3952,7 @@ function buildDrawer(row, m){
   }});
   row._rig = inst;
   if(inst.rig.fx) inst.rig.fx.failure = !!m.failure;
-  paintAnatomy(d.querySelector("#map_"+m.id), act);
+  mountAnatomy(d.querySelector(".movemap"), act, {h:210, yaw:0.5});
 
   d.querySelector("[data-play]").addEventListener("click", ev => {
     inst.playing = !inst.playing;
@@ -3723,6 +3989,7 @@ function buildDrawer(row, m){
     updateProgress(); save();
   }));
   d.querySelector("[data-swap]").addEventListener("click", () => swapMove(m));
+  d.querySelector("[data-surprise]").addEventListener("click", () => surpriseMove(m));
 
   const wtEl = d.querySelector("[data-wt]"), repsEl = d.querySelector("[data-reps]"),
         prNote = d.querySelector("[data-prnote]");
@@ -3858,6 +4125,51 @@ function swapMove(m){
   unmountAll(); save(); renderSession(false);
   toast("Swapped", best.n+" takes that slot.", "");
 }
+/* Swap finds the closest fit. Surprise deliberately doesn't — it takes anything
+   your kit supports that trains the same job, favouring what you've done least. */
+function surpriseMove(m){
+  const s = state.session;
+  const avail = s.cfg.loc === "home" ? state.equip : PUBLIC_SET;
+  const seen = {};
+  for(const h of (state.history || [])) for(const id of (h.mids || [])) seen[id] = (seen[id] || 0) + 1;
+  const targets = new Set();
+  (s.cfg.focus.length ? s.cfg.focus : ["full"]).forEach(k => FOCUS[k].m.forEach(t => targets.add(t)));
+  const wholeBody = (s.cfg.focus.length ? s.cfg.focus : ["full"]).includes("full");
+
+  const pool = X.filter(x =>
+    x.cls !== "cardio" && x.id !== m.id &&
+    x.eq.every(t => avail.includes(t)) &&
+    !s.moves.some(o => o.id === x.id) &&
+    (x.pat === m.x.pat || x.cls === m.x.cls) &&
+    (wholeBody || x.pri.some(k => targets.has(k)) || x.pat === "core"));
+  if(!pool.length){ toast("Nothing new to try", "Your kit has no other movement for that slot.", ""); return; }
+
+  /* weight novelty: never-done first, then rarely-done */
+  const rare = Math.min(...pool.map(x => seen[x.id] || 0));
+  const fresh = pool.filter(x => (seen[x.id] || 0) === rare);
+  const best = fresh[Math.floor(Math.random() * fresh.length)];
+  applyMove(m, best, (seen[best.id] || 0) === 0
+    ? "Surprise pick — you have never logged this one."
+    : "Surprise pick — you have only done this " + (seen[best.id]) + "× before.");
+  toast("Surprise", best.n + " it is.", "");
+}
+function applyMove(m, x, reason){
+  const s = state.session;
+  const sec = x.unit === "sec";
+  const sch = Object.assign({}, SCHEME[x.cls][s.cfg.effort], sec ? CORE_SEC[s.cfg.effort] : {});
+  Object.assign(m, {id:x.id, x, sets:sch.s, reps:sch.r, rest:sch.rest, rpe:sch.rpe,
+    tempo:sch.tempo, note:sch.note, unit:x.unit||"reps", each:!!x.uni,
+    doneSets:[], weight:"", claimed:false,
+    failure: !!m.failure && (x.cls === "iso" || x.cls === "acc") && x.unit !== "sec",
+    reason});
+  const wholeBody = (s.cfg.focus.length ? s.cfg.focus : ["full"]).includes("full");
+  const targets = new Set();
+  (s.cfg.focus.length ? s.cfg.focus : ["full"]).forEach(k => FOCUS[k].m.forEach(t => targets.add(t)));
+  s.act = activationOf(s.moves.concat(s.cardio ? [{x:s.cardio.x}] : []));
+  s.coverage = coverageOf(s.act, wholeBody ? null : targets);
+  unmountAll(); save(); renderSession(false);
+}
+
 function updateProgress(){
   const s = state.session;
   const done = s.moves.reduce((a,m) => a + m.doneSets.filter(Boolean).length, 0);
@@ -3883,7 +4195,8 @@ function finishSession(){
   state.xp += earned;
   state.history.unshift({date:s.date, title:s.title, xp:Math.max(full, already), moves:s.moves.length,
                          coverage:s.coverage, minutes:s.minutes, effort:s.cfg.effort,
-                         focus:(s.cfg.focus||["full"]).slice(), sets:done+"/"+total});
+                         focus:(s.cfg.focus||["full"]).slice(), sets:done+"/"+total,
+                         mids:s.moves.map(m => m.id)});
   state.history = state.history.slice(0, 40);
   const newBadges = checkBadges();
   state.session = null;
@@ -4156,11 +4469,10 @@ $("#brand").insertAdjacentHTML("afterbegin", logoMark(30));
   const pick = X.filter(x => x.big && x.cls === "comp" && x.eq.every(t => avail.includes(t)));
   const hero = pick[Math.floor(Math.random()*pick.length)] || XMAP.pushup;
   mountRig(rig, hero.arch, {h:Math.round(rig.getBoundingClientRect().height) || 220, speed:.5, x:hero});
-  map.innerHTML = anatomySVG("heroMap2", {h:150});
   const a = {}; MUSCLE_IDS.forEach(k => a[k] = 0);
   for(const k of hero.pri) a[k] = 1;
   for(const k of hero.sec) a[k] = .5;
-  paintAnatomy($("#heroMap2"), a);
+  mountAnatomy(map, a, {h:150, yaw:0.3});
 })();
 window.addEventListener("beforeunload", save);
 

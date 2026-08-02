@@ -24,10 +24,20 @@ and ordering the sheet the way you should actually train it — compounds first,
 isolation later, core at the end. Every movement tells you why it earned its
 slot, and the session shows you which muscle groups it missed.
 
-**A 3D figure for every movement.** A real articulated skeleton, not a video:
-drag to orbit it, snap to side / three-quarter / front, or set it spinning.
-Equipment is drawn in 3D too, so a barbell is a bar with plates on both ends
-rather than a line. Beside it, a muscle map shades what the movement works.
+**A shaded 3D body for every movement.** Not a stick figure and not a video —
+a procedural anatomical mesh whose every surface quad knows which muscle it
+belongs to. Drag to orbit, snap to side / three-quarter / front, or set it
+spinning. Equipment and surfaces are drawn in 3D too: floor, bench, rack, bars
+with plates on both ends, bands anchored to the ground.
+
+**The same body is the heat map.** Because each quad carries a muscle id,
+colouring by activation turns the figure itself into the chart — rotate it to
+see exactly what today's session lands on, front, back or side. No more
+guessing from a flat silhouette.
+
+**It notices what you skip.** The generator keeps a rolling read of the last
+fortnight and builds up a debt for muscles that keep getting missed, then pays
+it down in later sessions and tells you when it does.
 
 **Personal bests.** Log a lift's load and reps from the session sheet or from
 your profile, for the big lifts or any movement you name. Entries are ranked by
@@ -118,7 +128,10 @@ only to make it installable.
 
 | Part | What it does |
 | --- | --- |
-| `M` / `GEO` | 23 muscle regions, each drawn from several shapes so the chart reads as an anatomy plate |
+| `M` | 23 muscle regions |
+| `LIMBS` / `MUSCLE_AT` | The body mesh: lofted tubes with radius profiles, and the rule that decides which muscle owns a surface point from its position along the bone and angle around it |
+| `bodyQuads()` | Builds the shaded figure each frame; the same mesh serves the movement rig and the heat map |
+| `muscleDebt()` | Rolling read of what recent sessions neglected, fed back into generation |
 | `ARCH` | 49 movement archetypes — two authored poses each, plus the equipment to draw |
 | `solve()` | Re-solves every frame against one canonical skeleton, so joint *angles* come from the pose and limb *lengths* never do |
 | `pose3()` | Extrudes a solved 2D pose into 3D — sagittal archetypes gain left/right depth, frontal ones mirror in place |
