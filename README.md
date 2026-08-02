@@ -61,9 +61,17 @@ last twelve months, each day coloured by how hard that session was. Ranks go
 from Empty Bar to Cast Iron. Training at least every other day keeps a streak
 alive, and every seventh day banks a rest-day pass that covers one longer gap.
 
-**Somewhere for the points to go.** Redeem them for rest-day passes — a real
-mechanic, they protect the streak — or add your own rewards with your own
-prices, and cash them in when you've earned them.
+**Build the week.** Pick a split — Push/Pull/Legs, Upper/Lower, Full Body ×3,
+a body-part split, or set it day by day — and every session in it is generated
+at once. The split is what gets saved; the movements are re-rolled each time
+it's built, so the same routine keeps landing on different work. Planned days
+show up on the streak calendar ahead of time, so opening the app tells you
+what today is.
+
+**Standings.** Points rank you rather than buy things. Your total, your week,
+your best session and your streak multiplier, plus a breakdown of exactly where
+points come from and which lever is worth the most right now. Leaderboards
+against other lifters need a server and are not live in this build.
 
 ## Install it on your phone
 
@@ -194,6 +202,8 @@ After that:
 | | Pro — $10/mo | Max — $20/mo |
 | --- | --- | --- |
 | Sessions per week | unlimited | unlimited |
+| Build-the-week training days | 4 | 7 |
+| Saved splits | 1 | unlimited |
 | Movements per session | 10 | 20 |
 | 3D rig, heat map, PRs, streaks, rewards | yes | yes |
 | Failure mode | — | yes |
