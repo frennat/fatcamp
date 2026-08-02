@@ -79,7 +79,9 @@ join local, country and global leaderboards.
 
 Optional, and additive. Signed out, the app is exactly what it was.
 
-Sign-in is by email with no password anywhere. The same email carries both a
+Sign-in lives in the profile, behind the avatar at the top of the page. There
+is an emailed six-digit code, the link in that same email, or a password —
+whichever suits. The same email carries both a
 six-digit code and a link, and the app accepts either — type the code, or tap
 the link and it returns you signed in (tokens are read from the URL fragment
 and immediately scrubbed out of history).

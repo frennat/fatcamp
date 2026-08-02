@@ -871,6 +871,10 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 .ptag{font-family:var(--f-mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;
   color:var(--accent);border:1px solid var(--accent);border-radius:2px;padding:3px 6px}
 .prow-actions{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.acctrow{display:flex;align-items:center;gap:11px;padding:11px 13px;border:1px solid var(--accent);
+  border-radius:var(--r-sm);background:var(--accent-wash);flex-wrap:wrap}
+.acctrow .pav{width:34px;height:34px;border-radius:50%;flex:none;font-size:13px}
+.dlgwrap{display:block}
 .pname{width:140px}
 .codebox{width:100%;margin-top:10px;font-family:var(--f-mono);font-size:11px;word-break:break-all;
   padding:9px 11px;border-radius:var(--r);border:1px solid var(--line-hard);
@@ -1131,19 +1135,19 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 </dialog>
 
 <dialog id="profileDlg">
-  <form method="dialog">
+  <div class="dlgwrap">
     <div class="dlg-hd">
       <h3>Profile</h3>
-      <button class="iconbtn" value="close" style="margin-left:auto" aria-label="Close">
+      <button class="iconbtn" type="button" data-close style="margin-left:auto" aria-label="Close">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
       </button>
     </div>
     <div class="dlg-bd" id="pBody"></div>
     <div class="dlg-ft">
-      <span class="dlg-note">Everything stays on this device</span>
-      <button class="btn primary" value="done" type="submit">Done</button>
+      <span class="dlg-note" id="pFootNote">Training data stays on this device</span>
+      <button class="btn primary" type="button" data-close>Done</button>
     </div>
-  </form>
+  </div>
 </dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite">
@@ -3449,6 +3453,7 @@ function renderProfileBtn(){
 function renderProfileDlg(){
   const ids = Object.keys(vault.profiles);
   $("#pBody").innerHTML = `
+    ${accountMarkup()}
     <div class="eqsec">
       <p class="eyebrow">Who's lifting</p>
       <div class="plist">
@@ -3503,6 +3508,7 @@ function renderProfileDlg(){
     </div>`;
 
   renderPRs();
+  wireAccount();
   $$("#pBody [data-switch]").forEach(b => b.addEventListener("click", () => {
     switchProfile(b.dataset.switch); renderProfileDlg(); renderProfileBtn();
   }));
@@ -3576,6 +3582,7 @@ function askImport(p){
   $("#pResult").textContent = "";
 }
 $("#profileBtn").addEventListener("click", () => { renderProfileDlg(); pdlg.showModal(); });
+$$("#profileDlg [data-close]").forEach(b2 => b2.addEventListener("click", () => pdlg.close()));
 
 /* ------------------------------------------------------------------ theme */
 function applyTheme(){
@@ -5128,20 +5135,26 @@ function pointTips(){
   return tips.slice(0, 5);
 }
 
-function boardMarkup(){
-  const scope = state.boardScope || "global";
+/* The account lives in the profile — it is the thing you set up once, and the
+   avatar at the top of every page is where people look for it. */
+function accountMarkup(){
   const c = vault.cloud || {};
   if(!signedIn()){
-    return `<div class="boardhd"><p class="eyebrow">Leaderboards</p></div>
+    return `<div class="eqsec" id="acctSec">
+      <p class="eyebrow">Account</p>
+      <p class="sub">Optional. Everything you log works signed out — an account only adds the
+        leaderboards, and publishes nothing but a handle, a region and your point totals.</p>
       <div class="signin">
-        <b>Sign in to compete</b>
-        <p>Everything you have logged stays on this device either way. Signing in publishes
-          only a handle, a region and your point totals — never your sessions, your loads
-          or your email.</p>
         <form class="signrow" id="signForm">
           <input id="signEmail" type="email" placeholder="you@example.com" required
                  autocomplete="email" aria-label="Email">
-          <button class="btn primary" type="submit">Send code</button>
+          <button class="btn primary" type="submit">Email me a code</button>
+        </form>
+        <form class="signrow" id="codeForm" hidden>
+          <input id="signCode" inputmode="numeric" placeholder="6-digit code" maxlength="8"
+                 autocomplete="one-time-code" aria-label="Code from your email">
+          <button class="btn primary" type="submit">Sign in</button>
+          <button class="btn ghost" type="button" id="codeBack">Back</button>
         </form>
         <form class="signrow" id="pwForm" hidden>
           <input id="pwEmail" type="email" placeholder="you@example.com" required
@@ -5151,23 +5164,17 @@ function boardMarkup(){
           <button class="btn primary" type="submit">Sign in</button>
           <button class="btn ghost" type="button" id="pwSignup">Create account</button>
         </form>
-        <form class="signrow" id="codeForm" hidden>
-          <input id="signCode" inputmode="numeric" placeholder="6-digit code" maxlength="8"
-                 autocomplete="one-time-code" aria-label="Code from your email">
-          <button class="btn primary" type="submit">Sign in</button>
-          <button class="btn ghost" type="button" id="codeBack">Back</button>
-        </form>
-        <p class="signnote">The email works either way — type the code, or just tap the link in it.</p>
         <p class="signnote" id="signNote"></p>
         <p class="signnote"><button class="linkbtn" type="button" id="pwToggle">Use a password instead</button></p>
-      </div>`;
+      </div>
+    </div>`;
   }
   if(!c.me){
-    return `<div class="boardhd"><p class="eyebrow">Pick a handle</p></div>
+    return `<div class="eqsec" id="acctSec">
+      <p class="eyebrow">Account</p>
+      <p class="sub">Choose the name other lifters see and roughly where you train.
+        Both are public; nothing else is.</p>
       <div class="signin">
-        <b>One more thing</b>
-        <p>Choose the name other lifters see and roughly where you train. Both are public;
-          nothing else is.</p>
         <form class="signrow" id="handleForm">
           <input id="hName" placeholder="handle" maxlength="20" pattern="[A-Za-z0-9_]{3,20}"
                  required aria-label="Handle">
@@ -5179,6 +5186,37 @@ function boardMarkup(){
           <button class="btn primary" type="submit">Save</button>
         </form>
         <p class="signnote" id="signNote"></p>
+      </div>
+    </div>`;
+  }
+  return `<div class="eqsec" id="acctSec">
+    <p class="eyebrow">Account</p>
+    <div class="acctrow">
+      <span class="pav" style="background:var(--accent)">${esc(initials(c.me.handle))}</span>
+      <span class="pmeta">
+        <b>${esc(c.me.handle)}</b>
+        <small>${esc([c.me.region, c.me.country].filter(Boolean).join(" · ") || "No region set")}
+          ${vault.cloud && vault.cloud.rank ? " · ranked #" + vault.cloud.rank : ""}</small>
+      </span>
+      <button class="btn ghost" type="button" id="acctSync">${c.syncing ? "Syncing…" : "Sync"}</button>
+      <button class="btn ghost" type="button" id="signOutBtn">Sign out</button>
+    </div>
+    <p class="signnote">Only your handle, region and point totals are public. Your sessions,
+      loads and PRs never leave this device.</p>
+  </div>`;
+}
+
+function boardMarkup(){
+  const scope = state.boardScope || "global";
+  const c = vault.cloud || {};
+  if(!signedIn() || !c.me){
+    return `<div class="boardhd"><p class="eyebrow">Leaderboards</p></div>
+      <div class="boardempty">
+        <b>${signedIn() ? "Pick a handle to appear" : "Sign in to compete"}</b>
+        <p>Everything you log works either way — an account only adds the boards, and
+          publishes nothing but a handle, a region and your point totals.</p>
+        <button class="btn primary" type="button" id="openAcct">
+          ${signedIn() ? "Choose a handle" : "Set up your account"}</button>
       </div>`;
   }
   const rows = c.board || [];
@@ -5206,7 +5244,7 @@ function boardMarkup(){
     <p class="signnote">Signed in as ${esc(c.me.handle)} · <button class="linkbtn" type="button" id="signOutBtn">Sign out</button></p>`;
 }
 
-function wireBoard(){
+function wireAccount(){
   const f = $("#signForm");
   if(f) f.addEventListener("submit", async ev => {
     ev.preventDefault();
@@ -5216,7 +5254,7 @@ function wireBoard(){
       await sendCode(email);
       vault.pendingEmail = email; save();
       f.hidden = true; $("#codeForm").hidden = false; $("#signCode").focus();
-      note.textContent = "Check " + email + " for a six-digit code.";
+      note.textContent = "Check " + email + " — type the code, or tap the link.";
     }catch(e){ note.textContent = e.message || "Could not send the code."; }
   });
   const cf = $("#codeForm");
@@ -5226,8 +5264,8 @@ function wireBoard(){
     try{
       await verifyCode(vault.pendingEmail, $("#signCode").value.trim());
       vault.pendingEmail = null; save();
-      await syncNow(true);
-      toast("Signed in", "Your points are on the board.", "");
+      await syncNow(true); renderProfileDlg(); renderProfileBtn();
+      toast("Signed in", "Set a handle and you are on the board.", "");
     }catch(e){ note.textContent = e.message || "That code did not work."; }
   });
   const cb = $("#codeBack");
@@ -5239,7 +5277,6 @@ function wireBoard(){
     $("#pwForm").hidden = !on; $("#signForm").hidden = on; $("#codeForm").hidden = true;
     pt.textContent = on ? "Use an emailed code instead" : "Use a password instead";
   });
-  const pf = $("#pwForm");
   async function doPw(create){
     const note = $("#signNote");
     const em = $("#pwEmail").value.trim(), pw = $("#pwPass").value;
@@ -5247,17 +5284,20 @@ function wireBoard(){
     note.textContent = create ? "Creating…" : "Signing in…";
     try{
       if(create) await signUpPassword(em, pw); else await signInPassword(em, pw);
-      await syncNow(true);
-      toast("Signed in", "Your points are on the board.", "");
+      await syncNow(true); renderProfileDlg(); renderProfileBtn();
+      toast("Signed in", "Set a handle and you are on the board.", "");
     }catch(e){
       note.textContent = e.needsConfirm ? e.message
-        : (e.message || "").match(/Invalid login/i) ? "Wrong email or password — or the account doesn't exist yet, try Create account."
-        : (e.message || "Could not sign in.");
+        : (e.message || "").match(/Invalid login/i)
+          ? "Wrong email or password — if you have not made an account yet, use Create account."
+          : (e.message || "Could not sign in.");
     }
   }
+  const pf = $("#pwForm");
   if(pf) pf.addEventListener("submit", ev => { ev.preventDefault(); doPw(false); });
   const su = $("#pwSignup");
   if(su) su.addEventListener("click", () => doPw(true));
+
   const hf = $("#handleForm");
   if(hf) hf.addEventListener("submit", async ev => {
     ev.preventDefault();
@@ -5265,15 +5305,23 @@ function wireBoard(){
     try{
       await saveLifter($("#hName").value.trim(), $("#hRegion").value || null,
                        ($("#hCountry").value || "").toUpperCase() || null);
-      await syncNow(true);
+      await syncNow(true); renderProfileDlg(); renderProfileBtn();
+      toast("You're on the board", "Bank a session and your points post automatically.", "");
     }catch(e){ note.textContent = e.status === 409 ? "That handle is taken." : (e.message || "Could not save."); }
   });
+  const as = $("#acctSync"); if(as) as.addEventListener("click", async () => { await syncNow(); renderProfileDlg(); });
+  const so = $("#signOutBtn"); if(so) so.addEventListener("click", () => { signOut(); renderProfileDlg(); renderProfileBtn(); });
+}
+
+function wireBoard(){
+  const oa = $("#openAcct");
+  if(oa) oa.addEventListener("click", () => { renderProfileDlg(); $("#profileDlg").showModal(); });
   $$("#rewardsBody [data-scope]").forEach(b => b.addEventListener("click", async () => {
     state.boardScope = b.dataset.scope; save();
     await syncNow(true);
   }));
   const sy = $("#syncBtn"); if(sy) sy.addEventListener("click", () => syncNow());
-  const so = $("#signOutBtn"); if(so) so.addEventListener("click", signOut);
+  const so = $("#signOutBtn"); if(so) so.addEventListener("click", () => { signOut(); renderProfileBtn(); });
 }
 
 function renderRewards(){
