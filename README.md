@@ -79,8 +79,22 @@ join local, country and global leaderboards.
 
 Optional, and additive. Signed out, the app is exactly what it was.
 
-Sign-in is a six-digit code by email — no passwords anywhere, which also works
-properly in an installed PWA where magic links bounce you out to a browser.
+Sign-in is by email with no password anywhere. The same email carries both a
+six-digit code and a link, and the app accepts either — type the code, or tap
+the link and it returns you signed in (tokens are read from the URL fragment
+and immediately scrubbed out of history).
+
+**Supabase settings this depends on**, under Authentication:
+- *URL Configuration* → add every origin you serve from to **Redirect URLs**
+  (`http://localhost:8080/**`, and your Pages URL). The link in the email comes
+  back to whichever origin asked for it, and an origin that is not on this list
+  is refused.
+- *Email Templates → Magic Link* → include `{{ .Token }}` if you want the code
+  to appear. The stock template only has the link.
+- The built-in mailer is rate limited to a couple of sends an hour, which is
+  easy to trip while testing. *Authentication → Rate Limits* shows the current
+  caps; wiring your own SMTP under *Project Settings → Auth → SMTP* removes the
+  constraint.
 
 **What leaves your device:** a handle, a coarse region, and per-session point
 totals. **What never does:** your movements, loads, PRs, gym photo, or email.
