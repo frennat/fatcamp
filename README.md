@@ -245,7 +245,10 @@ appears once or twice as an aside, as it does in the template.
 The forge button is the mark itself: a lightning bolt crossing a knurled
 dumbbell on a hot disc, with no chrome around it. It sits in the ask box, in the Workload panel
 next to the words *Forge the session*, and — once both have scrolled away —
-floating in the corner, so the session is always one press away.
+floating in the corner, so the session is always one press away. Hovering the
+Workload bar runs a row of chevrons across its empty middle, lighting in
+sequence toward the mark; the floating one carries a single chevron that
+breathes while it is up.
 
 The palette stays the IWF competition plate colours, used as an actual coding
 system rather than decoration — red 25 kg for Killer, blue 20 kg for Cardio,

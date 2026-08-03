@@ -267,6 +267,7 @@ h1,h2,h3,h4{font-family:var(--f-display);font-weight:800;margin:0;text-wrap:bala
 .fmark.sm{width:40px;height:40px}
 .fmark.lg{width:54px;height:54px}
 .fmark.xl{width:64px;height:64px}
+.fmark.xxl{width:82px;height:82px}
 @keyframes fbreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
 .fmark.live{animation:fbreathe 2.8s ease-in-out infinite}
 .fmark.live:hover{animation:none}
@@ -420,7 +421,7 @@ input[type=range]::-moz-range-thumb{
   background:var(--ink);color:var(--bg);border-radius:var(--r-pill);
   padding:13px 13px 13px 26px;box-shadow:var(--sh-2);
 }
-.forgebar .fcopy{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0}
+.forgebar .fcopy{display:flex;flex-direction:column;gap:6px;flex:0 1 auto;min-width:0}
 .forgebar .flabel{
   font-family:var(--f-display);font-weight:800;font-size:clamp(21px,4.8vw,32px);
   text-transform:uppercase;letter-spacing:-.03em;line-height:1;
@@ -431,7 +432,38 @@ input[type=range]::-moz-range-thumb{
   background:linear-gradient(100deg,transparent 30%,var(--accent) 50%,transparent 70%);
   opacity:0;transition:opacity .3s;
 }
-.forgebar:hover::after{opacity:.2}
+.forgebar:hover::after{opacity:.1}
+/* Chevrons across the bar's empty middle. They fire in sequence toward the
+   mark, so the hover state points somewhere instead of only glowing. */
+.chevs{display:flex;flex:1 1 auto;justify-content:center;align-items:center;gap:15px;min-width:0}
+.chevs i{
+  flex:none;width:14px;height:14px;border-radius:2px;transform:rotate(45deg);
+  border-top:3.2px solid currentColor;border-right:3.2px solid currentColor;opacity:.15;
+}
+@keyframes chevlit{
+  0%,58%,100%{opacity:.15;border-color:currentColor;filter:none}
+  20%{opacity:1;border-color:var(--accent);filter:drop-shadow(0 0 7px var(--accent))}
+}
+.chevs i:nth-child(2){animation-delay:.11s}
+.chevs i:nth-child(3){animation-delay:.22s}
+.chevs i:nth-child(4){animation-delay:.33s}
+.chevs i:nth-child(5){animation-delay:.44s}
+.forgebar:hover .chevs i,.forgebar:focus-within .chevs i{animation:chevlit 1.5s ease-in-out infinite}
+
+/* the floating one gets a single chevron that breathes while it is up */
+.ffchev{
+  flex:none;width:13px;height:13px;border-radius:2px;transform:rotate(45deg);opacity:.22;
+  border-top:3.2px solid var(--accent);border-right:3.2px solid var(--accent);
+}
+@keyframes ffchev{0%,100%{opacity:.22;filter:none}
+                   50%{opacity:1;filter:drop-shadow(0 0 8px var(--accent))}}
+.ffloat.on .ffchev{animation:ffchev 2s ease-in-out .35s infinite}
+@media(max-width:640px){.ffchev{display:none}}
+@media(max-width:620px){.chevs{display:none}.fmark.xxl{width:60px;height:60px}}
+@media(prefers-reduced-motion:reduce){
+  .forgebar:hover .chevs i,.ffloat.on .ffchev{animation:none;opacity:.5}
+}
+
 @keyframes wlflash{from{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 55%,transparent)}
                      to{box-shadow:0 0 0 15px transparent}}
 .criteria.filled{animation:wlflash .95s ease-out}
@@ -1146,7 +1178,8 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
         <span class="flabel">Forge the session</span>
         <span class="fmeta" id="forgeMeta"></span>
       </div>
-      <button class="fmark xl live" id="forgeBtn" type="button" aria-label="Forge the session"></button>
+      <span class="chevs" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+      <button class="fmark xxl live" id="forgeBtn" type="button" aria-label="Forge the session"></button>
     </div>
   </section>
 
@@ -1198,6 +1231,7 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 </div>
 <div class="ffloat" id="floatForge">
   <button class="fmark xl live" id="floatForgeBtn" type="button" aria-label="Forge the session"></button>
+  <i class="ffchev" aria-hidden="true"></i>
   <span class="fftxt">Forge the<br>session</span>
 </div>
 
