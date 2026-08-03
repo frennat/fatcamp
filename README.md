@@ -238,6 +238,13 @@ holds nothing and a loaded one holds dumbbells.
 `pat` keeps the session from stacking three horizontal presses in a row, and
 `big:1` puts it in the compound picker.
 
+## Getting it on your phone, and into the store
+
+[`DEPLOY.md`](DEPLOY.md) covers both: turning on GitHub Pages and adding the app
+to your iPhone home screen today, and the Apple Developer / Capacitor /
+TestFlight path for a native release later. `site/` is the marketing page — it
+links straight to the app, so it doubles as the front door on a laptop.
+
 ## Design
 
 The layout and typography follow the [SkiLens](https://skilens.framer.website/)

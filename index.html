@@ -918,6 +918,13 @@ input[type=range]::-moz-range-thumb{
 .plan .price{font-family:var(--f-mono);font-size:31px;font-weight:600;line-height:1;
   font-variant-numeric:tabular-nums}
 .plan .per{font-size:12px;color:var(--ink-3);font-weight:400}
+.plan .each{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;line-height:1.5;
+  margin:7px 0 2px;padding:7px 10px;border-radius:var(--r-sm);
+  background:var(--accent-wash);color:var(--ink-2);
+}
+.plan .each b{display:inline;font-family:var(--f-mono);font-size:14px;font-weight:600;
+  text-transform:none;letter-spacing:0;color:var(--accent)}
 .plan ul{list-style:none;margin:6px 0 12px;padding:0;display:grid;gap:7px;font-size:13px;
   color:var(--ink-2);flex:1}
 .plan li{padding-left:20px;position:relative;line-height:1.4}
@@ -999,6 +1006,21 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
   padding:9px 11px;border-radius:var(--r);border:1px solid var(--line-hard);
   background:var(--surface-2);color:var(--ink-2);resize:vertical}
 .dlg-note{font-size:12px;color:var(--ink-3);margin-right:auto;align-self:center}
+
+/* ---------- coming soon badge ---------- */
+.appsoon{
+  display:inline-flex;align-items:center;gap:11px;
+  background:#000;color:#fff;border-radius:11px;padding:9px 16px 10px 14px;
+  border:1px solid rgba(255,255,255,.22);text-decoration:none;flex:none;
+}
+.appsoon svg{width:26px;height:26px;fill:#fff;flex:none;margin-top:-2px}
+.appsoon .as-t{display:flex;flex-direction:column;line-height:1;gap:3px}
+.appsoon .as-t small{
+  font-family:var(--f-body);font-size:9.5px;letter-spacing:.09em;
+  text-transform:uppercase;opacity:.92;font-weight:500;
+}
+.appsoon .as-t b{font-family:var(--f-body);font-size:21px;font-weight:500;letter-spacing:-.01em}
+@media(max-width:560px){.appsoon{padding:8px 14px 9px 12px}.appsoon .as-t b{font-size:19px}}
 
 /* ---------- toast / xp burst ---------- */
 .toast{
@@ -1231,6 +1253,11 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
     <span class="tag">Lifted.AI</span>
     <span style="font-size:12px;color:var(--ink-3)">Everything is stored on this device. Not medical advice — warm up, and leave a rep in the tank when the bar says so.</span>
     <button class="linkbtn" id="resetBtn" type="button" style="margin-left:auto">Reset all progress</button>
+    <span style="flex-basis:100%;height:0"></span>
+    <span class="appsoon" role="img" aria-label="Coming soon to the App Store">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.36 1.43c0 1.14-.49 2.27-1.17 3.08-.75.9-1.99 1.57-2.99 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.57-2.27 1.21-2.98.8-.94 2.14-1.64 3.25-1.68.03.13.04.28.04.43zm4.57 15.71c-.03.07-.47 1.58-1.52 3.12-.95 1.34-1.94 2.71-3.43 2.71-1.52 0-1.9-.88-3.63-.88-1.7 0-2.3.91-3.67.91-1.38 0-2.33-1.26-3.43-2.8C3.97 18.38 2.94 15.57 2.94 12.92c0-4.28 2.8-6.55 5.55-6.55 1.45 0 2.68.95 3.6.95.87 0 2.22-1.01 3.9-1.01.62 0 2.89.06 4.38 2.19-.13.09-2.38 1.37-2.38 4.19 0 3.26 2.85 4.42 2.94 4.45z"/></svg>
+      <span class="as-t"><small>Coming soon to the</small><b>App Store</b></span>
+    </span>
   </footer>
 </div>
 
@@ -3244,10 +3271,19 @@ function newId(){ return "p" + Date.now().toString(36) + Math.floor(Math.random(
    wired up yet — picking a plan applies its limits so each tier can be felt
    out before any store goes live. */
 const PLANS = {
-  pro:{n:"Pro", moves:10, failure:false, surprise:false, profiles:1, adaptive:false, weekDays:4, splits:1},
-  max:{n:"Max", moves:20, failure:true,  surprise:true,  profiles:99, adaptive:true, weekDays:7, splits:99}
+  pro:{n:"Pro", price:10, moves:10, failure:false, surprise:false, profiles:1, adaptive:false, weekDays:4, splits:1},
+  max:{n:"Max", price:20, moves:20, failure:true,  surprise:true,  profiles:99, adaptive:true, weekDays:7, splits:99}
 };
-function trialDaysLeft(){
+const FIRST_MONTH = 5;              /* everything in Max, for the first month */
+/* What a session actually costs, from the plan price and the days it allows.
+   Computed rather than written down, so the copy cannot drift from the price. */
+const WEEKS_PER_MONTH = 52/12;
+function perSession(price, daysAWeek){
+  const n = daysAWeek * WEEKS_PER_MONTH;
+  const c = price / n;
+  return {n:Math.round(n), each:c < 1 ? Math.round(c*100) + "¢" : "$" + c.toFixed(2)};
+}
+function trialDaysLeft(){          /* the paid first month, not a free trial */
   const t0 = new Date(vault.firstUse || Date.now()).getTime();
   return Math.max(0, 30 - Math.floor((Date.now() - t0) / 86400000));
 }
@@ -5726,22 +5762,6 @@ function consumeAuthFragment(){
   return true;
 }
 
-/* ---- auth: a six digit code, or the link in the same email ---- */
-async function sendCode(email){
-  await sbRaw("/auth/v1/otp", {method:"POST", noAuth:true,
-    body:{email, create_user:true,
-          /* so the link in the same email returns here, not to the default site URL */
-          options:{email_redirect_to: location.origin + location.pathname}}});
-}
-async function verifyCode(email, token){
-  const {data} = await sbRaw("/auth/v1/verify", {method:"POST", noAuth:true,
-    body:{email, token, type:"email"}});
-  vault.auth = {token:data.access_token, refresh:data.refresh_token,
-                exp:Date.now() + (data.expires_in || 3600)*1000,
-                uid:data.user.id, email:data.user.email};
-  save();
-  return data.user;
-}
 function signOut(){
   vault.auth = null; vault.cloud = null;
   save(); renderRewards(); renderProfileDlg && $("#pBody") && renderProfileDlg();
@@ -5878,27 +5898,15 @@ function accountMarkup(){
       <p class="sub">Optional. Everything you log works signed out — an account only adds the
         leaderboards, and publishes nothing but a handle, a region and your point totals.</p>
       <div class="signin">
-        <form class="signrow" id="signForm">
-          <input id="signEmail" type="email" placeholder="you@example.com" required
-                 autocomplete="email" aria-label="Email">
-          <button class="btn primary" type="submit">Email me a code</button>
-        </form>
-        <form class="signrow" id="codeForm" hidden>
-          <input id="signCode" inputmode="numeric" placeholder="6-digit code" maxlength="8"
-                 autocomplete="one-time-code" aria-label="Code from your email">
-          <button class="btn primary" type="submit">Sign in</button>
-          <button class="btn ghost" type="button" id="codeBack">Back</button>
-        </form>
-        <form class="signrow" id="pwForm" hidden>
+        <form class="signrow" id="pwForm">
           <input id="pwEmail" type="email" placeholder="you@example.com" required
                  autocomplete="email" aria-label="Email">
           <input id="pwPass" type="password" placeholder="password (8+ characters)" required
                  minlength="8" autocomplete="current-password" aria-label="Password">
-          <button class="btn primary" type="submit">Sign in</button>
-          <button class="btn ghost" type="button" id="pwSignup">Create account</button>
+          <button class="btn primary" type="submit" id="pwGo">Sign in</button>
         </form>
         <p class="signnote" id="signNote"></p>
-        <p class="signnote"><button class="linkbtn" type="button" id="pwToggle">Use a password instead</button></p>
+        <p class="signnote"><button class="linkbtn" type="button" id="pwMode">New here? Create an account</button></p>
       </div>
     </div>`;
   }
@@ -5977,43 +5985,31 @@ function boardMarkup(){
     <p class="signnote">Signed in as ${esc(c.me.handle)} · <button class="linkbtn" type="button" id="signOutBtn">Sign out</button></p>`;
 }
 
+/* Email and a password, one button. The link underneath decides whether that
+   button signs you in or makes the account — auto-creating on a failed sign-in
+   would turn one mistyped password into a second, empty account. */
+let signMode = "in";
 function wireAccount(){
-  const f = $("#signForm");
-  if(f) f.addEventListener("submit", async ev => {
+  const pf = $("#pwForm"), mode = $("#pwMode"), go = $("#pwGo");
+  function paint(){
+    if(!go) return;
+    go.textContent = signMode === "in" ? "Sign in" : "Create account";
+    mode.textContent = signMode === "in" ? "New here? Create an account"
+                                         : "Already have an account? Sign in";
+    const pw = $("#pwPass");
+    if(pw) pw.autocomplete = signMode === "in" ? "current-password" : "new-password";
+  }
+  if(mode) mode.addEventListener("click", () => {
+    signMode = signMode === "in" ? "up" : "in";
+    $("#signNote").textContent = ""; paint(); $("#pwEmail").focus();
+  });
+  paint();
+  if(pf) pf.addEventListener("submit", async ev => {
     ev.preventDefault();
-    const email = $("#signEmail").value.trim(); if(!email) return;
-    const note = $("#signNote"); note.textContent = "Sending…";
-    try{
-      await sendCode(email);
-      vault.pendingEmail = email; save();
-      f.hidden = true; $("#codeForm").hidden = false; $("#signCode").focus();
-      note.textContent = "Check " + email + " — type the code, or tap the link.";
-    }catch(e){ note.textContent = e.message || "Could not send the code."; }
-  });
-  const cf = $("#codeForm");
-  if(cf) cf.addEventListener("submit", async ev => {
-    ev.preventDefault();
-    const note = $("#signNote"); note.textContent = "Checking…";
-    try{
-      await verifyCode(vault.pendingEmail, $("#signCode").value.trim());
-      vault.pendingEmail = null; save();
-      await syncNow(true); renderProfileDlg(); renderProfileBtn();
-      toast("Signed in", "Set a handle and you are on the board.", "");
-    }catch(e){ note.textContent = e.message || "That code did not work."; }
-  });
-  const cb = $("#codeBack");
-  if(cb) cb.addEventListener("click", () => { $("#codeForm").hidden = true; $("#signForm").hidden = false; });
-
-  const pt = $("#pwToggle");
-  if(pt) pt.addEventListener("click", () => {
-    const on = $("#pwForm").hidden;
-    $("#pwForm").hidden = !on; $("#signForm").hidden = on; $("#codeForm").hidden = true;
-    pt.textContent = on ? "Use an emailed code instead" : "Use a password instead";
-  });
-  async function doPw(create){
     const note = $("#signNote");
     const em = $("#pwEmail").value.trim(), pw = $("#pwPass").value;
     if(!em || pw.length < 8){ note.textContent = "Email, and at least 8 characters."; return; }
+    const create = signMode === "up";
     note.textContent = create ? "Creating…" : "Signing in…";
     try{
       if(create) await signUpPassword(em, pw); else await signInPassword(em, pw);
@@ -6022,14 +6018,12 @@ function wireAccount(){
     }catch(e){
       note.textContent = e.needsConfirm ? e.message
         : (e.message || "").match(/Invalid login/i)
-          ? "Wrong email or password — if you have not made an account yet, use Create account."
-          : (e.message || "Could not sign in.");
+          ? "Wrong email or password. No account yet? Tap Create an account below."
+        : (e.message || "").match(/already registered|already been/i)
+          ? "That email already has an account — switch to Sign in."
+        : (e.message || "Could not sign in.");
     }
-  }
-  const pf = $("#pwForm");
-  if(pf) pf.addEventListener("submit", ev => { ev.preventDefault(); doPw(false); });
-  const su = $("#pwSignup");
-  if(su) su.addEventListener("click", () => doPw(true));
+  });
 
   const hf = $("#handleForm");
   if(hf) hf.addEventListener("submit", async ev => {
@@ -6100,23 +6094,28 @@ function renderPlans(){
   const host = $("#planBody"); if(!host) return;
   const tier = tierOf(), days = trialDaysLeft();
   const cur = t => tier === t;
+  const first = perSession(FIRST_MONTH, 7),
+        pro   = perSession(PLANS.pro.price, PLANS.pro.weekDays),
+        max   = perSession(PLANS.max.price, PLANS.max.weekDays);
   host.innerHTML = `
     <div class="plangrid">
       <div class="plan ${cur("trial") ? "current" : ""}">
-        <span class="rewtag">${cur("trial") ? "Current" : tier === "expired" ? "Ended" : "Included"}</span>
-        <b>Founder trial</b>
-        <div class="price">Free<span class="per"> · 30 days</span></div>
+        <span class="rewtag">${cur("trial") ? "Current" : tier === "expired" ? "Ended" : "Start here"}</span>
+        <b>First month</b>
+        <div class="price">$${FIRST_MONTH}<span class="per"> · one month</span></div>
+        <p class="each">Train all 7 days and that is <b>${first.each}</b> a session — ${first.n} of them.</p>
         <ul>
           <li>Everything in Max, unlocked</li>
           <li>Starts the first time you open the app</li>
-          <li>${tier === "expired" ? "Your 30 days are up — pick a lane" : days + " day" + (days === 1 ? "" : "s") + " left"}</li>
+          <li>${tier === "expired" ? "Your month is up — pick a lane" : days + " day" + (days === 1 ? "" : "s") + " left"}</li>
         </ul>
-        ${vault.plan && days > 0 ? `<button class="btn ghost" type="button" data-plan="">Back to trial</button>` : ""}
+        ${vault.plan && days > 0 ? `<button class="btn ghost" type="button" data-plan="">Back to the first month</button>` : ""}
       </div>
       <div class="plan ${cur("pro") ? "current" : ""}">
         <span class="rewtag">${cur("pro") ? "Current" : "Starter"}</span>
         <b>Pro</b>
-        <div class="price">$10<span class="per"> / month</span></div>
+        <div class="price">$${PLANS.pro.price}<span class="per"> / month</span></div>
+        <p class="each">4 training days a week is <b>${pro.each}</b> a session — ${pro.n} a month.</p>
         <ul>
           <li>Unlimited sessions &amp; re-rolls</li>
           <li>Up to 10 movements a session</li>
@@ -6131,7 +6130,8 @@ function renderPlans(){
       <div class="plan ${cur("max") ? "current" : ""}">
         <span class="rewtag">${cur("max") ? "Current" : "Most complete"}</span>
         <b>Max</b>
-        <div class="price">$20<span class="per"> / month</span></div>
+        <div class="price">$${PLANS.max.price}<span class="per"> / month</span></div>
+        <p class="each">All 7 days is <b>${max.each}</b> a session — ${max.n} a month.</p>
         <ul>
           <li>Everything in Pro</li>
           <li>Up to 20 movements a session</li>
@@ -6145,15 +6145,18 @@ function renderPlans(){
           ${cur("max") ? "disabled" : ""}>${cur("max") ? "Current plan" : "Choose Max"}</button>
       </div>
     </div>
-    <p class="plannote">Billing isn't wired up yet — this build is the founder period. Picking a plan
-      applies its limits so each tier can be felt out; nothing is charged.</p>`;
+    <p class="plannote">Every one of these is under a dollar a session, against $40-plus a month for a
+      gym you still have to think inside of. Max buys more training days rather than a cheaper rate —
+      30 sessions a month against Pro's 17 — which is why its per-session number sits just above Pro's.
+      Billing is not wired up yet: this build is the founder period, so picking a plan applies its
+      limits to feel each tier out and nothing is charged.</p>`;
   $$("#planBody [data-plan]").forEach(b => b.addEventListener("click", () => {
     vault.plan = b.dataset.plan || null;
     const lim = limitsOf();
     if(state.cfg.count > lim.moves) state.cfg.count = lim.moves;
     if(state.cfg.failureOn && !lim.failure) state.cfg.failureOn = false;
     save(); syncControls(); renderPlans(); renderWeek();
-    toast(vault.plan ? PLANS[vault.plan].n + " set" : "Back on trial",
+    toast(vault.plan ? PLANS[vault.plan].n + " set" : "Back to the first month",
           vault.plan ? "Limits applied. Billing arrives with the store release — nothing is charged today."
                      : trialDaysLeft() + " days of everything left.", "");
   }));

@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lifted.AI — your session built right in front of you</title>
+<meta name="description" content="Say what you want to train and Lifted.AI builds the session — coverage-first, with a 3D rig for every movement. Works in a gym, a basement, or a hotel room with nothing at all.">
+<meta name="theme-color" content="#EFEDE7">
+<meta property="og:title" content="Lifted.AI">
+<meta property="og:description" content="Say what you want to train. Get the session, the muscles, and the numbers.">
+<meta property="og:type" content="website">
+<style>
+:root{
+  --bg:#EFEDE7; --bg-sunk:#E4E1D9; --surface:#FBFAF7; --surface-2:#F4F2EC;
+  --line:#D2CDC2; --line-hard:#B4AEA1; --ink:#1B1A19; --ink-2:#4A4742; --ink-3:#7C776D;
+  --p25:#D8382B; --p20:#2B62C4; --p15:#E8B21C; --p10:#1F8A52;
+  --accent:var(--p25); --accent-2:#F2705C; --accent-ink:#fff; --accent-wash:rgba(216,56,43,.10);
+  --f-display:"Avenir Next","Avenir","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
+  --f-body:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;
+  --f-mono:"SF Mono","Menlo",ui-monospace,"Roboto Mono",monospace;
+  --r:14px; --r-sm:10px; --r-pill:80px; --r-card:16px 48px 16px 16px;
+  --pad:clamp(16px,4vw,26px); --maxw:1120px;
+  --sh-1:0 4px 8px -2px rgba(16,24,40,.10), 0 2px 4px -2px rgba(16,24,40,.06);
+  --sh-2:0 12px 16px -4px rgba(16,24,40,.10), 0 4px 6px -2px rgba(16,24,40,.04);
+  --sh-3:0 24px 48px -12px rgba(16,24,40,.20);
+  --grain:rgba(27,26,25,.045);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#17161A; --bg-sunk:#121114; --surface:#1F1E23; --surface-2:#26242A;
+    --line:#33313A; --line-hard:#4A4753; --ink:#F0EDE6; --ink-2:#B8B3AA; --ink-3:#837E77;
+    --p25:#E8503F; --p20:#4E7EDB; --p15:#F0C13C; --p10:#2FA765;
+    --accent:var(--p25); --accent-2:#FF8A72; --accent-ink:#17161A; --accent-wash:rgba(232,80,63,.14);
+    --grain:rgba(255,255,255,.035);
+    --sh-1:0 4px 10px -2px rgba(0,0,0,.5);
+    --sh-2:0 14px 24px -8px rgba(0,0,0,.6);
+    --sh-3:0 30px 60px -16px rgba(0,0,0,.75);
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;overflow-x:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:radial-gradient(var(--grain) 1px,transparent 1px);background-size:3px 3px;
+}
+.wrap{position:relative;z-index:1;max-width:var(--maxw);margin:0 auto;padding:0 var(--pad)}
+h1,h2,h3{font-family:var(--f-display);font-weight:800;letter-spacing:-.03em;margin:0}
+.eyebrow{
+  font-family:var(--f-mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 14px;
+}
+
+/* ---------- top ---------- */
+.top{display:flex;align-items:center;gap:12px;padding:20px 0 0}
+.top .name{font-family:var(--f-display);font-weight:800;font-size:20px;letter-spacing:-.02em;
+  text-transform:uppercase;color:var(--accent)}
+.top .sp{margin-left:auto}
+
+/* ---------- hero ---------- */
+.hero{padding:44px 0 8px;text-align:center;display:grid;justify-items:center;gap:16px}
+@media(min-width:760px){.hero{padding:70px 0 14px}}
+.hero h1{font-size:clamp(38px,8vw,78px);line-height:.92;text-transform:uppercase;max-width:14ch}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero .lede{color:var(--ink-2);font-size:clamp(15px,2.2vw,18px);max-width:52ch;margin:0}
+.cta{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+.btn{
+  font:inherit;font-family:var(--f-display);font-weight:800;text-transform:uppercase;
+  letter-spacing:-.01em;font-size:16px;border-radius:var(--r-pill);padding:15px 30px;
+  border:1px solid var(--line-hard);background:var(--surface);color:var(--ink);
+  cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:10px;
+  transition:transform .14s, box-shadow .18s, filter .18s;box-shadow:var(--sh-1);
+}
+.btn:hover{transform:translateY(-2px);box-shadow:var(--sh-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.hero .fine{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-3);margin:2px 0 0}
+
+/* the mark, reused from the app */
+.bolt{width:22px;height:22px;flex:none}
+
+/* ---------- shot ---------- */
+.shot{
+  margin:34px auto 0;max-width:820px;border-radius:var(--r-card);overflow:hidden;
+  border:1px solid var(--line);background:var(--surface);box-shadow:var(--sh-3);
+}
+.shot .bar{display:flex;gap:6px;padding:11px 14px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.shot .bar i{width:10px;height:10px;border-radius:50%;background:var(--line-hard);display:block}
+.shot .body{padding:26px 22px 30px;text-align:left;display:grid;gap:14px}
+.shot .ask{
+  border:1px solid var(--line-hard);border-radius:22px;padding:16px 18px;background:var(--bg-sunk);
+  font-size:15px;color:var(--ink-2);display:flex;align-items:center;gap:14px;
+}
+.shot .ask span{flex:1}
+.shot .out{display:grid;gap:7px}
+.shot .row{
+  display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid var(--line);
+  border-radius:var(--r);background:var(--bg);font-size:14px;
+}
+.shot .row b{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);width:2ch}
+.shot .row .m{flex:1}
+.shot .row .s{font-family:var(--f-mono);font-size:12px;color:var(--ink-2)}
+
+/* ---------- sections ---------- */
+section{padding:60px 0}
+@media(min-width:760px){section{padding:86px 0}}
+.shead{max-width:60ch;margin-bottom:30px}
+.shead h2{font-size:clamp(28px,5vw,46px);line-height:.98;text-transform:uppercase}
+.shead p{color:var(--ink-2);margin:14px 0 0;font-size:16px}
+.grid{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:680px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:980px){.grid.three{grid-template-columns:repeat(3,1fr)}}
+.card{
+  border:1px solid var(--line);border-radius:var(--r-card);background:var(--surface);
+  padding:24px 22px;box-shadow:var(--sh-1);position:relative;overflow:hidden;
+}
+.card h3{font-size:19px;text-transform:uppercase;margin-bottom:8px}
+.card p{margin:0;color:var(--ink-2);font-size:14.5px;line-height:1.6}
+.card .k{
+  font-family:var(--f-mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--accent);display:block;margin-bottom:11px;
+}
+
+/* ---------- steps ---------- */
+.steps{display:grid;gap:16px;counter-reset:s}
+@media(min-width:820px){.steps{grid-template-columns:repeat(3,1fr)}}
+.step{position:relative;padding-left:56px}
+.step::before{
+  counter-increment:s;content:counter(s);position:absolute;left:0;top:-4px;
+  width:42px;height:42px;border-radius:50%;display:grid;place-items:center;
+  font-family:var(--f-mono);font-size:17px;font-weight:600;
+  background:var(--accent);color:var(--accent-ink);
+}
+.step h3{font-size:17px;text-transform:uppercase;margin-bottom:6px}
+.step p{margin:0;color:var(--ink-2);font-size:14.5px}
+
+/* ---------- pricing ---------- */
+.plans{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:820px){.plans{grid-template-columns:repeat(3,1fr)}}
+.plan{
+  border:1px solid var(--line);border-radius:var(--r-card);background:var(--surface);
+  padding:26px 24px;display:flex;flex-direction:column;gap:4px;box-shadow:var(--sh-1);
+}
+.plan.hot{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent),var(--sh-2)}
+.tag{
+  font-family:var(--f-mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:6px;
+}
+.plan.hot .tag{color:var(--accent)}
+.plan b.nm{font-family:var(--f-display);font-weight:800;font-size:23px;text-transform:uppercase;letter-spacing:-.02em}
+.price{font-family:var(--f-mono);font-size:34px;font-weight:600;line-height:1;margin:8px 0 0}
+.price .per{font-size:12px;color:var(--ink-3);font-weight:400}
+.each{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.05em;line-height:1.55;
+  margin:12px 0 4px;padding:9px 12px;border-radius:var(--r-sm);
+  background:var(--accent-wash);color:var(--ink-2);
+}
+.each b{font-size:15px;color:var(--accent)}
+.plan ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px;font-size:13.5px;color:var(--ink-2)}
+.plan li{padding-left:21px;position:relative;line-height:1.45}
+.plan li::before{content:"✓";position:absolute;left:0;color:var(--accent);font-weight:700}
+.pricenote{margin:22px 0 0;font-size:13.5px;color:var(--ink-3);max-width:70ch}
+
+/* ---------- install ---------- */
+.install{
+  border:1px dashed var(--line-hard);border-radius:var(--r-card);padding:28px 26px;
+  background:var(--surface-2);
+}
+.install ol{margin:14px 0 0;padding-left:22px;display:grid;gap:10px;color:var(--ink-2);font-size:15px}
+.install code{
+  font-family:var(--f-mono);font-size:13px;background:var(--bg-sunk);
+  padding:2px 7px;border-radius:6px;border:1px solid var(--line);
+}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line);padding:34px 0 46px;display:flex;gap:16px;
+  flex-wrap:wrap;align-items:center;font-size:13px;color:var(--ink-3)}
+.appsoon{
+  display:inline-flex;align-items:center;gap:11px;background:#000;color:#fff;
+  border-radius:11px;padding:9px 16px 10px 14px;border:1px solid rgba(255,255,255,.22);
+  text-decoration:none;flex:none;
+}
+.appsoon svg{width:26px;height:26px;fill:#fff;flex:none;margin-top:-2px}
+.appsoon .as-t{display:flex;flex-direction:column;line-height:1;gap:3px}
+.appsoon .as-t small{font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;opacity:.92;font-weight:500}
+.appsoon .as-t b{font-size:21px;font-weight:500;letter-spacing:-.01em}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <span id="logo"></span>
+    <span class="name">Lifted.AI</span>
+    <span class="sp"></span>
+    <a class="btn" href="#pricing" style="padding:10px 20px;font-size:13px">Pricing</a>
+  </header>
+
+  <section class="hero">
+    <p class="eyebrow">Your session built right in front of you</p>
+    <h1>Say it. <em>Then go lift it.</em></h1>
+    <p class="lede">Tell Lifted.AI what you want to train the way you'd say it out loud —
+      <em>“push day at home, six movements, go hard”</em> — and it builds the session:
+      the movements, the muscles, the numbers, and a 3D rig showing exactly how each one moves.</p>
+    <div class="cta">
+      <a class="btn primary" href="../index.html"><span id="cbolt"></span>Open Lifted.AI</a>
+      <a class="btn" href="#install">Put it on your phone</a>
+    </div>
+    <p class="fine">Works offline · No account needed to train</p>
+
+    <div class="shot" aria-hidden="true">
+      <div class="bar"><i></i><i></i><i></i></div>
+      <div class="body">
+        <div class="ask"><span>Chest and triceps at home, six movements, go hard</span><span id="sbolt"></span></div>
+        <div class="out">
+          <div class="row"><b>1</b><span class="m">Dumbbell Bench Press</span><span class="s">4 × 6–8</span></div>
+          <div class="row"><b>2</b><span class="m">Incline Push-Up</span><span class="s">3 × 10–12</span></div>
+          <div class="row"><b>3</b><span class="m">Dip</span><span class="s">3 × 8–10</span></div>
+          <div class="row"><b>4</b><span class="m">Skull Crusher</span><span class="s">3 × 12–15</span></div>
+          <div class="row"><b>5</b><span class="m">Diamond Push-Up</span><span class="s">3 × 12–15</span></div>
+          <div class="row"><b>6</b><span class="m">Overhead Extension</span><span class="s">3 × 12–15</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead">
+      <p class="eyebrow">What it does</p>
+      <h2>It builds the session. You just train.</h2>
+      <p>Not a logbook you have to fill in. Not a video library to scroll. You say what you
+        want, it decides what covers the most ground in the time you have, and it shows you how.</p>
+    </div>
+    <div class="grid three">
+      <div class="card"><span class="k">The ask box</span><h3>Plain words in</h3>
+        <p>Location, muscle groups, movement count, effort, conditioning, and lifts you name
+          by name. A duration counts too — “45 minutes” becomes six movements.</p></div>
+      <div class="card"><span class="k">Generator</span><h3>Coverage first</h3>
+        <p>It fills the sheet by maximising new muscle coverage while keeping the movement
+          patterns balanced, so nothing gets trained three times and nothing gets skipped.</p></div>
+      <div class="card"><span class="k">3D rig</span><h3>See the movement</h3>
+        <p>Every lift comes with an articulated 3D figure running the actual motion, plus a
+          heat map of exactly which muscles it loads. No guessing from a name.</p></div>
+      <div class="card"><span class="k">Anywhere</span><h3>Home, gym, or nothing</h3>
+        <p>Define your home kit once and it will never prescribe a lift you can't load.
+          Body Weight mode strips it to you and the floor — a hotel room, a park, ten minutes.</p></div>
+      <div class="card"><span class="k">Build the week</span><h3>A whole split at once</h3>
+        <p>Pick a split and it generates every session in it. Save the split; the movements
+          re-roll each week, so the same routine keeps landing on different work.</p></div>
+      <div class="card"><span class="k">Points &amp; standings</span><h3>Something to chase</h3>
+        <p>Sessions bank points, streaks multiply them, and an optional account puts you on
+          local, national and global boards. Your training never leaves the device.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead">
+      <p class="eyebrow">How it goes</p>
+      <h2>Three taps to a session</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><h3>Say what you want</h3>
+        <p>Type it, or tap a preset. The workload panel fills in underneath so you can see
+          exactly what it heard before anything is built.</p></div>
+      <div class="step"><h3>Forge it</h3>
+        <p>One press builds the sheet — movements, sets, reps, rest, RPE and tempo, ordered
+          so the heavy work happens while you are fresh.</p></div>
+      <div class="step"><h3>Train and bank it</h3>
+        <p>Tick sets as you go. Finishing banks the points, extends the streak, and feeds
+          the next session's targeting so under-trained muscles come back around.</p></div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <div class="shead">
+      <p class="eyebrow">Pricing</p>
+      <h2>Under a dollar a session</h2>
+      <p>A gym you still have to think inside of runs $40 a month. An hour with a coach is $75.
+        This is the thinking part, for less than a coffee a week.</p>
+    </div>
+    <div class="plans">
+      <div class="plan hot">
+        <span class="tag">Start here</span>
+        <b class="nm">First month</b>
+        <div class="price">$5<span class="per"> · one month</span></div>
+        <p class="each">Train all 7 days and that is <b>16¢</b> a session — 30 of them.</p>
+        <ul>
+          <li>Everything in Max, unlocked</li>
+          <li>Every feature, no limits</li>
+          <li>Then pick Pro or Max</li>
+        </ul>
+      </div>
+      <div class="plan">
+        <span class="tag">Starter</span>
+        <b class="nm">Pro</b>
+        <div class="price">$10<span class="per"> / month</span></div>
+        <p class="each">4 training days a week is <b>58¢</b> a session — 17 a month.</p>
+        <ul>
+          <li>Unlimited sessions &amp; re-rolls</li>
+          <li>Up to 10 movements a session</li>
+          <li>Build the week — up to 4 days</li>
+          <li>One saved split</li>
+          <li>3D rig, heat map, PRs, streaks</li>
+        </ul>
+      </div>
+      <div class="plan">
+        <span class="tag">Most complete</span>
+        <b class="nm">Max</b>
+        <div class="price">$20<span class="per"> / month</span></div>
+        <p class="each">All 7 days is <b>66¢</b> a session — 30 a month.</p>
+        <ul>
+          <li>Everything in Pro</li>
+          <li>Up to 20 movements a session</li>
+          <li>Build the week — all 7 days</li>
+          <li>Unlimited saved splits</li>
+          <li>Failure mode &amp; Surprise Me</li>
+          <li>Adaptive catch-up targeting</li>
+        </ul>
+      </div>
+    </div>
+    <p class="pricenote">Max buys more training days rather than a lower rate — 30 sessions a
+      month against Pro's 17 — which is why its per-session number sits just above Pro's.
+      Billing is not live yet; the app is in its founder period.</p>
+  </section>
+
+  <section id="install">
+    <div class="shead">
+      <p class="eyebrow">On your phone</p>
+      <h2>It installs like an app</h2>
+      <p>There is nothing to download. Open it in Safari and add it to your home screen —
+        it gets its own icon, opens full screen with no browser chrome, and works with no signal.</p>
+    </div>
+    <div class="install">
+      <b style="font-family:var(--f-display);text-transform:uppercase;letter-spacing:-.02em;font-size:18px">iPhone &amp; iPad</b>
+      <ol>
+        <li>Open Lifted.AI in <b>Safari</b> — it has to be Safari, not Chrome.</li>
+        <li>Tap the <b>Share</b> button (the square with the arrow out of the top).</li>
+        <li>Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li>
+        <li>Launch it from the icon. Full screen, offline, no address bar.</li>
+      </ol>
+      <p style="margin:18px 0 0;font-size:14px;color:var(--ink-3)">On a Mac or PC it just runs in
+        the browser — or use <code>Install</code> in Chrome's address bar for a windowed app.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span id="flogo"></span>
+    <span>Everything is stored on your device. Not medical advice — warm up, and leave a rep in
+      the tank when the bar says so.</span>
+    <span style="flex-basis:100%;height:0"></span>
+    <span class="appsoon" role="img" aria-label="Coming soon to the App Store">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.36 1.43c0 1.14-.49 2.27-1.17 3.08-.75.9-1.99 1.57-2.99 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.57-2.27 1.21-2.98.8-.94 2.14-1.64 3.25-1.68.03.13.04.28.04.43zm4.57 15.71c-.03.07-.47 1.58-1.52 3.12-.95 1.34-1.94 2.71-3.43 2.71-1.52 0-1.9-.88-3.63-.88-1.7 0-2.3.91-3.67.91-1.38 0-2.33-1.26-3.43-2.8C3.97 18.38 2.94 15.57 2.94 12.92c0-4.28 2.8-6.55 5.55-6.55 1.45 0 2.68.95 3.6.95.87 0 2.22-1.01 3.9-1.01.62 0 2.89.06 4.38 2.19-.13.09-2.38 1.37-2.38 4.19 0 3.26 2.85 4.42 2.94 4.45z"/></svg>
+      <span class="as-t"><small>Coming soon to the</small><b>App Store</b></span>
+    </span>
+  </footer>
+</div>
+
+<script>
+/* the same mark the app uses, so the two do not drift apart */
+function armPath(){
+  return "M58 46 C58 32 70 24 81 24 C93 24 104 32 104 46 " +
+         "L104 62 C104 70 99 75 93 77 " +
+         "C90 88 88 96 86 104 " +
+         "C92 110 96 112 102 113 " +
+         "C110 96 124 82 140 88 C155 94 162 112 162 132 " +
+         "L162 144 C162 150 158 154 152 154 " +
+         "L70 154 C61 154 54 148 54 139 " +
+         "L54 74 C54 62 55 52 58 46 Z";
+}
+function logoMark(size){
+  const simple = size < 40, id = "lgm" + Math.random().toString(36).slice(2,7);
+  const accent = "var(--accent)", accent2 = "var(--accent-2)", ink = "var(--ink)";
+  return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 200 200" fill="none" '+
+    'xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Lifted.AI">'+
+    '<defs><linearGradient id="'+id+'" x1="55" y1="26" x2="160" y2="160" gradientUnits="userSpaceOnUse">'+
+    '<stop offset="0" stop-color="'+accent2+'"/><stop offset="1" stop-color="'+accent+'"/></linearGradient></defs>'+
+    '<path d="M100 8 L179.7 54 L179.7 146 L100 192 L20.3 146 L20.3 54 Z" stroke="'+accent+'" stroke-width="4" stroke-linejoin="round"/>'+
+    (simple ? "" :
+      '<path d="M100 22 L167.6 61 L167.6 139 L100 178 L32.4 139 L32.4 61 Z" stroke="'+accent+'" stroke-width="1.4" opacity=".28"/>') +
+    '<path d="'+armPath()+'" fill="url(#'+id+')" stroke="'+ink+'" stroke-width="'+(simple?7:5.5)+'" stroke-linejoin="round"/>'+
+    '<path d="M100 138 L114 118 L126 131 L145 108" stroke="'+ink+'" stroke-width="'+(simple?7:5.5)+
+    '" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+const BOLT = '<svg class="bolt" viewBox="41 17 18 66" fill="currentColor" aria-hidden="true">' +
+  '<path d="M56,20L43.5,52H50.5L45,80L57,48H49.5Z"/></svg>';
+document.getElementById("logo").innerHTML  = logoMark(34);
+document.getElementById("flogo").innerHTML = logoMark(28);
+document.getElementById("cbolt").innerHTML = BOLT;
+document.getElementById("sbolt").innerHTML =
+  '<span style="display:grid;place-items:center;width:44px;height:44px;border-radius:50%;' +
+  'background:var(--accent);color:#FFF1DC;flex:none">' + BOLT + '</span>';
+</script>
+</body>
+</html>
