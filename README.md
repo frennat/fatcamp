@@ -23,9 +23,8 @@ slowly through the gym and back again — dumbbell, kettlebell, barbell, medicin
 ball, a flexing arm, a bicycle, a treadmill, a bench, a rope, resistance bands
 and a forge hammer.
 
-**Presets, if you don't want to think.** Four plates — Easy Day (10 kg), Medium
-Day (15 kg), Killer (25 kg), Cardio (20 kg). One tap fills in every criterion
-below it. Change whatever you like afterwards, or just forge it. The card marks
+**Presets, if you don't want to think.** Four of them — Easy Day, Medium Day,
+Killer, Cardio. One tap fills in every criterion below it. Change whatever you like afterwards, or just forge it. The card marks
 the effort in bolts — one, two, three — in the plate colour that codes it
 everywhere else; Cardio gets a runner on a treadmill instead.
 
@@ -265,7 +264,8 @@ breathes while it is up.
 
 The palette stays the IWF competition plate colours, used as an actual coding
 system rather than decoration — red 25 kg for Killer, blue 20 kg for Cardio,
-yellow 15 kg for Medium, green 10 kg for Easy. Red carries the brand because
+yellow 15 kg for Medium, green 10 kg for Easy. The weights themselves are not
+printed on the cards; the colour is the code. Red carries the brand because
 that is what the mark is built from; the template's acid lime would have fought
 it. Every number is set in a monospace face so sets, reps, points and timers
 stay in tabular columns. Both light and dark themes are first-class; the toggle

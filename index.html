@@ -342,7 +342,6 @@ h1,h2,h3,h4{font-family:var(--f-display);font-weight:800;margin:0;text-wrap:bala
   .preset .pd{max-width:calc(100% - (var(--mw,44px) * .73) - 12px)}
 }
 .preset b{font-family:var(--f-display);font-size:21px;text-transform:uppercase;line-height:1;letter-spacing:.01em}
-.preset small{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--pc)}
 .preset .pd{font-size:12.5px;color:var(--ink-3);margin-top:5px;position:relative;z-index:1;
   max-width:calc(100% - var(--mw,44px) - 16px)}
 .preset[aria-pressed="true"]{border-color:var(--pc);box-shadow:inset 0 0 0 1px var(--pc)}
@@ -2835,16 +2834,16 @@ const FOCUS = {
 
 /* ---------------------------------------------------------------- presets */
 const PRESETS = {
-  easy:   {n:"Easy Day",  plate:"10 KG", c:"var(--p10)", count:4, effort:1, focus:["full"], comps:1,
+  easy:   {n:"Easy Day",  c:"var(--p10)", count:4, effort:1, focus:["full"], comps:1,
            cardio:true,  cstyle:"steady",
            d:"Move, don't maul. Full body, low fatigue, easy conditioning to finish."},
-  medium: {n:"Medium Day",plate:"15 KG", c:"var(--p15)", count:5, effort:2, focus:["full"], comps:2,
+  medium: {n:"Medium Day",c:"var(--p15)", count:5, effort:2, focus:["full"], comps:2,
            cardio:false, cstyle:"intervals",
            d:"The default. Two compounds, broad coverage, in and out in about an hour."},
-  killer: {n:"Killer",    plate:"25 KG", c:"var(--p25)", count:7, effort:4, focus:["full"], comps:3,
+  killer: {n:"Killer",    c:"var(--p25)", count:7, effort:4, focus:["full"], comps:3,
            cardio:true,  cstyle:"finisher", failure:true,
            d:"Heavy compounds, real volume, a finisher that hurts. Plan your next day around it."},
-  cardio: {n:"Cardio",    plate:"20 KG", c:"var(--p20)", count:3, effort:2, focus:["legs","core"], comps:1,
+  cardio: {n:"Cardio",    c:"var(--p20)", count:3, effort:2, focus:["legs","core"], comps:1,
            cardio:true,  cstyle:"intervals",
            d:"Conditioning is the session. A short strength primer, then the engine work."}
 };
@@ -3824,7 +3823,6 @@ function renderPresets(){
   $("#presets").innerHTML = Object.entries(PRESETS).map(([k,p]) => `
     <button class="preset" type="button" data-preset="${k}" style="--pc:${p.c};--mw:${presetMarkW(k)}px" aria-pressed="${state.cfg.preset===k}">
       <span class="pmark">${presetIcon(k)}</span>
-      <small>${p.plate}</small>
       <b>${p.n}</b>
       <span class="pd">${esc(p.d)}</span>
     </button>`).join("");
