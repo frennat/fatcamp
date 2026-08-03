@@ -27,9 +27,14 @@ and a forge hammer.
 Day (15 kg), Killer (25 kg), Cardio (20 kg). One tap fills in every criterion
 below it. Change whatever you like afterwards, or just forge it.
 
-**Home or public gym.** *Home* uses a kit you define once — the generator will
-never prescribe a lift you can't load. *Public gym* opens up racks, cables,
-machines and conditioning gear.
+**Home, public gym, or nothing at all.** *Home* uses a kit you define once — the
+generator will never prescribe a lift you can't load. *Public gym* opens up
+racks, cables, machines and conditioning gear. *Body Weight* strips it to you
+and the floor: a hotel room, a park, ten minutes between things. Twenty-seven
+movements need no equipment whatsoever, covering fourteen of the twenty-three
+muscle regions. Lats and biceps are not among them — there is no honest way to
+load a pull without something to hang from, so the mode says so on the panel
+rather than inventing something.
 
 **Coverage-first generation.** You pick the compound lifts you want and the
 muscle groups you care about; the generator fills the remaining slots by

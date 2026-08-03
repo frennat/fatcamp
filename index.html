@@ -1117,6 +1117,7 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
           <div class="seg" id="locSeg" role="group" aria-label="Location">
             <button type="button" data-loc="home" aria-pressed="true">Home</button>
             <button type="button" data-loc="public" aria-pressed="false">Public Gym</button>
+            <button type="button" data-loc="body" aria-pressed="false">Body Weight</button>
           </div>
           <div class="locnote" id="locNote"></div>
           <button class="linkbtn" id="editEquip" type="button">Edit your home gym</button>
@@ -2445,6 +2446,11 @@ const EQUIP = {
 const EQUIP_IDS = Object.keys(EQUIP);
 const HOME_DEFAULT = ["bw","bench","incline","rack","barbell","dumbbell","kettlebell","pullupbar","bands","abwheel","box","jumprope"];
 const PUBLIC_SET = EQUIP_IDS.slice();
+/* Nothing but you and the floor: a hotel room, a park, a spare ten minutes. */
+const BODY_SET = ["bw"];
+function availFor(loc){
+  return loc === "public" ? PUBLIC_SET : loc === "body" ? BODY_SET : state.equip;
+}
 
 /* ------------------------------------------------------------- exercises
    cls: comp | acc | iso | core | cardio
@@ -2740,6 +2746,55 @@ const X = [
 {id:"rope",n:"Jump Rope",arch:"jumprope",eq:["jumprope"],cls:"cardio",pat:"cardio",
  pri:["calves"],sec:["delt_s","forearms","abs","quads","tibialis"],
  cue:"Wrists turn the rope, not the arms. Barely leave the floor."},
+/* --- bodyweight, and nothing else ---
+   These exist so "Body Weight" has a library worth generating from. The gaps
+   are real ones: with no bar to hang from there is no honest way to load the
+   lats or the biceps, so the mode says so rather than inventing something. */
+{id:"airsquat",n:"Bodyweight Squat",arch:"squat",eq:["bw"],cls:"acc",pat:"squat",
+ pri:["quads","glutes"],sec:["hams","adductors","abs","calves"],
+ cue:"Sit between your heels, knees tracking over the toes. Full depth beats a fast count."},
+{id:"jumpsquat",n:"Jump Squat",arch:"squat",eq:["bw"],cls:"acc",pat:"squat",
+ pri:["quads","glutes"],sec:["calves","hams","abs"],
+ cue:"Drop to a quarter squat and drive through the floor. Land quiet — the landing is the training."},
+{id:"reverselunge",n:"Reverse Lunge",arch:"lunge",eq:["bw"],cls:"acc",pat:"lunge",uni:1,
+ pri:["quads","glutes"],sec:["hams","adductors","abs"],
+ cue:"Step back, drop the back knee to the floor, drive off the front heel."},
+{id:"cossack",n:"Cossack Squat",arch:"lunge",eq:["bw"],cls:"acc",pat:"lunge",uni:1,
+ pri:["adductors","quads"],sec:["glutes","hams","calves"],
+ cue:"Wide stance, sit into one hip and keep the other leg straight. The only free adductor work there is."},
+{id:"bwgm",n:"Bodyweight Good Morning",arch:"hinge",eq:["bw"],cls:"acc",pat:"hinge",
+ pri:["hams","glutes"],sec:["lowerback","abs"],
+ cue:"Hands behind the head, soft knees, push the hips back until the hamstrings complain."},
+{id:"slrdl",n:"Single-Leg RDL",arch:"rdl",eq:["bw"],cls:"acc",pat:"hinge",uni:1,
+ pri:["hams","glutes"],sec:["lowerback","abs","calves"],
+ cue:"Hinge over one leg, back leg rising behind you in a straight line. Slow is the point."},
+{id:"singleglute",n:"Single-Leg Glute Bridge",arch:"hipthrust",eq:["bw"],cls:"acc",pat:"hip",uni:1,
+ pri:["glutes"],sec:["hams","lowerback","abs"],
+ cue:"One foot planted, the other knee pulled in. Ribs down, squeeze at the top."},
+{id:"superman",n:"Superman",arch:"hyperext",eq:["bw"],cls:"acc",pat:"hinge",
+ pri:["lowerback","glutes"],sec:["upperback","hams","delt_r"],
+ cue:"Face down, lift chest and thighs together. Lengthen away from yourself rather than cranking up."},
+{id:"ytw",n:"Prone Y-T-W Raise",arch:"rearfly",eq:["bw"],cls:"iso",pat:"iso_delt",
+ pri:["upperback","delt_r"],sec:["traps","lowerback"],
+ cue:"Face down, arms tracing a Y, then a T, then a W. Thumbs up, no weight needed and none wanted."},
+{id:"diamondpush",n:"Diamond Push-Up",arch:"pushup",eq:["bw"],cls:"acc",pat:"push_h",
+ pri:["triceps","chest"],sec:["delt_f","abs","serratus"],
+ cue:"Hands together under the sternum, elbows tight to the ribs."},
+{id:"archerpush",n:"Archer Push-Up",arch:"pushup",eq:["bw"],cls:"acc",pat:"push_h",uni:1,
+ pri:["chest","triceps"],sec:["delt_f","abs","serratus"],
+ cue:"Wide hands, bend into one arm and keep the other straight. As close to a one-arm push-up as most people get."},
+{id:"sideplank",n:"Side Plank",arch:"plank",eq:["bw"],cls:"core",pat:"core",unit:"sec",uni:1,
+ pri:["obliques"],sec:["abs","glutes","delt_s"],
+ cue:"Stack the shoulders and hips, push the floor away. Hips stay high the whole time."},
+{id:"hollowhold",n:"Hollow Body Hold",arch:"legraise",eq:["bw"],cls:"core",pat:"core",unit:"sec",
+ pri:["abs"],sec:["hipflex","quads"],
+ cue:"Low back pinned to the floor. If it lifts, bring the arms and legs in until it does not."},
+{id:"bicyclecrunch",n:"Bicycle Crunch",arch:"twist",eq:["bw"],cls:"core",pat:"core",
+ pri:["obliques","abs"],sec:["hipflex"],
+ cue:"Slow and deliberate, rotating from the ribs. Speed here is just momentum."},
+{id:"skater",n:"Skater Bounds",arch:"run",eq:["bw"],cls:"cardio",pat:"cardio",
+ pri:["quads","glutes"],sec:["adductors","calves","abs","tibialis"],
+ cue:"Bound side to side and stick each landing on one leg."},
 {id:"burpee",n:"Burpees",arch:"burpee",eq:["bw"],cls:"cardio",pat:"cardio",
  pri:["quads","chest"],sec:["abs","delt_f","triceps","glutes","calves","tibialis"],
  cue:"Chest to the floor, full stand at the top. Pace it — the first ten always lie."},
@@ -2918,7 +2973,7 @@ function neglected(n){
 function generate(cfg){
   cfg.count = Math.min(cfg.count, limitsOf().moves);
   const rnd = mulberry(cfg.seed);
-  const avail = cfg.loc === "home" ? state.equip.slice() : PUBLIC_SET.slice();
+  const avail = availFor(cfg.loc).slice();
   const has = x => x.eq.every(t => avail.includes(t));
   const pool = X.filter(x => x.cls !== "cardio" && has(x));
 
@@ -3748,7 +3803,7 @@ function applyPreset(k){
   c.failureOn = !!p.failure && limitsOf().failure;
   c.count = Math.min(c.count, limitsOf().moves);
   /* auto-pick the compounds this kit can actually support */
-  const avail = c.loc === "home" ? state.equip : PUBLIC_SET;
+  const avail = availFor(c.loc);
   const bigs = X.filter(x => x.big && x.eq.every(t => avail.includes(t)));
   const seen = new Set(); const chosen = [];
   const order = ["squat","hinge","push_h","pull_h","push_v","pull_v","lunge","hip"];
@@ -3776,7 +3831,7 @@ function renderFocus(){
   }));
 }
 function renderCompounds(){
-  const avail = state.cfg.loc === "home" ? state.equip : PUBLIC_SET;
+  const avail = availFor(state.cfg.loc);
   const bigs = X.filter(x => x.big).sort((a,b) => patOrd(a.pat)-patOrd(b.pat) || a.n.localeCompare(b.n));
   $("#compoundChips").innerHTML = bigs.map(x => {
     const ok = x.eq.every(t => avail.includes(t));
@@ -3812,10 +3867,11 @@ function syncControls(){
   $("#cardioOn").checked = c.cardioOn;
   $("#failureOn").checked = !!c.failureOn;
   $("#editEquip").style.display = c.loc === "home" ? "" : "none";
-  const avail = c.loc === "home" ? state.equip : PUBLIC_SET;
-  $("#locNote").textContent = c.loc === "home"
-    ? state.equip.length+" pieces of kit on hand — the generator will not prescribe anything you can't load."
-    : "Full commercial gym. Racks, cables, machines and conditioning gear are all fair game.";
+  const avail = availFor(c.loc);
+  $("#locNote").textContent =
+    c.loc === "public" ? "Full commercial gym. Racks, cables, machines and conditioning gear are all fair game."
+  : c.loc === "body"   ? "You and the floor, nowhere in particular. No lat or biceps work is possible without something to hang from — everything else is on the table."
+  : state.equip.length+" pieces of kit on hand — the generator will not prescribe anything you can't load.";
   const slots = c.count - c.compounds.length;
   $("#mSlot").textContent = c.compounds.length
     ? c.compounds.length+" locked in, "+Math.max(0,slots)+" for the generator to fill"
@@ -3831,7 +3887,7 @@ function syncControls(){
 /* controls: location, stepper, effort, cardio */
 $$("#locSeg button").forEach(b => b.addEventListener("click", () => {
   state.cfg.loc = b.dataset.loc; state.cfg.preset = null;
-  const avail = state.cfg.loc === "home" ? state.equip : PUBLIC_SET;
+  const avail = availFor(state.cfg.loc);
   state.cfg.compounds = state.cfg.compounds.filter(id => XMAP[id].eq.every(t => avail.includes(t)));
   syncControls(); save();
 }));
@@ -4475,7 +4531,7 @@ const ASK_WORDNUM = {one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,
 
 /* What the workload says, in one line, so you can check what it heard. */
 function askSummary(c){
-  const bits = [c.loc === "home" ? "Home" : "Public gym",
+  const bits = [c.loc === "public" ? "Public gym" : c.loc === "body" ? "Bodyweight" : "Home",
                 c.focus.map(k => FOCUS[k].n).join(" + "),
                 c.count + " movement" + (c.count === 1 ? "" : "s"),
                 EFFORT_N[c.effort]];
@@ -4519,11 +4575,15 @@ function askApply(raw){
   }
 
   /* where */
-  if(has("home") || has("basement") || has("garage") || has("my house") ||
-     has("apartment") || has("hotel") || has("at home")){ c.loc = "home"; heard++; }
+  if(has("bodyweight") || has("body weight") || has("no equipment") || has("no gear") ||
+     has("no gym") || has("nothing") || has("hotel") || has("hotel room") || has("travelling") ||
+     has("traveling") || has("on the road") || has("a park") || has("the park") ||
+     has("outside") || has("anywhere") || has("calisthenics")){ c.loc = "body"; heard++; }
+  else if(has("home") || has("basement") || has("garage") || has("my house") ||
+          has("apartment") || has("at home")){ c.loc = "home"; heard++; }
   else if(has("public") || has("commercial") || has("the gym") || has("a gym") ||
           has("planet fitness") || has("my gym") || has("real gym")){ c.loc = "public"; heard++; }
-  const avail = c.loc === "home" ? state.equip : PUBLIC_SET;
+  const avail = availFor(c.loc);
 
   /* Named lifts are read first and then struck out of the sentence, so that
      "back squat" is not also heard as a back day and "barbell row" is not
@@ -4639,7 +4699,7 @@ function renderSession(animate){
       <div class="top">
         <div>
           <h2>${esc(s.title)}</h2>
-          <div class="sub">${EFFORT_N[s.cfg.effort]} · ${s.cfg.loc === "home" ? "Home gym" : "Public gym"} · ${s.moves.length} movements${s.cardio ? " + "+esc(s.cardio.styleName.toLowerCase()) : ""}</div>
+          <div class="sub">${EFFORT_N[s.cfg.effort]} · ${s.cfg.loc === "public" ? "Public gym" : s.cfg.loc === "body" ? "Bodyweight" : "Home gym"} · ${s.moves.length} movements${s.cardio ? " + "+esc(s.cardio.styleName.toLowerCase()) : ""}</div>
           ${s.trimmed > 0 ? `<div class="sub note">Asked for ${s.cfg.count} — your kit and focus only support ${s.moves.length} without repeating or going off-target.</div>` : ""}
           ${(s.caughtUp||[]).length ? `<div class="sub note up">Catching up on ${esc(musList(s.caughtUp))} — the log says you've been skipping ${s.caughtUp.length>1?"them":"it"}.</div>` : ""}
         </div>
@@ -5040,7 +5100,7 @@ function phaseWord(x, i){
 }
 function swapMove(m){
   const s = state.session;
-  const avail = s.cfg.loc === "home" ? state.equip : PUBLIC_SET;
+  const avail = availFor(s.cfg.loc);
   const others = s.moves.filter(o => o !== m);
   const act = activationOf(others);
   const rnd = mulberry((Math.random()*1e9)|0);
@@ -5082,7 +5142,7 @@ function surpriseMove(m){
     return;
   }
   const s = state.session;
-  const avail = s.cfg.loc === "home" ? state.equip : PUBLIC_SET;
+  const avail = availFor(s.cfg.loc);
   const seen = {};
   for(const h of (state.history || [])) for(const id of (h.mids || [])) seen[id] = (seen[id] || 0) + 1;
   const targets = new Set();
