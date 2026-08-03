@@ -97,7 +97,7 @@ hooks on top of it before you submit. The cheapest credible ones:
 **4. Subscriptions have to be In-App Purchase.**
 Apple requires IAP for digital subscriptions and takes a commission — 15% under
 the Small Business Program (under $1M/year, which is you) and 30% above it. So
-the $5 first month, $10 Pro and $20 Max become StoreKit products configured in
+the $5 first month, $10 Pro and $17 Max become StoreKit products configured in
 App Store Connect, not Stripe.
 
 Stripe is still the right answer for people who subscribe **through the website**

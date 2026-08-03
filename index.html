@@ -3272,7 +3272,7 @@ function newId(){ return "p" + Date.now().toString(36) + Math.floor(Math.random(
    out before any store goes live. */
 const PLANS = {
   pro:{n:"Pro", price:10, moves:10, failure:false, surprise:false, profiles:1, adaptive:false, weekDays:4, splits:1},
-  max:{n:"Max", price:20, moves:20, failure:true,  surprise:true,  profiles:99, adaptive:true, weekDays:7, splits:99}
+  max:{n:"Max", price:17, moves:20, failure:true,  surprise:true,  profiles:99, adaptive:true, weekDays:7, splits:99}
 };
 const FIRST_MONTH = 5;              /* everything in Max, for the first month */
 /* What a session actually costs, from the plan price and the days it allows.
@@ -6145,11 +6145,10 @@ function renderPlans(){
           ${cur("max") ? "disabled" : ""}>${cur("max") ? "Current plan" : "Choose Max"}</button>
       </div>
     </div>
-    <p class="plannote">Every one of these is under a dollar a session, against $40-plus a month for a
-      gym you still have to think inside of. Max buys more training days rather than a cheaper rate —
-      30 sessions a month against Pro's 17 — which is why its per-session number sits just above Pro's.
-      Billing is not wired up yet: this build is the founder period, so picking a plan applies its
-      limits to feel each tier out and nothing is charged.</p>`;
+    <p class="plannote">Every one of these is under a dollar a session, against $40-plus a month for
+      a gym you still have to think inside of — and Max is the cheapest per session of the three,
+      because it buys nearly twice the training days. Billing is not wired up yet: this build is the
+      founder period, so picking a plan applies its limits to feel each tier out and nothing is charged.</p>`;
   $$("#planBody [data-plan]").forEach(b => b.addEventListener("click", () => {
     vault.plan = b.dataset.plan || null;
     const lim = limitsOf();

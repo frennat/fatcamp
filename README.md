@@ -287,10 +287,10 @@ inline and drops the hairline detail below 40px; the same paths generate
 
 ## Plans
 
-Thirty days of everything, free, counted from the first time the app is opened.
-After that:
+The first month is $5 with everything in Max unlocked, counted from the first
+time the app is opened. After that:
 
-| | Pro — $10/mo | Max — $20/mo |
+| | Pro — $10/mo | Max — $17/mo |
 | --- | --- | --- |
 | Sessions per week | unlimited | unlimited |
 | Build-the-week training days | 4 | 7 |
@@ -301,6 +301,10 @@ After that:
 | Surprise Me | — | yes |
 | Adaptive catch-up targeting | — | yes |
 | Profiles on one device | 1 | unlimited |
+
+Per session, at the training days each plan allows: the first month is **16¢**,
+Pro **58¢** across 17 sessions, Max **56¢** across 30. Max is the cheapest of
+the three per session because it buys nearly twice the days for $7 more.
 
 Sessions are deliberately **unlimited on both tiers**. Metering how often
 somebody trains is the one limit that would make the app worse at its job; the
