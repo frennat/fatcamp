@@ -25,7 +25,9 @@ and a forge hammer.
 
 **Presets, if you don't want to think.** Four plates — Easy Day (10 kg), Medium
 Day (15 kg), Killer (25 kg), Cardio (20 kg). One tap fills in every criterion
-below it. Change whatever you like afterwards, or just forge it.
+below it. Change whatever you like afterwards, or just forge it. The card marks
+the effort in bolts — one, two, three — in the plate colour that codes it
+everywhere else; Cardio gets a runner on a treadmill instead.
 
 **Home, public gym, or nothing at all.** *Home* uses a kit you define once — the
 generator will never prescribe a lift you can't load. *Public gym* opens up

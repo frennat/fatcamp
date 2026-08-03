@@ -325,18 +325,28 @@ h1,h2,h3,h4{font-family:var(--f-display);font-weight:800;margin:0;text-wrap:bala
   color:inherit;font:inherit;display:flex;flex-direction:column;gap:2px;
 }
 .preset::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--pc)}
-.preset .pw{
-  position:absolute;right:-16px;top:50%;transform:translateY(-50%);
-  width:74px;height:74px;border-radius:50%;border:9px solid var(--pc);opacity:.16;
+/* One bolt for easy, two for medium, three for killer — the count is the
+   difficulty, in the plate colour that already codes it everywhere else. */
+.preset .pmark{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  display:flex;align-items:center;gap:2px;color:var(--pc);opacity:.6;pointer-events:none;
   transition:opacity .2s, transform .3s cubic-bezier(.2,.8,.2,1);
 }
+.preset .pmark svg{display:block;height:46px;width:auto}
+.preset .pmark svg.run{height:44px}
 .preset:hover{transform:translateY(-2px);border-color:var(--line-hard);box-shadow:var(--shadow)}
-.preset:hover .pw{opacity:.26;transform:translateY(-50%) rotate(25deg) scale(1.06)}
+.preset:hover .pmark{opacity:.85;transform:translateY(-50%) scale(1.06)}
+@media(max-width:620px){   /* two cards to a row leaves less to give away */
+  .preset .pmark svg{height:34px}
+  .preset .pmark svg.run{height:33px}
+  .preset .pd{max-width:calc(100% - (var(--mw,44px) * .73) - 12px)}
+}
 .preset b{font-family:var(--f-display);font-size:21px;text-transform:uppercase;line-height:1;letter-spacing:.01em}
 .preset small{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--pc)}
-.preset .pd{font-size:12.5px;color:var(--ink-3);margin-top:5px;position:relative;z-index:1;max-width:82%}
+.preset .pd{font-size:12.5px;color:var(--ink-3);margin-top:5px;position:relative;z-index:1;
+  max-width:calc(100% - var(--mw,44px) - 16px)}
 .preset[aria-pressed="true"]{border-color:var(--pc);box-shadow:inset 0 0 0 1px var(--pc)}
-.preset[aria-pressed="true"] .pw{opacity:.3}
+.preset[aria-pressed="true"] .pmark{opacity:1}
 
 /* ---------- criteria form ---------- */
 .criteria{
@@ -3785,10 +3795,35 @@ function renderHUD(){
 }
 
 /* --------------------------------------------------------------- controls */
+/* the same bolt the forge mark is built from, cropped to its own bounds */
+const BOLT_ICON = '<svg viewBox="41 17 18 66" fill="currentColor" aria-hidden="true">' +
+  '<path d="M56,20L43.5,52H50.5L45,80L57,48H49.5Z"/></svg>';
+/* someone running on a treadmill, for the day the conditioning is the session */
+const RUN_ICON = '<svg class="run" viewBox="0 0 64 64" fill="none" stroke="currentColor" ' +
+  'stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<circle cx="36" cy="12" r="4.1" fill="currentColor" stroke="none"/>' +
+  '<path d="M35,16.6 32,30"/>' +                          /* torso, leaning in  */
+  '<path d="M34,20 28.4,23.6 28,18.4"/>' +                /* lead arm, bent up  */
+  '<path d="M34,20 39.6,25.6"/>' +                        /* trailing arm       */
+  '<path d="M32,30 26,33.6 27.6,42"/>' +                  /* knee driven up     */
+  '<path d="M32,30 36.6,39 40,48.8"/>' +                  /* rear leg, on belt  */
+  '<path d="M7,52.4 50,52.4" stroke-width="4.4"/>' +      /* deck               */
+  '<path d="M13.4,52.4 16.4,29"/><path d="M10,26.6 22.4,26.6"/></svg>';
+const PRESET_BOLTS = {easy:1, medium:2, killer:3};
+function presetIcon(k){
+  if(k === "cardio") return RUN_ICON;
+  return BOLT_ICON.repeat(PRESET_BOLTS[k] || 1);
+}
+/* how much room the mark needs, so the copy can reserve that and no more */
+function presetMarkW(k){
+  if(k === "cardio") return 44;
+  const n = PRESET_BOLTS[k] || 1;
+  return Math.round(n*12.6 + (n-1)*2);
+}
 function renderPresets(){
   $("#presets").innerHTML = Object.entries(PRESETS).map(([k,p]) => `
-    <button class="preset" type="button" data-preset="${k}" style="--pc:${p.c}" aria-pressed="${state.cfg.preset===k}">
-      <span class="pw"></span>
+    <button class="preset" type="button" data-preset="${k}" style="--pc:${p.c};--mw:${presetMarkW(k)}px" aria-pressed="${state.cfg.preset===k}">
+      <span class="pmark">${presetIcon(k)}</span>
       <small>${p.plate}</small>
       <b>${p.n}</b>
       <span class="pd">${esc(p.d)}</span>
