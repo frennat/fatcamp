@@ -4145,14 +4145,18 @@ function forgeMarkSVG(){
 function paintMarks(){ $$(".fmark").forEach(b => { if(!b.firstChild) b.innerHTML = forgeMarkSVG(); }); }
 
 /* ------------------------------------------------------------- the ask object
-   The shape behind the box. It is a lathe — one radius profile spun around its
-   axis — plus a perpendicular cross piece that only the hammer uses. Every piece
-   of equipment is authored as a profile and resampled to the same ring count, so
-   morphing a kettlebell into a hammer is a lerp and the topology never changes.
-   Drawn at 1x and blurred in CSS: the silhouette is what you read, not the facets. */
+   The shape behind the box. A bicycle, a bench and a treadmill cannot be made
+   from one lathe, so the rig is a fixed set of eight slots and every shape
+   fills in the ones it needs. A slot is still a lathe — a profile spun about
+   its own axis — but it carries its own position and tilt, its cross-section
+   can be squared off, and it can be scaled differently across and through.
+   The slot count never changes, so morphing anything into anything is still a
+   lerp. Drawn at 1x and blurred in CSS: the silhouette is what you read. */
 const ASKOBJ = (function(){
-  const R_N = 24, S_N = 20, C_N = 12, TAU = Math.PI*2;
-  const NO_CROSS = [0,0,0,0,0,0,0,0,0,0,0,0];
+  const R_N = 18, S_N = 12, SLOTS = 8, TAU = Math.PI*2, Q = Math.PI/2;
+  const VPS = R_N*S_N, FPS = (R_N-1)*S_N;        /* verts and faces per slot */
+  const NV = SLOTS*VPS, NF = SLOTS*FPS;
+
   function resample(ctl, n){
     const out = new Float32Array(n);
     for(let i=0;i<n;i++){
@@ -4161,45 +4165,121 @@ const ASKOBJ = (function(){
     }
     return out;
   }
-  /* p: radius along the axis, bottom to top. c: the perpendicular piece —
-     a kettlebell's handle and a hammer's head are the same primitive.
-     h is length, bend is how far it arcs, wave is how much it coils. */
+
+  /* radius from 0 to 1 along a slot's own axis. The 0.03 at each end of ROD
+     caps the tube — with no back-face cull an open one reads as hollow. */
+  const ROD  = [.03,1,1,1,1,1,1,1,1,1,1,.03];
+  const BALL = [0,.31,.55,.71,.83,.92,.98,1,.98,.92,.83,.71,.55,.31,0];
+  const EGG  = [0,.36,.62,.80,.93,1,.99,.92,.80,.64,.44,.20,0];
+  const LIMB = [.05,.90,1,.98,.94,.90,.86,.82,.78,.74,.05];
+
+  function slot(o){
+    o = o || {};
+    const p = o.p || [0,0];
+    return {p:resample(p, R_N), h:o.h || .1,
+            sx:o.sx == null ? 1 : o.sx, sz:o.sz == null ? 1 : o.sz,
+            sq:o.sq || 0, bend:o.bend || 0, wave:o.wave || 0,
+            x:o.x || 0, y:o.y || 0, z:o.z || 0, rx:o.rx || 0, rz:o.rz || 0,
+            on:p.some(v => v > .02)};
+  }
+  const OFF = slot();
+  /* a tube between two points in the xy plane, which is most of a bicycle */
+  function tube(x1,y1,x2,y2,r,z,p){
+    const dx = x2-x1, dy = y2-y1;
+    return {p:p || ROD, h:Math.sqrt(dx*dx + dy*dy), sx:r, sz:r,
+            x:(x1+x2)/2, y:(y1+y2)/2, z:z || 0, rz:Math.atan2(-dx, dy)};
+  }
+  function shape(n, list){
+    const out = [];
+    for(let i=0;i<SLOTS;i++) out.push(list[i] ? slot(list[i]) : OFF);
+    return {n:n, s:out};
+  }
+
   const SH = [
-    {n:"dumbbell", h:2.00, bend:0, wave:0, clen:.5, cy:0, c:NO_CROSS,
-     p:[.02,.40,.46,.46,.40,.10,.09,.09,.09,.09,.09,.09,.09,.09,.09,.10,.40,.46,.46,.40,.02]},
-    {n:"kettlebell", h:1.55, bend:0, wave:0, clen:1.18, cy:.355,
-     p:[.02,.25,.37,.44,.48,.50,.50,.48,.45,.41,.35,.27,.17,.10,.085,.085,.085,.085,.085,.07,.02],
-     c:[.02,.08,.14,.17,.17,.17,.17,.17,.14,.08,.04,.02]},
-    {n:"barbell", h:2.60, bend:0, wave:0, clen:.5, cy:0, c:NO_CROSS,
-     p:[.02,.07,.07,.40,.44,.40,.07,.06,.06,.06,.06,.06,.06,.06,.06,.07,.40,.44,.40,.07,.02]},
-    {n:"rope", h:2.20, bend:.55, wave:1, clen:.5, cy:0, c:NO_CROSS,
-     p:[.02,.13,.15,.14,.15,.14,.15,.14,.15,.14,.15,.14,.15,.14,.15,.14,.15,.14,.15,.13,.02]},
-    {n:"band", h:2.40, bend:1.25, wave:0, clen:.5, cy:0, c:NO_CROSS,
-     p:[.02,.07,.075,.07,.075,.07,.075,.07,.075,.07,.075,.07,.075,.07,.075,.07,.075,.07,.075,.07,.02]},
-    {n:"hammer", h:2.00, bend:0, wave:0, clen:1.05, cy:.36,
-     p:[.02,.13,.14,.13,.12,.115,.11,.105,.10,.10,.095,.095,.09,.09,.09,.09,.09,.09,.09,.07,.02],
-     c:[.02,.22,.32,.34,.34,.34,.34,.34,.32,.22,.08,.02]}
-  ].map(x => ({h:x.h, bend:x.bend, wave:x.wave, clen:x.clen, cy:x.cy,
-               p:resample(x.p, R_N), c:resample(x.c, C_N)}));
+    shape("dumbbell", [
+      {p:[.02,.40,.46,.46,.40,.10,.09,.09,.09,.09,.09,.09,.09,.09,.09,.10,.40,.46,.46,.40,.02], h:2.00}
+    ]),
+    shape("kettlebell", [
+      {p:[.02,.25,.37,.44,.48,.50,.50,.48,.45,.41,.35,.27,.17,.10,.085,.085,.085,.085,.085,.07,.02], h:1.55},
+      {p:[.02,.09,.16,.20,.20,.20,.20,.20,.16,.09,.04,.02], h:1.24, y:.60, rz:-Q}
+    ]),
+    shape("barbell", [
+      {p:[.02,.07,.07,.40,.44,.40,.07,.06,.06,.06,.06,.06,.06,.06,.06,.07,.40,.44,.40,.07,.02], h:2.60}
+    ]),
+    shape("medicine ball", [
+      {p:BALL, h:1.64, sx:.82, sz:.82},
+      /* a seam, so it is a medicine ball and not just a ball */
+      {p:ROD, h:.05, sx:.83, sz:.83, rx:Q}
+    ]),
+    shape("bicep", [
+      tube(-.72,-.14,  .10,-.34, .15, 0, LIMB),                  /* upper arm  */
+      {p:EGG, h:.60, sx:.25, sz:.23, x:-.30, y:-.05, rz:-1.33},  /* the bulge  */
+      tube( .14,-.34,  .34, .66, .145, 0, LIMB),                 /* forearm    */
+      {p:BALL, h:.42, sx:.21, sz:.21, x:.38, y:.82},             /* fist       */
+      {p:BALL, h:.38, sx:.19, sz:.19, x:-.78, y:-.10}            /* shoulder   */
+    ]),
+    shape("bicycle", [
+      {p:ROD, h:.10, sx:.46, sz:.46, x:-.58, y:-.42, rx:Q},      /* rear wheel */
+      {p:ROD, h:.10, sx:.46, sz:.46, x: .62, y:-.42, rx:Q},      /* front wheel*/
+      tube(-.58,-.42,  .05,-.38, .045),                          /* chainstay  */
+      tube( .05,-.38,  .52, .28, .050),                          /* down tube  */
+      tube( .05,-.38, -.16, .30, .050),                          /* seat tube  */
+      tube(-.16, .30,  .52, .28, .050),                          /* top tube   */
+      {p:ROD, h:.54, sx:.045, sz:.045, x:.55, y:.42, rx:Q},      /* handlebar  */
+      {p:ROD, h:.34, sx:.075, sz:.055, sq:1, x:-.20, y:.40, rz:-Q}  /* saddle  */
+    ]),
+    shape("treadmill", [
+      {p:ROD, h:1.55, sx:.065, sz:.30, sq:.85, x:.05, y:-.54, rz:-Q}, /* deck   */
+      {p:ROD, h:1.34, sx:.028, sz:.265, sq:1, x:.02, y:-.42, rz:-Q},  /* belt   */
+      tube(-.62,-.48, -.52,.44, .045,  .22),                          /* upright*/
+      tube(-.62,-.48, -.52,.44, .045, -.22),                          /* upright*/
+      {p:ROD, h:.60, sx:.05, sz:.20, sq:1, x:-.50, y:.58, rx:Q},      /* console*/
+      {p:ROD, h:.58, sx:.135, sz:.135, x:.74, y:-.44, rx:Q}           /* roller */
+    ]),
+    shape("bench", [
+      {p:ROD, h:1.34, sx:.075, sz:.22, sq:.9, x:0, y:.20, rz:-Q},     /* pad    */
+      tube(-.42,.12, -.60,-.62, .048),
+      tube(-.42,.12, -.24,-.62, .048),
+      tube( .42,.12,  .60,-.62, .048),
+      tube( .42,.12,  .24,-.62, .048),
+      {p:ROD, h:.46, sx:.042, sz:.042, x:-.42, y:-.62, rx:Q},         /* feet   */
+      {p:ROD, h:.46, sx:.042, sz:.042, x: .42, y:-.62, rx:Q}
+    ]),
+    shape("rope", [
+      {p:[.02,.13,.15,.14,.15,.14,.15,.14,.15,.14,.15,.14,.15,.14,.15,.14,.15,.14,.15,.13,.02],
+       h:2.20, bend:.55, wave:1}
+    ]),
+    shape("bands", [
+      {p:[.02,.07,.075,.07,.075,.07,.075,.07,.075,.07,.075,.07,.075,.07,.075,.07,.075,.07,.075,.07,.02],
+       h:2.34, bend:1.15, x:-.10},
+      {p:[.02,.07,.075,.07,.075,.07,.075,.07,.075,.07,.075,.07,.075,.07,.075,.07,.075,.07,.075,.07,.02],
+       h:2.34, bend:.95, x:.14, z:.26},
+      {p:ROD, h:.44, sx:.085, sz:.085, y: 1.16, rz:-Q},               /* handles*/
+      {p:ROD, h:.44, sx:.085, sz:.085, y:-1.16, rz:-Q}
+    ]),
+    shape("hammer", [
+      {p:[.02,.13,.14,.13,.12,.115,.11,.105,.10,.10,.095,.095,.09,.09,.09,.09,.09,.09,.09,.07,.02], h:2.00},
+      {p:[.02,.22,.32,.34,.34,.34,.34,.34,.32,.22,.08,.02], h:1.05, y:.72, rz:-Q}
+    ])
+  ];
 
-  const MV = R_N*S_N, TV = MV + C_N*S_N;
-  const vx = new Float32Array(TV), vy = new Float32Array(TV), vz = new Float32Array(TV);
-  const wx = new Float32Array(TV), wy = new Float32Array(TV), wz = new Float32Array(TV);
-  const sx = new Float32Array(TV), sy = new Float32Array(TV);
+  const vx = new Float32Array(NV), vy = new Float32Array(NV), vz = new Float32Array(NV);
+  const wx = new Float32Array(NV), wy = new Float32Array(NV), wz = new Float32Array(NV);
+  const sx = new Float32Array(NV), sy = new Float32Array(NV);
 
-  const F = [];
-  for(let i=0;i<R_N-1;i++) for(let j=0;j<S_N;j++){
-    const k = (j+1)%S_N;
-    F.push([i*S_N+j, i*S_N+k, (i+1)*S_N+k, (i+1)*S_N+j]);
+  const F = new Array(NF);
+  for(let i=0;i<SLOTS;i++){
+    const base = i*VPS;
+    for(let r=0;r<R_N-1;r++) for(let j=0;j<S_N;j++){
+      const j2 = (j+1)%S_N;
+      F[i*FPS + r*S_N + j] = [base + r*S_N + j,     base + r*S_N + j2,
+                              base + (r+1)*S_N + j2, base + (r+1)*S_N + j];
+    }
   }
-  const MF = F.length;
-  for(let i=0;i<C_N-1;i++) for(let j=0;j<S_N;j++){
-    const k = (j+1)%S_N;
-    F.push([MV+i*S_N+j, MV+i*S_N+k, MV+(i+1)*S_N+k, MV+(i+1)*S_N+j]);
-  }
-  const depth = new Float32Array(F.length);
-  const ordAll  = Int16Array.from(F, (_,i) => i);
-  const ordMain = ordAll.slice(0, MF);
+  const depth = new Float32Array(NF);
+  const ord = new Int16Array(NF);
+  const cmp = (p, q) => depth[p] - depth[q];
+  const active = new Array(SLOTS).fill(false);
 
   /* ember to a lit edge — 28 steps is plenty once the whole thing is blurred */
   const RAMP = [];
@@ -4209,33 +4289,44 @@ const ASKOBJ = (function(){
               "," + Math.round(26+126*Math.pow(t,2.1)) + ")");
   }
 
-  /* fill the model-space buffers with shape a lerped s of the way toward b */
-  function build(a, b, s){
-    const h = a.h + (b.h-a.h)*s, bend = a.bend + (b.bend-a.bend)*s;
-    const wave = a.wave + (b.wave-a.wave)*s;
-    const clen = a.clen + (b.clen-a.clen)*s, cy = (a.cy + (b.cy-a.cy)*s)*h;
-    for(let i=0;i<R_N;i++){
-      const t = i/(R_N-1), y = (t-.5)*h, r = a.p[i] + (b.p[i]-a.p[i])*s;
-      const ox = bend*Math.sin(t*Math.PI)*.52 + wave*Math.sin(t*Math.PI*5)*.15;
-      const oz = bend*Math.sin(t*TAU)*.2      + wave*Math.cos(t*Math.PI*5)*.15;
-      for(let j=0;j<S_N;j++){
-        const ang = j/S_N*TAU, k = i*S_N+j;
-        vx[k] = Math.cos(ang)*r + ox; vy[k] = y; vz[k] = Math.sin(ang)*r + oz;
+  /* fill the model-space buffers with shape A lerped t of the way toward B */
+  function build(A, B, t){
+    for(let i=0;i<SLOTS;i++){
+      const a = A.s[i], b = B.s[i];
+      if(!a.on && !b.on){ active[i] = false; continue; }
+      active[i] = true;
+      /* a slot the other shape does not use borrows its partner's placement, so
+         parts grow and shrink where they belong instead of flying out of the middle */
+      const pa = a.on ? a : b, pb = b.on ? b : a;
+      const L = k => pa[k] + (pb[k] - pa[k])*t;
+      const h = L("h"), qx = L("sx"), qz = L("sz"), sq = L("sq"),
+            bend = L("bend"), wave = L("wave"),
+            px = L("x"), py = L("y"), pz = L("z");
+      const crz = Math.cos(L("rz")), srz = Math.sin(L("rz")),
+            crx = Math.cos(L("rx")), srx = Math.sin(L("rx"));
+      const base = i*VPS;
+      for(let r=0;r<R_N;r++){
+        const u = r/(R_N-1), ly = (u-.5)*h;
+        const rad = a.p[r] + (b.p[r]-a.p[r])*t;
+        const bx = bend*Math.sin(u*Math.PI)*.52 + wave*Math.sin(u*Math.PI*5)*.15;
+        const bz = bend*Math.sin(u*TAU)*.2      + wave*Math.cos(u*Math.PI*5)*.15;
+        for(let j=0;j<S_N;j++){
+          const ang = j/S_N*TAU, c = Math.cos(ang), n = Math.sin(ang);
+          /* circle to square, blended — a bench pad and a barbell share a slot */
+          const m = Math.max(Math.abs(c), Math.abs(n)) || 1;
+          const lx = (c + (c/m - c)*sq)*rad*qx + bx;
+          const lz = (n + (n/m - n)*sq)*rad*qz + bz;
+          const X = lx*crz - ly*srz, Y1 = lx*srz + ly*crz;
+          const k = base + r*S_N + j;
+          vx[k] = X + px;
+          vy[k] = Y1*crx - lz*srx + py;
+          vz[k] = Y1*srx + lz*crx + pz;
+        }
       }
     }
-    let cmax = 0;
-    for(let i=0;i<C_N;i++){
-      const t = i/(C_N-1), x = (t-.5)*clen, r = a.c[i] + (b.c[i]-a.c[i])*s;
-      if(r > cmax) cmax = r;
-      for(let j=0;j<S_N;j++){
-        const ang = j/S_N*TAU, k = MV + i*S_N + j;
-        vx[k] = x; vy[k] = cy + Math.cos(ang)*r; vz[k] = Math.sin(ang)*r;
-      }
-    }
-    return cmax;
   }
 
-  const HOLD = 1900, MORPH = 1600, STEP = HOLD + MORPH;
+  const HOLD = 1650, MORPH = 1450, STEP = HOLD + MORPH;
 
   function mount(cv){
     const ctx = cv.getContext("2d", {alpha:true});
@@ -4256,35 +4347,44 @@ const ASKOBJ = (function(){
       const i = Math.floor(u);
       let f = u - i;
       f = f < HOLD/STEP ? 0 : (f - HOLD/STEP)/(MORPH/STEP);
-      const cmax = build(SH[i], SH[(i+1) % SH.length], f*f*(3-2*f));
+      build(SH[i], SH[(i+1) % SH.length], f*f*(3-2*f));
 
       const yaw = now*0.00042, pitch = Math.sin(now*0.00031)*0.30 + 0.12,
             roll = -0.42 + Math.sin(now*0.00019)*0.22;
       const cy1 = Math.cos(yaw), sy1 = Math.sin(yaw),
             cp = Math.cos(pitch), sp = Math.sin(pitch),
             cr = Math.cos(roll),  sr = Math.sin(roll), d = 5.2;
-      const full = cmax > 0.015, FN = full ? F.length : MF, VN = full ? TV : MV;
 
-      for(let k=0;k<VN;k++){
-        const X0 = vx[k]*cr - vy[k]*sr, Y0 = vx[k]*sr + vy[k]*cr;
-        const X1 = X0*cy1 + vz[k]*sy1,  Z1 = vz[k]*cy1 - X0*sy1;
-        const Y2 = Y0*cp - Z1*sp,       Z2 = Y0*sp + Z1*cp;
-        wx[k] = X1; wy[k] = Y2; wz[k] = Z2;
-        const q = d/(d - Z2);
-        sx[k] = cx + X1*q*scale; sy[k] = cy - Y2*q*scale;
+      for(let i2=0;i2<SLOTS;i2++){
+        if(!active[i2]) continue;
+        const end = i2*VPS + VPS;
+        for(let k=i2*VPS;k<end;k++){
+          const X0 = vx[k]*cr - vy[k]*sr, Y0 = vx[k]*sr + vy[k]*cr;
+          const X1 = X0*cy1 + vz[k]*sy1,  Z1 = vz[k]*cy1 - X0*sy1;
+          const Y2 = Y0*cp - Z1*sp,       Z2 = Y0*sp + Z1*cp;
+          wx[k] = X1; wy[k] = Y2; wz[k] = Z2;
+          const q = d/(d - Z2);
+          sx[k] = cx + X1*q*scale; sy[k] = cy - Y2*q*scale;
+        }
       }
-      for(let q=0;q<FN;q++){
-        const g = F[q];
-        depth[q] = (wz[g[0]] + wz[g[1]] + wz[g[2]] + wz[g[3]])*.25;
+      let fn = 0;
+      for(let i2=0;i2<SLOTS;i2++){
+        if(!active[i2]) continue;
+        const f0 = i2*FPS, end = f0 + FPS;
+        for(let q=f0;q<end;q++){
+          const g = F[q];
+          depth[q] = (wz[g[0]] + wz[g[1]] + wz[g[2]] + wz[g[3]])*.25;
+          ord[fn++] = q;
+        }
       }
-      const ord = full ? ordAll : ordMain;
-      ord.sort((a,b) => depth[a] - depth[b]);
+      const view = ord.subarray(0, fn);
+      view.sort(cmp);
 
       ctx.clearRect(0, 0, W, H);
       let cur = -1;
       ctx.beginPath();
-      for(let q=0;q<FN;q++){
-        const g = F[ord[q]], a0 = g[0], b0 = g[1], c0 = g[2];
+      for(let q=0;q<fn;q++){
+        const g = F[view[q]], a0 = g[0], b0 = g[1], c0 = g[2];
         const ux = wx[b0]-wx[a0], uy = wy[b0]-wy[a0], uz = wz[b0]-wz[a0];
         const vX = wx[c0]-wx[a0], vY = wy[c0]-wy[a0], vZ = wz[c0]-wz[a0];
         const nx = uy*vZ - uz*vY, ny = uz*vX - ux*vZ, nz = ux*vY - uy*vX;
@@ -4325,7 +4425,7 @@ const ASKOBJ = (function(){
     let rt = 0;
     window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { W = 0; }, 120); });
   }
-  return {mount};
+  return {mount, SH, STEP, HOLD};
 })();
 
 /* -------------------------------------------------------------- the agent

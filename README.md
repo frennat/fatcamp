@@ -19,8 +19,9 @@ and any lifts you name by name, fills in the whole Workload panel, and forges
 the session in one press. Each ask is a complete request rather than an edit of
 the last one, so yesterday's bench press cannot turn up in today's leg day.
 Anything it doesn't recognise it leaves alone. Behind the box a shape turns
-slowly through the things you pick up — dumbbell, kettlebell, barbell, rope,
-band — and a forge hammer.
+slowly through the gym and back again — dumbbell, kettlebell, barbell, medicine
+ball, a flexing arm, a bicycle, a treadmill, a bench, a rope, resistance bands
+and a forge hammer.
 
 **Presets, if you don't want to think.** Four plates — Easy Day (10 kg), Medium
 Day (15 kg), Killer (25 kg), Cardio (20 kg). One tap fills in every criterion
@@ -238,8 +239,13 @@ Framer template: wide geometric display type set uppercase with tight negative
 tracking, corner-bracket eyebrow labels, 80px pill buttons with a circular
 accent badge, cards with one corner blown out to 48px and layered soft shadows.
 The top of the page is a single question over a frosted, translucent pane —
-Apple's liquid glass, more or less — with a slowly morphing lathe glowing
-behind it, in the manner of [dough.do](https://dough.do). A handwritten face
+Apple's liquid glass, more or less — with a slowly morphing form glowing
+behind it, in the manner of [dough.do](https://dough.do). That form is a rig of
+eight slots, each a lathe with its own place and tilt and a cross-section that
+can be squared off; a shape fills in the slots it needs and leaves the rest
+empty. The slot count never changes, so turning a bicycle into a bench is still
+a lerp, and a slot the next shape does not use borrows its partner's position
+so parts grow where they belong instead of flying out of the middle. A handwritten face
 appears once or twice as an aside, as it does in the template.
 
 The forge button is the mark itself: a lightning bolt crossing a knurled
