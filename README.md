@@ -11,6 +11,17 @@ exactly as before.
 
 ## What it does
 
+**Just say it.** The box at the top takes the request the way you'd say it out
+loud — *"push day at home, six movements, go hard"*, *"45 minutes of legs and a
+steady state run"*, *"killer leg day with back squats and RDLs"*. It reads the
+location, the muscle groups, the movement count, the effort, the conditioning
+and any lifts you name by name, fills in the whole Workload panel, and forges
+the session in one press. Each ask is a complete request rather than an edit of
+the last one, so yesterday's bench press cannot turn up in today's leg day.
+Anything it doesn't recognise it leaves alone. Behind the box a shape turns
+slowly through the things you pick up — dumbbell, kettlebell, barbell, rope,
+band — and back into the hammer that the forge button is made of.
+
 **Presets, if you don't want to think.** Four plates — Easy Day (10 kg), Medium
 Day (15 kg), Killer (25 kg), Cardio (20 kg). One tap fills in every criterion
 below it. Change whatever you like afterwards, or just forge it.
@@ -225,9 +236,16 @@ holds nothing and a loaded one holds dumbbells.
 The layout and typography follow the [SkiLens](https://skilens.framer.website/)
 Framer template: wide geometric display type set uppercase with tight negative
 tracking, corner-bracket eyebrow labels, 80px pill buttons with a circular
-accent badge, cards with one corner blown out to 48px, layered soft shadows,
-and a hero built from perspective-transformed cards floating in 3D. A
-handwritten face appears once or twice as an aside, as it does in the template.
+accent badge, cards with one corner blown out to 48px and layered soft shadows.
+The top of the page is a single question over a frosted, translucent pane —
+Apple's liquid glass, more or less — with a slowly morphing lathe glowing
+behind it, in the manner of [dough.do](https://dough.do). A handwritten face
+appears once or twice as an aside, as it does in the template.
+
+The forge button is the mark itself: a hammer and a dumbbell crossed on a hot
+disc, with no chrome around it. It sits in the ask box, in the Workload panel
+next to the words *Forge the session*, and — once both have scrolled away —
+floating in the corner, so the session is always one press away.
 
 The palette stays the IWF competition plate colours, used as an actual coding
 system rather than decoration — red 25 kg for Killer, blue 20 kg for Cardio,
