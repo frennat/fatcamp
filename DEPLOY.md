@@ -55,6 +55,11 @@ fine for checking a change, not for real use.
 
 ## Part 2 — The App Store
 
+> The concrete, step-by-step version of this now lives in
+> [`XCODE-CLOUD.md`](XCODE-CLOUD.md), which is the route being taken:
+> Xcode Cloud builds on Apple's hardware and hands off to TestFlight, so
+> nothing has to be archived on this Intel Mac. What follows is the background.
+
 ### The Mac app you were thinking of
 
 There are three pieces and they are easy to mix up:

@@ -1,3 +1,11 @@
 .DS_Store
 qa*.html
 _*.html
+
+# node / capacitor
+node_modules/
+www/
+ios/App/App/public/
+ios/App/Pods/
+ios/DerivedData/
+*.xcuserdatad
