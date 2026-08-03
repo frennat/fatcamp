@@ -20,7 +20,7 @@ the session in one press. Each ask is a complete request rather than an edit of
 the last one, so yesterday's bench press cannot turn up in today's leg day.
 Anything it doesn't recognise it leaves alone. Behind the box a shape turns
 slowly through the things you pick up — dumbbell, kettlebell, barbell, rope,
-band — and back into the hammer that the forge button is made of.
+band — and a forge hammer.
 
 **Presets, if you don't want to think.** Four plates — Easy Day (10 kg), Medium
 Day (15 kg), Killer (25 kg), Cardio (20 kg). One tap fills in every criterion
@@ -242,8 +242,8 @@ Apple's liquid glass, more or less — with a slowly morphing lathe glowing
 behind it, in the manner of [dough.do](https://dough.do). A handwritten face
 appears once or twice as an aside, as it does in the template.
 
-The forge button is the mark itself: a hammer and a dumbbell crossed on a hot
-disc, with no chrome around it. It sits in the ask box, in the Workload panel
+The forge button is the mark itself: a lightning bolt crossing a knurled
+dumbbell on a hot disc, with no chrome around it. It sits in the ask box, in the Workload panel
 next to the words *Forge the session*, and — once both have scrolled away —
 floating in the corner, so the session is always one press away.
 

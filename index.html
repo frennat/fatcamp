@@ -4069,9 +4069,12 @@ function forgeMarkSVG(){
     const o = i*2.8;
     hatch += "M" + (36+o) + ",39L" + (64+o) + ",67M" + (36+o) + ",61L" + (64+o) + ",33";
   }
-  /* Both tools are drawn in an upright local frame and take the same -45° turn,
-     which drops the hammer to the lower right and lifts the dumbbell to the
-     upper right — perpendicular, because their local frames are. */
+  /* The bolt stays upright while the dumbbell lies at -45°. Lightning only
+     reads as lightning near vertical — turned onto the diagonal it just looks
+     like a slanted Z. It goes on last, because a bolt cut through the middle
+     stops reading as one, and carries a halo in the disc colour to sit clear
+     of the bar. */
+  const bolt = "M56,20L43.5,52H50.5L45,80L57,48H49.5Z";
   return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">' +
     '<defs>' +
       '<radialGradient id="' + g + '" cx="34%" cy="27%" r="82%">' +
@@ -4081,23 +4084,6 @@ function forgeMarkSVG(){
     '</defs>' +
     '<circle cx="50" cy="50" r="50" fill="url(#' + g + ')"/>' +
 
-    /* hammer: handle down, face left, claw hooking up and right */
-    '<g transform="rotate(-45 50 50)">' +
-      '<path fill="#F6F1E5" d="M41.8,31h7.2v49.5a3.6,3.6 0 0 1 -7.2,0z"/>' +
-      /* head: flared striking face, then the eye the handle passes through */
-      '<path fill="#F6F1E5" d="M18,26q0,-3 3,-3h4.5q2.5,0 2.5,2.5v1.5h21q4.5,0 4.5,4v7' +
-            'q0,4 -4.5,4h-21v1.5q0,2.5 -2.5,2.5h-4.5q-3,0 -3,-3z"/>' +
-      /* the claw hooks back over the head — the orange it leaves underneath is
-         what makes it read as a claw rather than a lump */
-      '<path fill="#F6F1E5" d="M53.5,27C54.5,13 43,6.5 30.5,9.5' +
-            'C27.5,10.2 27.3,14 30,14.5C38.5,13 46,19 46.5,27Z"/>' +
-      '<path fill="none" stroke="#E8501F" stroke-width="1.6" stroke-linecap="round" ' +
-            'd="M31.5,12C39,11 44.5,16.5 45.5,23"/>' +
-      '<path fill="none" stroke="#E8501F" stroke-width="1.6" stroke-linecap="round" ' +
-            'd="M28,24V45"/>' +
-    '</g>' +
-
-    /* dumbbell, laid over the hammer — its own outline punches the gap */
     '<g transform="rotate(-45 50 50)">' +
       '<g fill="#F6F1E5" stroke="#E8501F" stroke-width="4.6" stroke-linejoin="round" paint-order="stroke">' +
         '<rect x="26" y="46.2" width="48" height="7.6" rx="1.6"/>' +
@@ -4114,6 +4100,12 @@ function forgeMarkSVG(){
       '<g clip-path="url(#' + k + ')" stroke="#E8501F" stroke-width="1" opacity=".75">' +
         '<path d="' + hatch + '"/>' +
       '</g>' +
+    '</g>' +
+
+    /* the corners are rounded by stroking each layer in its own colour */
+    '<g stroke-linejoin="round">' +
+      '<path d="' + bolt + '" fill="#E8501F" stroke="#E8501F" stroke-width="7.6"/>' +
+      '<path d="' + bolt + '" fill="#F6F1E5" stroke="#F6F1E5" stroke-width="2.6"/>' +
     '</g></svg>';
 }
 function paintMarks(){ $$(".fmark").forEach(b => { if(!b.firstChild) b.innerHTML = forgeMarkSVG(); }); }
