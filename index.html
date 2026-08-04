@@ -272,8 +272,15 @@ h1,h2,h3,h4{font-family:var(--f-display);font-weight:800;margin:0;text-wrap:bala
 .fmark.lg{width:54px;height:54px}
 .fmark.xl{width:64px;height:64px}
 .fmark.xxl{width:82px;height:82px}
-@keyframes fbreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
-.fmark.live{animation:fbreathe 2.8s ease-in-out infinite}
+/* The glow breathes with the button rather than sitting still behind it —
+   the scale alone read as a twitch, the two together read as a pulse. */
+@keyframes fbreathe{
+  0%,100%{transform:scale(1);
+          filter:drop-shadow(0 8px 18px color-mix(in srgb,var(--accent) 40%,transparent))}
+  50%    {transform:scale(1.075);
+          filter:drop-shadow(0 12px 30px color-mix(in srgb,var(--accent) 80%,transparent))}
+}
+.fmark.live{animation:fbreathe 2.2s ease-in-out infinite}
 .fmark.live:hover{animation:none}
 @media(prefers-reduced-motion:reduce){.fmark.live{animation:none}}
 
