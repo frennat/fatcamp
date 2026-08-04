@@ -238,7 +238,8 @@ h1,h2,h3,h4{font-family:var(--f-display);font-weight:800;margin:0;text-wrap:bala
   font:inherit;font-size:clamp(16px,2.3vw,19px);line-height:1.5;color:var(--ink);
   padding:18px 18px 4px;min-height:82px;
 }
-#askBox::placeholder{color:var(--ink-3)}
+#askBox::placeholder{color:var(--ink-3);transition:opacity .3s}
+#askBox.fading::placeholder{opacity:0}
 .glass-ft{position:relative;display:flex;align-items:center;gap:10px;padding:4px 6px 6px 14px}
 .glass-ft .fmark{margin-left:auto}   /* the chips hide on small screens; the mark stays right */
 .askchips{display:flex;gap:6px;flex-wrap:wrap;flex:1;min-width:0}
@@ -453,16 +454,23 @@ input[type=range]::-moz-range-thumb{
 .chevs i{
   flex:none;width:14px;height:14px;border-radius:2px;transform:rotate(45deg);
   border-top:3.2px solid currentColor;border-right:3.2px solid currentColor;opacity:.15;
+  --d:0s;   /* the stagger has to ride in the shorthand — see below */
 }
 @keyframes chevlit{
-  0%,58%,100%{opacity:.15;border-color:currentColor;filter:none}
-  20%{opacity:1;border-color:var(--accent);filter:drop-shadow(0 0 7px var(--accent))}
+  0%,42%,100%{opacity:.15;border-color:currentColor;filter:none}
+  14%{opacity:1;border-color:var(--accent);filter:drop-shadow(0 0 8px var(--accent))}
 }
-.chevs i:nth-child(2){animation-delay:.11s}
-.chevs i:nth-child(3){animation-delay:.22s}
-.chevs i:nth-child(4){animation-delay:.33s}
-.chevs i:nth-child(5){animation-delay:.44s}
-.forgebar:hover .chevs i,.forgebar:focus-within .chevs i{animation:chevlit 1.5s ease-in-out infinite}
+.chevs i:nth-child(2){--d:.14s}
+.chevs i:nth-child(3){--d:.28s}
+.chevs i:nth-child(4){--d:.42s}
+.chevs i:nth-child(5){--d:.56s}
+/* The delay travels as a custom property rather than animation-delay, because
+   the shorthand below resets every animation-* longhand it does not name — and
+   it outranks the nth-child rules, so a plain animation-delay there was being
+   zeroed and all five lit at once instead of running left to right. */
+.forgebar:hover .chevs i,.forgebar:focus-within .chevs i{
+  animation:chevlit 1.6s ease-in-out var(--d) infinite;
+}
 
 /* the floating one gets a single chevron that breathes while it is up */
 .ffchev{
@@ -1012,6 +1020,20 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
   background:var(--surface-2);color:var(--ink-2);resize:vertical}
 .dlg-note{font-size:12px;color:var(--ink-3);margin-right:auto;align-self:center}
 
+/* ---------- settings ---------- */
+.setlab{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);margin:16px 0 8px}
+.setlab:first-of-type{margin-top:4px}
+.permlist{display:grid;gap:6px}
+.permrow{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 12px;
+  border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;background:var(--surface)}
+.permrow b{font-size:13px;grid-column:1}
+.permrow small{grid-column:1;font-size:11.5px;color:var(--ink-3);line-height:1.45}
+.permstate{grid-column:2;grid-row:1 / span 2;font-family:var(--f-mono);font-size:9px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);
+  border:1px solid var(--line);border-radius:var(--r-pill);padding:4px 9px;white-space:nowrap}
+.permstate.on{color:var(--p10);border-color:var(--p10)}
+
 /* ---------- coming soon badge ---------- */
 .appsoon{
   display:inline-flex;align-items:center;gap:11px;
@@ -1257,6 +1279,7 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
   <footer style="margin-top:44px;padding-top:16px;border-top:1px solid var(--line);display:flex;gap:14px;flex-wrap:wrap;align-items:center">
     <span class="tag">Lifted.AI</span>
     <span style="font-size:12px;color:var(--ink-3)">Everything is stored on this device. Not medical advice — warm up, and leave a rep in the tank when the bar says so.</span>
+    <a href="site/privacy.html" class="linkbtn" style="text-decoration:none">Privacy</a>
     <button class="linkbtn" id="resetBtn" type="button" style="margin-left:auto">Reset all progress</button>
     <span style="flex-basis:100%;height:0"></span>
     <span class="appsoon" role="img" aria-label="Coming soon to the App Store">
@@ -3015,7 +3038,8 @@ function generate(cfg){
   cfg.count = Math.min(cfg.count, limitsOf().moves);
   const rnd = mulberry(cfg.seed);
   const avail = availFor(cfg.loc).slice();
-  const has = x => x.eq.every(t => avail.includes(t));
+  const lim = state.limits || [];
+  const has = x => x.eq.every(t => avail.includes(t)) && !blockedBy(x, lim);
   const pool = X.filter(x => x.cls !== "cardio" && has(x));
 
   const targets = new Set();
@@ -3170,15 +3194,27 @@ const RANKS = [
   {xp:9800,  n:"Three Plates"},{xp:17000, n:"Four Plates"},
   {xp:28000, n:"Five Plates"}, {xp:44000, n:"Cast Iron"}
 ];
+/* p: rest passes banked on arrival. The ladder runs all the way to a year,
+   because a streak you cannot see the end of stops being a streak. */
 const BADGES = [
-  {id:"first",  d:3,  i:"◍", n:"First Rep",    s:"Log one session"},
-  {id:"spark",  d:3,  i:"△", n:"Spark",        s:"3-day streak"},
-  {id:"week",   d:7,  i:"▣", n:"Week of Iron", s:"7-day streak"},
-  {id:"fort",   d:14, i:"◈", n:"Fortnight",    s:"14-day streak"},
-  {id:"month",  d:30, i:"⬢", n:"Month of Iron",s:"30-day streak"},
-  {id:"fifty",  d:50, i:"✦", n:"Half Ton",     s:"50-day streak"},
-  {id:"cent",   d:100,i:"★", n:"Centurion",    s:"100-day streak"}
+  {id:"first",  d:3,   i:"◍", n:"First Rep",     s:"Log one session"},
+  {id:"spark",  d:3,   i:"△", n:"Spark",         s:"3-day streak"},
+  {id:"week",   d:7,   i:"▣", n:"Week of Iron",  s:"7-day streak",   p:1},
+  {id:"fort",   d:14,  i:"◈", n:"Fortnight",     s:"14-day streak",  p:1},
+  {id:"habit",  d:21,  i:"◆", n:"Habit",         s:"21-day streak",  p:1},
+  {id:"month",  d:30,  i:"⬢", n:"Month of Iron", s:"30-day streak",  p:2},
+  {id:"fifty",  d:50,  i:"✦", n:"Half Ton",      s:"50-day streak",  p:2},
+  {id:"cent",   d:100, i:"★", n:"Centurion",     s:"100-day streak", p:3},
+  {id:"anvil",  d:150, i:"⬟", n:"Anvil",         s:"150-day streak", p:3},
+  {id:"forged", d:200, i:"❖", n:"Forged",        s:"200-day streak", p:4},
+  {id:"relent", d:250, i:"⧫", n:"Relentless",    s:"250-day streak", p:4},
+  {id:"unbrok", d:300, i:"⬣", n:"Unbroken",      s:"300-day streak", p:5},
+  {id:"ironman",d:365, i:"⚡", n:"Iron Man",      s:"365 days — one full year", p:7},
+  {id:"twoyr",  d:730, i:"☗", n:"Two Years",     s:"730-day streak", p:10}
 ];
+/* The streak multiplier stops climbing at 20 days for most people. Getting past
+   a hundred, and then past a year, should be worth more than a badge. */
+function streakCap(streak){ return streak >= 365 ? 40 : streak >= 100 ? 30 : 20; }
 function rankFor(xp){
   let r = RANKS[0], next = RANKS[1];
   for(let i=0;i<RANKS.length;i++){ if(xp >= RANKS[i].xp){ r = RANKS[i]; next = RANKS[i+1] || null; } }
@@ -3200,7 +3236,7 @@ function scoreSession(s, streak){
   if(s.cardio) base += s.cardio.mins * 4 * (s.cardio.style === "intervals" ? 1.25 : s.cardio.style === "finisher" ? 1.3 : 1);
   base *= em;
   const covBonus = Math.round(s.coverage * 0.85);
-  const mult = 1 + Math.min(20, streak) * 0.03;
+  const mult = 1 + Math.min(streakCap(streak), streak) * 0.03;
   const total = Math.round((base + covBonus) * mult);
   return {base:Math.round(base), covBonus, mult:+mult.toFixed(2), total};
 }
@@ -3236,9 +3272,20 @@ function checkBadges(){
   for(const b of BADGES){
     if(state.badges.includes(b.id)) continue;
     const ok = b.id === "first" ? state.history.length >= 1 : state.streak >= b.d;
-    if(ok){ state.badges.push(b.id); got.push(b); }
+    if(ok){
+      state.badges.push(b.id); got.push(b);
+      if(b.p) state.freezes += b.p;        /* the perk arrives with the badge */
+    }
   }
   return got;
+}
+/* The next rung and how far off it is, for the streak card to point at. */
+function nextMilestone(){
+  for(const b of BADGES){
+    if(b.id === "first" || state.badges.includes(b.id)) continue;
+    if(state.streak < b.d) return {b, left:b.d - state.streak};
+  }
+  return null;
 }
 
 /* ---------------------------------------------------------------- profiles
@@ -3248,16 +3295,41 @@ function checkBadges(){
    by code or by backup file. */
 const KEY = "liftedai.v2", OLD_KEY = "liftedai.v1";
 const PROFILE_FIELDS = ["name","color","equip","customEquip","gymPhoto","xp","streak",
-                        "freezes","lastDay","history","badges","cfg","session",
+                        "freezes","lastDay","history","badges","limits","cfg","session",
                         "rewards","redeemed","calView","prs","prPick","unit","lastWeight",
                         "week","savedSplits","boardScope"];
 const PROFILE_COLORS = ["var(--p25)","var(--p20)","var(--p15)","var(--p10)"];
+/* Movement limitations. Each one names the muscles and patterns to keep out of
+   a session, so ticking a box changes what gets generated rather than just
+   printing a warning. */
+const LIMITS = {
+  shoulder: {n:"Shoulder",   pat:["push_v","iso_delt"], mus:["delt_f","delt_s","delt_r"]},
+  elbow:    {n:"Elbow",      pat:["iso_arm"],           mus:["triceps","biceps"]},
+  wrist:    {n:"Wrist",      pat:[],                    mus:["forearms"], eq:["abwheel"]},
+  lowback:  {n:"Lower back", pat:["hinge"],             mus:["lowerback"]},
+  knee:     {n:"Knee",       pat:["squat","lunge"],     mus:["quads"]},
+  hip:      {n:"Hip",        pat:["hip"],               mus:["glutes","adductors","hipflex"]},
+  ankle:    {n:"Ankle",      pat:[],                    mus:["calves","tibialis"]},
+  neck:     {n:"Neck",       pat:[],                    mus:["neck","traps"]}
+};
+/* true when a movement is off the table given the limitations that are on */
+function blockedBy(x, limits){
+  if(!limits || !limits.length) return false;
+  for(const k of limits){
+    const L = LIMITS[k]; if(!L) continue;
+    if(L.pat.indexOf(x.pat) >= 0) return true;
+    if((L.eq || []).some(e => x.eq.indexOf(e) >= 0)) return true;
+    /* a primary mover on an injured area is out; a secondary is tolerated */
+    if((x.pri || []).some(m => L.mus.indexOf(m) >= 0)) return true;
+  }
+  return false;
+}
 const DEFAULT_CFG = {loc:"home", count:5, effort:2, focus:["full"], compounds:[], cardioOn:false, cstyle:"intervals", failureOn:false, preset:null};
 
 function blankProfile(name, color){
   return {name:name||"You", color:color||PROFILE_COLORS[0],
           equip:HOME_DEFAULT.slice(), customEquip:[], gymPhoto:null,
-          xp:0, streak:0, freezes:0, lastDay:null, history:[], badges:[],
+          xp:0, streak:0, freezes:0, lastDay:null, history:[], badges:[], limits:[],
           rewards:[], redeemed:[], calView:"month",
           prs:[], prPick:null, unit:"lb", lastWeight:{}, week:null, savedSplits:[], boardScope:"global",
           cfg:Object.assign({}, DEFAULT_CFG), session:null};
@@ -3672,10 +3744,77 @@ function renderProfileBtn(){
   b.title = state.name + " — " + state.xp.toLocaleString() + " points";
   b.setAttribute("aria-label", "Profile: " + state.name);
 }
+/* ------------------------------------------------------------------ settings */
+function settingsMarkup(){
+  const th = vault.theme || "auto";
+  const lim = state.limits || [];
+  const on = k => lim.indexOf(k) >= 0;
+  return `<div class="eqsec">
+    <p class="eyebrow">Settings</p>
+
+    <p class="setlab">Appearance</p>
+    <div class="seg" id="themeSeg" role="group" aria-label="Theme">
+      <button type="button" data-th="auto"  aria-pressed="${th==="auto"}">System</button>
+      <button type="button" data-th="light" aria-pressed="${th==="light"}">Light</button>
+      <button type="button" data-th="dark"  aria-pressed="${th==="dark"}">Dark</button>
+    </div>
+
+    <p class="setlab">Movement limitations</p>
+    <p class="sub">Anything ticked here is kept out of every session — the generator
+      drops the patterns and the movements that load it, rather than warning you after.</p>
+    <div class="chips" id="limChips">
+      ${Object.entries(LIMITS).map(([k,L]) =>
+        `<button class="chip sm" type="button" data-lim="${k}" aria-pressed="${on(k)}">${L.n}</button>`).join("")}
+    </div>
+    <p class="signnote" id="limNote">${lim.length
+      ? lim.length + " limitation" + (lim.length===1?"":"s") + " active — " + poolLeft() + " movements still available."
+      : "None set. Everything your kit supports is on the table."}</p>
+
+    <p class="setlab">Units</p>
+    <div class="seg" id="unitSeg" role="group" aria-label="Units">
+      <button type="button" data-u="lb" aria-pressed="${(state.unit||"lb")==="lb"}">Pounds</button>
+      <button type="button" data-u="kg" aria-pressed="${(state.unit||"lb")==="kg"}">Kilos</button>
+    </div>
+
+    <p class="setlab">Permissions</p>
+    <div class="permlist">
+      <div class="permrow"><b>Storage</b><small>Everything you log lives on this device.</small>
+        <span class="permstate on">Granted</span></div>
+      <div class="permrow"><b>Apple Health</b><small>Read workouts logged by other apps so they count toward your streak.</small>
+        <span class="permstate">iOS build only</span></div>
+      <div class="permrow"><b>Notifications</b><small>A nudge when a streak is about to lapse.</small>
+        <span class="permstate">iOS build only</span></div>
+    </div>
+  </div>`;
+}
+/* how much of the library survives the current limitations, for the note above */
+function poolLeft(){
+  const avail = availFor(state.cfg.loc);
+  return X.filter(x => x.cls !== "cardio" && x.eq.every(t => avail.includes(t))
+                       && !blockedBy(x, state.limits || [])).length;
+}
+function wireSettings(){
+  $$("#themeSeg button").forEach(b => b.addEventListener("click", () => {
+    vault.theme = b.dataset.th === "auto" ? null : b.dataset.th;
+    save(); applyTheme(); renderProfileDlg();
+  }));
+  $$("#unitSeg button").forEach(b => b.addEventListener("click", () => {
+    state.unit = b.dataset.u; save(); renderProfileDlg();
+  }));
+  $$("#limChips [data-lim]").forEach(b => b.addEventListener("click", () => {
+    const k = b.dataset.lim;
+    state.limits = state.limits || [];
+    const i = state.limits.indexOf(k);
+    if(i >= 0) state.limits.splice(i,1); else state.limits.push(k);
+    save(); renderProfileDlg(); syncControls();
+  }));
+}
+
 function renderProfileDlg(){
   const ids = Object.keys(vault.profiles);
   $("#pBody").innerHTML = `
     ${accountMarkup()}
+    ${settingsMarkup()}
     <div class="eqsec">
       <p class="eyebrow">Who's lifting</p>
       <div class="plist">
@@ -3731,6 +3870,7 @@ function renderProfileDlg(){
 
   renderPRs();
   wireAccount();
+  wireSettings();
   $$("#pBody [data-switch]").forEach(b => b.addEventListener("click", () => {
     switchProfile(b.dataset.switch); renderProfileDlg(); renderProfileBtn();
   }));
@@ -5283,6 +5423,7 @@ function finishSession(){
   state.history.unshift({date:s.date, title:s.title, xp:Math.max(full, already), moves:s.moves.length,
                          coverage:s.coverage, minutes:s.minutes, effort:s.cfg.effort,
                          focus:(s.cfg.focus||["full"]).slice(), sets:done+"/"+total,
+                         loc:s.cfg.loc, cardio:!!s.cardio,   /* so the ask box can quote it back */
                          mids:s.moves.map(m => m.id)});
   state.history = state.history.slice(0, 40);
   const newBadges = checkBadges();
@@ -6194,6 +6335,29 @@ $("#brand").insertAdjacentHTML("afterbegin", logoMark(30));
   const cv = $("#askObj");
   if(cv) ASKOBJ.mount(cv);
 
+  /* The placeholder cycles through your own past sessions, phrased the way you
+     would type them — every hint is a sentence the parser accepts, so it doubles
+     as a reminder of what you did and a thing you can copy. Falls back to the
+     seeded examples until there is a history to draw on. */
+  const LOC_SAY = {home:"at home", public:"at the gym", body:"with just bodyweight"};
+  function askHints(){
+    const out = [], seen = {};
+    for(const h of (state.history || [])){
+      const foc = (h.focus || []).map(k => FOCUS[k] && FOCUS[k].n).filter(Boolean).join(" and ");
+      if(!foc) continue;
+      const bits = [foc + (LOC_SAY[h.loc] ? " " + LOC_SAY[h.loc] : "")];
+      if(h.moves) bits.push(h.moves + " movements");
+      if(h.effort) bits.push((EFFORT_N[h.effort] || "").toLowerCase());
+      if(h.cardio) bits.push("plus conditioning");
+      const line = bits.filter(Boolean).join(", ");
+      const key = line.toLowerCase();
+      if(seen[key]) continue;
+      seen[key] = 1; out.push(line);
+      if(out.length >= 6) break;
+    }
+    return out;
+  }
+
   /* Examples worth pressing, drawn from the kit you actually have. */
   const seeds = [
     "Push day at home, 6 movements, go hard",
@@ -6214,6 +6378,29 @@ $("#brand").insertAdjacentHTML("afterbegin", logoMark(30));
   }
 
   const box = $("#askBox"), dockIn = $("#askDockIn");
+
+  /* Rotate the placeholder, but never while it would fight the person typing. */
+  (function rotateHint(){
+    const base = box.getAttribute("placeholder");
+    let i = 0, hints = [];
+    function refresh(){
+      const h = askHints();
+      hints = h.length ? h.concat(base ? [base] : []) : [base];
+    }
+    refresh();
+    function step(){
+      if(document.activeElement === box || box.value.trim()) return;
+      refresh();
+      if(hints.length < 2) return;
+      i = (i + 1) % hints.length;
+      box.classList.add("fading");
+      setTimeout(() => {
+        box.setAttribute("placeholder", hints[i]);
+        box.classList.remove("fading");
+      }, 320);
+    }
+    setInterval(step, 5200);
+  })();
   function fire(el){
     const v = (el.value || "").trim();
     if(!v){ el.focus(); return; }
