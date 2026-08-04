@@ -1344,6 +1344,10 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
   <span class="tx" id="toastXp"></span>
 </div>
 
+<!-- Capacitor's own runtime. On the web it simply reports "not native" and the
+     Health code below stays dormant; in the iOS shell it provides registerPlugin,
+     which is the only way to reach a plugin the native side registered. -->
+<script src="capacitor.js"></script>
 <script>
 /* ==========================================================================
    LIFTED.AI
@@ -3787,8 +3791,20 @@ function settingsMarkup(){
     <div class="permlist">
       <div class="permrow"><b>Storage</b><small>Everything you log lives on this device.</small>
         <span class="permstate on">Granted</span></div>
-      <div class="permrow"><b>Apple Health</b><small>Read workouts logged by other apps so they count toward your streak.</small>
-        <span class="permstate">iOS build only</span></div>
+      <div class="permrow"><b>Apple Health</b><small>${healthPlugin()
+        ? "Read workouts logged by other apps so they count toward your streak, and write yours back."
+        : "Read workouts logged by other apps so they count toward your streak. Available in the iOS app."}</small>
+        ${healthPlugin()
+          ? (healthOn()
+              ? `<span class="permstate on">Connected</span>`
+              : `<button class="btn primary" type="button" id="healthGo">Connect</button>`)
+          : `<span class="permstate">iOS build only</span>`}</div>
+      ${healthOn() ? `<p class="signnote" id="healthNote">${
+        state.health.at
+          ? Object.keys(state.health.days || {}).length + " day" +
+            (Object.keys(state.health.days || {}).length === 1 ? "" : "s") +
+            " picked up from other apps."
+          : "Connected. Sync on the next session."}</p>` : ""}
       <div class="permrow"><b>Notifications</b><small>A nudge when a streak is about to lapse.</small>
         <span class="permstate">iOS build only</span></div>
     </div>
@@ -3808,6 +3824,19 @@ function wireSettings(){
   $$("#unitSeg button").forEach(b => b.addEventListener("click", () => {
     state.unit = b.dataset.u; save(); renderProfileDlg();
   }));
+  const hg = $("#healthGo");
+  if(hg) hg.addEventListener("click", async () => {
+    hg.disabled = true; hg.textContent = "Asking…";
+    try{
+      const ok = await healthConnect();
+      renderProfileDlg(); renderLog(); renderHUD();
+      toast(ok ? "Health connected" : "Health declined",
+            ok ? "Workouts from other apps now hold your streak." : "You can turn it on later in Settings.", "");
+    }catch(e){
+      hg.disabled = false; hg.textContent = "Connect";
+      toast("Health unavailable", e.message || "Could not connect.", "");
+    }
+  });
   $$("#limChips [data-lim]").forEach(b => b.addEventListener("click", () => {
     const k = b.dataset.lim;
     state.limits = state.limits || [];
@@ -5433,6 +5462,7 @@ function finishSession(){
                          loc:s.cfg.loc, cardio:!!s.cardio,   /* so the ask box can quote it back */
                          mids:s.moves.map(m => m.id)});
   state.history = state.history.slice(0, 40);
+  healthSave(s, s.minutes);            /* let the rings know */
   const newBadges = checkBadges();
   if(state.week && typeof s.weekDay === "number" && state.week.days[s.weekDay]){
     state.week.days[s.weekDay].doneDate = new Date().toISOString();
@@ -5458,6 +5488,100 @@ const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov
 const DOW = ["M","T","W","T","F","S","S"];
 
 /* dayKey -> the hardest session logged that day, for colouring the calendar */
+/* ------------------------------------------------------------------ health
+   Apple Health, on the iOS build only. Two directions:
+     * read workouts other apps recorded, so a run logged by something else
+       still holds the streak together;
+     * write finished sessions back, so the rings know.
+   Everything read is reduced to day keys here on the device and kept in the
+   profile. Nothing about it is ever sent to the server. */
+let _healthProxy = null;
+function healthPlugin(){
+  const C = window.Capacitor;
+  if(!(C && C.isNativePlatform && C.isNativePlatform() && C.registerPlugin)) return null;
+  /* registerPlugin makes the JS proxy; the native side registers the instance.
+     Both halves are required — the class alone is never reachable. */
+  if(!_healthProxy) _healthProxy = C.registerPlugin("Health");
+  return _healthProxy;
+}
+function healthOn(){ return !!(state.health && state.health.granted); }
+
+async function healthConnect(){
+  const H = healthPlugin();
+  if(!H) throw new Error("Health is only available in the iOS app.");
+  const avail = await H.isAvailable();
+  if(!avail.available) throw new Error("This device has no Health data.");
+  const res = await H.requestAuthorization();
+  state.health = state.health || {};
+  state.health.granted = !!res.granted;
+  save();
+  if(res.granted) await healthSync();
+  return state.health.granted;
+}
+
+/* Pull the window and fold it down to one entry a day. */
+async function healthSync(){
+  const H = healthPlugin();
+  if(!H || !healthOn()) return 0;
+  try{
+    const {workouts} = await H.recentWorkouts({days:400});
+    const days = {};
+    for(const w of (workouts || [])){
+      if(w.mine) continue;                   /* our own sessions are already logged */
+      if(!w.day || (w.minutes|0) < 5) continue;   /* a two-minute blip is not a session */
+      const d = days[w.day] || (days[w.day] = {minutes:0, types:[], sources:[]});
+      d.minutes += w.minutes|0;
+      if(d.types.indexOf(w.type) < 0) d.types.push(w.type);
+      if(d.sources.indexOf(w.source) < 0) d.sources.push(w.source);
+    }
+    state.health = state.health || {};
+    state.health.days = days;
+    state.health.at = Date.now();
+    recomputeStreak();
+    save();
+    return Object.keys(days).length;
+  }catch(e){
+    state.health = state.health || {};
+    state.health.err = e.message || String(e);
+    save();
+    return 0;
+  }
+}
+
+async function healthSave(session, minutes){
+  const H = healthPlugin();
+  if(!H || !healthOn() || !minutes) return;
+  try{ await H.saveWorkout({minutes:Math.round(minutes)}); }catch(e){}
+}
+
+/* Every day that counts, from either source. */
+function allTrainedKeys(){
+  const set = {};
+  for(const h of (state.history || [])) set[dayKey(new Date(h.date))] = 1;
+  const hd = (state.health && state.health.days) || {};
+  for(const k in hd) set[k] = 1;
+  return set;
+}
+/* Walk back from today over the union, using the same two-day tolerance the
+   live counter uses. Never lowers what you already have — a gap in Health
+   should not take a streak away that the app itself watched you earn. */
+function recomputeStreak(){
+  const set = allTrainedKeys();
+  const today = new Date();
+  let n = 0, probe = new Date(today);
+  if(!set[dayKey(probe)]) probe.setDate(probe.getDate() - 1);   /* today is still open */
+  let guard = 0;
+  while(guard++ < 800){
+    const k = dayKey(probe);
+    if(set[k]){ n++; probe.setDate(probe.getDate() - 1); continue; }
+    const back = new Date(probe); back.setDate(back.getDate() - 1);
+    if(set[dayKey(back)]){ probe = back; continue; }             /* one rest day is allowed */
+    break;
+  }
+  if(n > (state.streak || 0)) state.streak = n;
+  return n;
+}
+
 function trainingDays(){
   const map = {};
   for(const h of state.history){
@@ -5465,6 +5589,13 @@ function trainingDays(){
     const e = h.effort || 2;
     if(!map[k] || e > map[k].effort) map[k] = {effort:e, xp:0, n:0};
     map[k].xp += h.xp; map[k].n += 1;
+  }
+  /* days that came from Health keep the calendar honest without inventing
+     points — they mark the day, they do not score it */
+  const hd = (state.health && state.health.days) || {};
+  for(const k in hd){
+    if(map[k]) { map[k].ext = hd[k]; continue; }
+    map[k] = {effort:2, xp:0, n:0, ext:hd[k], only:true};
   }
   return map;
 }
@@ -6454,6 +6585,7 @@ $("#brand").insertAdjacentHTML("afterbegin", logoMark(30));
   window.addEventListener("resize", syncChrome);
   syncChrome();
 })();
+if(healthOn()) setTimeout(() => healthSync().then(() => { renderLog(); renderHUD(); }), 900);
 if(consumeAuthFragment()) setTimeout(() => { syncNow(true); renderRewards();
   toast("Signed in", "Welcome back.", ""); $("#rewardsPanel").scrollIntoView({behavior:"smooth"}); }, 300);
 else if(signedIn()) setTimeout(() => syncNow(true), 400);
