@@ -285,32 +285,17 @@ h1,h2,h3,h4{font-family:var(--f-display);font-weight:800;margin:0;text-wrap:bala
 @media(prefers-reduced-motion:reduce){.fmark.live{animation:none}}
 
 /* ---------- the ask again, once the real one has scrolled away ---------- */
-.askdock{
-  position:fixed;left:50%;top:var(--dock-top,64px);translate:-50% 0;z-index:39;
-  width:min(640px,calc(100% - 22px));display:flex;align-items:center;gap:8px;
-  border-radius:var(--r-pill);padding:6px 6px 6px 18px;
-  background:color-mix(in srgb,var(--surface) 58%,transparent);
-  -webkit-backdrop-filter:blur(22px) saturate(1.9);backdrop-filter:blur(22px) saturate(1.9);
-  border:1px solid color-mix(in srgb,var(--ink) 13%,transparent);
-  box-shadow:0 16px 42px -18px rgba(0,0,0,.5),inset 0 1px 0 color-mix(in srgb,#fff 46%,transparent);
-  opacity:0;transform:translateY(-16px);pointer-events:none;
-  transition:opacity .3s,transform .3s cubic-bezier(.2,.9,.3,1.2);
-}
-.askdock.on{opacity:1;transform:none;pointer-events:auto}
-.askdock input{flex:1;min-width:0;border:0;background:transparent;outline:none;color:var(--ink);
-  font:inherit;font-size:15px;padding:8px 0}
-.askdock input::placeholder{color:var(--ink-3)}
 
 /* ---------- and the forge, always within reach ---------- */
 .ffloat{
   position:fixed;z-index:38;right:max(16px,calc((100vw - 1180px) / 2));
-  bottom:calc(22px + env(safe-area-inset-bottom, 0px));
+  bottom:calc(96px + env(safe-area-inset-bottom, 0px));   /* clear the tab bar */
   display:flex;flex-direction:row-reverse;align-items:center;gap:11px;
   opacity:0;transform:translateY(20px) scale(.88);pointer-events:none;
   transition:opacity .3s,transform .3s cubic-bezier(.2,.9,.3,1.4),bottom .3s;
 }
 .ffloat.on{opacity:1;transform:none;pointer-events:auto}
-.ffloat.lift{bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
+.ffloat.lift{bottom:calc(168px + env(safe-area-inset-bottom, 0px))}
 .ffloat .fftxt{
   font-family:var(--f-display);font-weight:800;text-transform:uppercase;letter-spacing:-.02em;
   font-size:13px;line-height:1;color:var(--ink);pointer-events:none;
@@ -320,7 +305,7 @@ h1,h2,h3,h4{font-family:var(--f-display);font-weight:800;margin:0;text-wrap:bala
   border-radius:var(--r-pill);padding:9px 15px;box-shadow:var(--sh-2);
 }
 @media(max-width:640px){.ffloat .fftxt{display:none}
-  .ffloat{bottom:calc(18px + env(safe-area-inset-bottom, 0px));right:16px}}
+  .ffloat{bottom:calc(92px + env(safe-area-inset-bottom, 0px));right:16px}}
 
 /* ---------- panels ---------- */
 .panel{margin-top:44px}
@@ -976,7 +961,6 @@ dialog{
   border:1px solid var(--line-hard);border-radius:var(--r-card);background:var(--surface);color:var(--ink);
   padding:0;max-width:min(560px,94vw);width:100%;box-shadow:var(--shadow);
 }
-#profileDlg{max-width:min(780px,94vw)}
 dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 .dlg-hd{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
 .dlg-hd h3{font-size:24px;text-transform:uppercase;letter-spacing:-.028em}
@@ -1041,6 +1025,45 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
   border:1px solid var(--line);border-radius:var(--r-pill);padding:4px 9px;white-space:nowrap}
 .permstate.on{color:var(--p10);border-color:var(--p10)}
 
+/* ---------- tabs ---------- */
+.tabpane{display:none}
+.tabpane.on{display:block;animation:paneIn .22s ease-out}
+@keyframes paneIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.tabpane.on{animation:none}}
+/* the bar is fixed, so every pane has to end above it */
+.panes{padding-bottom:calc(74px + env(safe-area-inset-bottom, 0px))}
+.tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:60;display:grid;grid-template-columns:repeat(4,1fr);
+  background:color-mix(in srgb, var(--bg) 82%, transparent);
+  -webkit-backdrop-filter:blur(22px) saturate(1.7);backdrop-filter:blur(22px) saturate(1.7);
+  border-top:1px solid var(--line);
+  padding:7px 6px calc(7px + env(safe-area-inset-bottom, 0px));
+}
+.tabbar button{
+  appearance:none;border:0;background:transparent;cursor:pointer;color:var(--ink-3);
+  display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 2px 3px;
+  border-radius:var(--r-sm);-webkit-tap-highlight-color:transparent;
+  transition:color .16s;font:inherit;
+}
+.tabbar svg{width:23px;height:23px;flex:none}
+.tabbar span{
+  font-family:var(--f-mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;line-height:1;
+}
+.tabbar button[aria-selected="true"]{color:var(--accent)}
+.tabbar button[aria-selected="true"] svg{filter:drop-shadow(0 0 7px color-mix(in srgb,var(--accent) 55%,transparent))}
+.tabbar button:active{transform:scale(.94)}
+
+/* Create is the whole screen now, not a band at the top of a long scroll —
+   centre it and drop the divider it used to need. */
+#paneCreate .ask{
+  border-bottom:0;
+  min-height:calc(100dvh - 172px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  display:flex;flex-direction:column;justify-content:center;
+}
+@supports not (height: 100dvh){
+  #paneCreate .ask{min-height:calc(100vh - 172px)}
+}
+
 /* ---------- coming soon badge ---------- */
 .appsoon{
   display:inline-flex;align-items:center;gap:11px;
@@ -1069,10 +1092,11 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 .toast small{display:block;font-size:11.5px;opacity:.7;font-family:var(--f-body)}
 
 .finishbar{
-  position:sticky;bottom:0;z-index:30;margin:16px calc(var(--pad) * -1) 0;padding:12px var(--pad);
+  position:sticky;bottom:calc(74px + env(safe-area-inset-bottom, 0px));z-index:30;
+  margin:16px calc(var(--pad) * -1) 0;padding:12px var(--pad);
   background:color-mix(in srgb,var(--bg) 90%, transparent);backdrop-filter:blur(12px);
   border-top:1px solid var(--line-hard);display:flex;gap:12px;align-items:center;
-  padding-bottom:calc(12px + env(safe-area-inset-bottom));
+  padding-bottom:12px;
 }
 .finishbar .prog{flex:1;min-width:0}
 .finishbar .prog b{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);display:block;margin-bottom:4px}
@@ -1142,6 +1166,8 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
     <div class="rankline" aria-hidden="true"><b id="hudRankSm"></b><i id="hudXpLine"></i></div>
   </header>
 
+  <main class="panes">
+  <div class="tabpane on" id="paneCreate">
   <section class="ask" id="askSec">
     <div class="ask-glow" aria-hidden="true"></div>
     <canvas class="ask-obj" id="askObj" aria-hidden="true"></canvas>
@@ -1163,6 +1189,9 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
     </div>
   </section>
 
+  </div>
+
+  <div class="tabpane" id="paneWorkload">
   <section class="panel" id="setupPanel">
     <div class="panel-head">
       <h2>Get in the slot</h2>
@@ -1259,6 +1288,9 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 
   <section class="panel" id="sessionPanel" hidden></section>
 
+  </div>
+
+  <div class="tabpane" id="paneLog">
   <section class="panel" id="logPanel">
     <div class="panel-head">
       <h2>The log</h2>
@@ -1273,6 +1305,15 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
       <div class="hint">Where your points put you, and how to climb.</div>
     </div>
     <div id="rewardsBody"></div>
+  </section>
+
+  </div>
+
+  <div class="tabpane" id="paneProfile">
+  <section class="panel" id="profilePanel">
+    <div class="panel-head"><h2>Profile</h2>
+      <div class="hint">Your account, your settings, your kit.</div></div>
+    <div id="pBody"></div>
   </section>
 
   <section class="panel" id="planPanel">
@@ -1294,13 +1335,24 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
       <span class="as-t"><small>Coming soon to the</small><b>App Store</b></span>
     </span>
   </footer>
-</div>
+  </div>
+  </main>
 
-<div class="askdock" id="askDock">
-  <input id="askDockIn" type="text" maxlength="400" aria-label="Ask Lifted.AI"
-         placeholder="Ask Lifted.AI for a session…">
-  <button class="fmark sm" id="askDockGo" type="button" aria-label="Forge the session"></button>
-</div>
+  <nav class="tabbar" id="tabbar" role="tablist" aria-label="Sections">
+    <button type="button" role="tab" data-tab="paneProfile" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.2-3.7 4-5.5 7.5-5.5s6.3 1.8 7.5 5.5"/></svg>
+      <span>Profile</span></button>
+    <button type="button" role="tab" data-tab="paneCreate" aria-selected="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/></svg>
+      <span>Create</span></button>
+    <button type="button" role="tab" data-tab="paneLog" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4"/><path d="M7.5 14h2.5M14 14h2.5M7.5 17.5h2.5M14 17.5h2.5"/></svg>
+      <span>Logbook</span></button>
+    <button type="button" role="tab" data-tab="paneWorkload" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 9v6M17.5 9v6M3.5 10.5v3M20.5 10.5v3M6.5 12h11"/></svg>
+      <span>Workload</span></button>
+  </nav>
+
 <div class="ffloat" id="floatForge">
   <button class="fmark xl live" id="floatForgeBtn" type="button" aria-label="Forge the session"></button>
   <i class="ffchev" aria-hidden="true"></i>
@@ -1323,21 +1375,6 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
   </form>
 </dialog>
 
-<dialog id="profileDlg">
-  <div class="dlgwrap">
-    <div class="dlg-hd">
-      <h3>Profile</h3>
-      <button class="iconbtn" type="button" data-close style="margin-left:auto" aria-label="Close">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
-      </button>
-    </div>
-    <div class="dlg-bd" id="pBody"></div>
-    <div class="dlg-ft">
-      <span class="dlg-note" id="pFootNote">Training data stays on this device</span>
-      <button class="btn primary" type="button" data-close>Done</button>
-    </div>
-  </div>
-</dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite">
   <div><b id="toastTitle">Nice</b><small id="toastBody"></small></div>
@@ -3744,7 +3781,6 @@ function renderPRs(){
 }
 
 /* ------------------------------------------------------------ profile UI */
-const pdlg = $("#profileDlg");
 function initials(n){
   const parts = String(n||"?").trim().split(/\s+/);
   return ((parts[0][0]||"?") + (parts[1] ? parts[1][0] : "")).toUpperCase();
@@ -3979,8 +4015,7 @@ function askImport(p){
   renderProfileDlg(); renderProfileBtn();
   $("#pResult").textContent = "";
 }
-$("#profileBtn").addEventListener("click", () => { renderProfileDlg(); pdlg.showModal(); });
-$$("#profileDlg [data-close]").forEach(b2 => b2.addEventListener("click", () => pdlg.close()));
+$("#profileBtn").addEventListener("click", () => showTab("paneProfile"));
 
 /* ------------------------------------------------------------------ theme */
 function applyTheme(){
@@ -4637,6 +4672,7 @@ const ASKOBJ = (function(){
   function mount(cv){
     const ctx = cv.getContext("2d", {alpha:true});
     if(!ctx) return;
+    const calm = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     let W = 0, H = 0, cx = 0, cy = 0, scale = 1;
     function size(){
       const r = cv.getBoundingClientRect();
@@ -4649,14 +4685,19 @@ const ASKOBJ = (function(){
     }
     function draw(now){
       if(!W && !size()) return;
-      const u = (now % (SH.length*STEP)) / STEP;
+      /* Reduced motion means gentler, not dead. iOS reports it whenever Low
+         Power Mode is on, so hard-freezing turns a low battery into what looks
+         like a broken app. The camera stops and the morph crawls instead. */
+      const t = calm ? now * 0.22 : now;
+      const u = (t % (SH.length*STEP)) / STEP;
       const i = Math.floor(u);
       let f = u - i;
       f = f < HOLD/STEP ? 0 : (f - HOLD/STEP)/(MORPH/STEP);
       build(SH[i], SH[(i+1) % SH.length], f*f*(3-2*f));
 
-      const yaw = now*0.00042, pitch = Math.sin(now*0.00031)*0.30 + 0.12,
-            roll = -0.42 + Math.sin(now*0.00019)*0.22;
+      const yaw   = calm ? 0.62 : now*0.00042,
+            pitch = calm ? 0.12 : Math.sin(now*0.00031)*0.30 + 0.12,
+            roll  = calm ? -0.42 : -0.42 + Math.sin(now*0.00019)*0.22;
       const cy1 = Math.cos(yaw), sy1 = Math.sin(yaw),
             cp = Math.cos(pitch), sp = Math.sin(pitch),
             cr = Math.cos(roll),  sr = Math.sin(roll), d = 5.2;
@@ -4716,8 +4757,6 @@ const ASKOBJ = (function(){
        is looked at — and the shape is the first thing you see. */
     size(); draw(700);
     document.addEventListener("visibilitychange", () => { if(!document.hidden) draw(performance.now()); });
-
-    if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let on = true, raf = 0;
     if("IntersectionObserver" in window){
@@ -4915,7 +4954,8 @@ function doForge(){
   cfg.seed = (Math.random()*1e9)|0;
   state.session = generate(cfg);
   save(); renderSession(true);
-  $("#sessionPanel").scrollIntoView({behavior:"smooth", block:"start"});
+  showTab("paneWorkload");                 /* the session lives here */
+  requestAnimationFrame(() => $("#sessionPanel").scrollIntoView({behavior:"smooth", block:"start"}));
 }
 /* Ask, then forge — one press does both, which is the whole point of the box. */
 function askForge(text){
@@ -6326,7 +6366,7 @@ function wireAccount(){
 
 function wireBoard(){
   const oa = $("#openAcct");
-  if(oa) oa.addEventListener("click", () => { renderProfileDlg(); $("#profileDlg").showModal(); });
+  if(oa) oa.addEventListener("click", () => showTab("paneProfile"));
   $$("#rewardsBody [data-scope]").forEach(b => b.addEventListener("click", async () => {
     state.boardScope = b.dataset.scope; save();
     await syncNow(true);
@@ -6454,6 +6494,20 @@ $("#resetBtn").addEventListener("click", () => {
   toast("Reset", "Back to an empty bar.", "");
 });
 
+
+/* ------------------------------------------------------------------- tabs
+   Four panes, one visible at a time. Create is what opens, because the whole
+   point of the app is the box you type into. */
+function showTab(id){
+  $$(".tabpane").forEach(p => p.classList.toggle("on", p.id === id));
+  $$("#tabbar button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === id)));
+  state.tab = id;
+  if(id === "paneProfile") renderProfileDlg();
+  window.scrollTo({top:0, behavior:"instant"});
+  syncChrome && syncChrome();
+}
+$$("#tabbar button").forEach(b => b.addEventListener("click", () => showTab(b.dataset.tab)));
+
 /* ------------------------------------------------------------------- boot */
 load();
 applyTheme();
@@ -6515,7 +6569,7 @@ $("#brand").insertAdjacentHTML("afterbegin", logoMark(30));
     }));
   }
 
-  const box = $("#askBox"), dockIn = $("#askDockIn");
+  const box = $("#askBox");
 
   /* Rotate the placeholder, but never while it would fight the person typing. */
   (function rotateHint(){
@@ -6548,21 +6602,7 @@ $("#brand").insertAdjacentHTML("afterbegin", logoMark(30));
   box.addEventListener("keydown", e => {
     if(e.key === "Enter" && !e.shiftKey){ e.preventDefault(); fire(box); }
   });
-  $("#askDockGo").addEventListener("click", () => fire(dockIn));
-  dockIn.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); fire(dockIn); } });
-  /* the two boxes are one box */
-  box.addEventListener("input", () => { dockIn.value = box.value; });
-  dockIn.addEventListener("input", () => { box.value = dockIn.value; });
 
-  /* The dock only exists once the real one has gone past, and it has to clear
-     the sticky top bar, whose height changes with the wrap on small screens. */
-  const dock = $("#askDock"), bar = $(".topbar");
-  function dockTop(){
-    const h = bar ? bar.getBoundingClientRect().height : 56;
-    document.documentElement.style.setProperty("--dock-top", Math.round(h + 10) + "px");
-  }
-  dockTop();
-  window.addEventListener("resize", dockTop);
 
   /* The forge follows you down the page: it appears the moment the real button
      leaves, and lifts out of the way of the session's own sticky bar. Measured
@@ -6573,7 +6613,6 @@ $("#brand").insertAdjacentHTML("afterbegin", logoMark(30));
 
   function syncChrome(){
     const vh = window.innerHeight;
-    dock.classList.toggle("on", $("#askSec").getBoundingClientRect().bottom < 8);
     /* no floater while a mark is already on screen — the ask box has one too */
     const near = el => { const r = el.getBoundingClientRect();
                          return r.bottom > 40 && r.top < vh - 40; };
