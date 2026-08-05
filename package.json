@@ -5,8 +5,9 @@
   "description": "Lifted.AI \u2014 a coverage-first session generator with an articulated 3D movement rig.",
   "scripts": {
     "build": "rm -rf www && mkdir -p www && cp index.html manifest.json capacitor.js www/ && cp -R icons www/",
-    "sync": "npm run build && npx cap sync ios",
-    "ios": "npm run sync && npx cap open ios"
+    "sync": "npm run build && npx cap sync ios && npm run verify",
+    "ios": "npm run sync && npx cap open ios",
+    "verify": "cmp -s index.html ios/App/App/public/index.html && echo 'ios assets in sync' || (echo 'STALE: run npm run sync' && exit 1)"
   },
   "dependencies": {
     "@capacitor/cli": "^8.5.0",
