@@ -9,5 +9,5 @@ xcuserdata
 capacitor-cordova-ios-plugins
 
 # Generated Config files
-App/App/capacitor.config.json
+# App/App/capacitor.config.json   <- committed: the Xcode project references it
 # App/App/config.xml   <- committed: Xcode Cloud archives from a clean clone
