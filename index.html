@@ -2320,6 +2320,9 @@ function makeRig(host, archKey, opts){
 
 /* ---- equipment, as 3D primitives that sort with the body ---- */
 function drawProps3(items, list, J3, S, cam, fit, ctx, acc, line, t){
+  /* Iron reads as iron. The accent is reserved for the muscles under load,
+     and plates painted in it fought with the highlight for attention. */
+  const steel = "#9aa2ad";
   const P = p => project(p, cam, fit);
   const seg = (a,b,w,col,cap) => items.push({z:(a[2]+b[2])/2, f:()=>{
     ctx.strokeStyle = col; ctx.lineWidth = w*fit.s*((a[3]+b[3])/2); ctx.lineCap = cap||"round";
@@ -2335,6 +2338,57 @@ function drawProps3(items, list, J3, S, cam, fit, ctx, acc, line, t){
     ctx.fillStyle = col; ctx.beginPath();
     ctx.ellipse(c[0], c[1], Math.max(.6, r*fit.s*c[3]*Math.abs(Math.cos(cam.yaw))), r*fit.s*c[3], 0, 0, 7);
     ctx.fill(); }});
+  /* A filled 3D quad, painter-sorted with everything else. `lift` shades it:
+     positive lightens, negative darkens, so a box reads as a solid with a lit
+     top rather than an outline. Works with any colour string. */
+  const face = (a,b,c,d, col, lift) => {
+    const A=P(a),B=P(b),C=P(c),D=P(d);
+    items.push({z:(A[2]+B[2]+C[2]+D[2])/4, f:()=>{
+      ctx.beginPath();
+      ctx.moveTo(A[0],A[1]); ctx.lineTo(B[0],B[1]); ctx.lineTo(C[0],C[1]); ctx.lineTo(D[0],D[1]);
+      ctx.closePath();
+      ctx.fillStyle = col; ctx.fill();
+      if(lift){
+        ctx.fillStyle = lift > 0 ? "rgba(255,255,255,"+lift+")" : "rgba(0,0,0,"+(-lift)+")";
+        ctx.fill();
+      }
+    }});
+  };
+  /* six faces around a centre — benches, boxes, machine housings, plates */
+  const box3 = (cx,cy,cz, hw,hh,hd, col) => {
+    const x0=cx-hw,x1=cx+hw,y0=cy-hh,y1=cy+hh,z0=cz-hd,z1=cz+hd;
+    face([x0,y0,z0],[x1,y0,z0],[x1,y0,z1],[x0,y0,z1], col,  .17);   /* top   */
+    face([x0,y1,z0],[x1,y1,z0],[x1,y1,z1],[x0,y1,z1], col, -.24);   /* under */
+    face([x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1], col,  .04);   /* front */
+    face([x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0], col, -.14);   /* back  */
+    face([x1,y0,z0],[x1,y0,z1],[x1,y1,z1],[x1,y1,z0], col, -.06);   /* right */
+    face([x0,y0,z0],[x0,y0,z1],[x0,y1,z1],[x0,y1,z0], col, -.06);   /* left  */
+  };
+  /* a round bar between two points, four quads around the axis */
+  const tube3 = (a, b, r, col) => {
+    const dx=b[0]-a[0], dy=b[1]-a[1], dz=b[2]-a[2];
+    const L=Math.hypot(dx,dy,dz)||1;
+    let ux=-dy/L, uy=dx/L, uz=0;
+    if(Math.hypot(ux,uy) < .001){ ux=1; uy=0; }
+    const vx=(uy*dz-uz*dy)/L, vy=(uz*dx-ux*dz)/L, vz=(ux*dy-uy*dx)/L;
+    const N=4;
+    for(let i=0;i<N;i++){
+      const t0=i/N*Math.PI*2, t1=(i+1)/N*Math.PI*2;
+      const o=(t)=>[Math.cos(t)*ux*r+Math.sin(t)*vx*r,
+                    Math.cos(t)*uy*r+Math.sin(t)*vy*r,
+                    Math.cos(t)*uz*r+Math.sin(t)*vz*r];
+      const p0=o(t0), p1=o(t1);
+      const lift = .16*Math.cos((t0+t1)/2) - .06;
+      face([a[0]+p0[0],a[1]+p0[1],a[2]+p0[2]], [b[0]+p0[0],b[1]+p0[1],b[2]+p0[2]],
+           [b[0]+p1[0],b[1]+p1[1],b[2]+p1[2]], [a[0]+p1[0],a[1]+p1[1],a[2]+p1[2]], col, lift);
+    }
+  };
+  /* a weight plate: a short thick cylinder with a lit face */
+  const plate3 = (c, r, halfW, col) => {
+    tube3([c[0]-halfW,c[1],c[2]], [c[0]+halfW,c[1],c[2]], r, col);
+    solidDisc(P([c[0]+halfW,c[1],c[2]]), r, col);
+    solidDisc(P([c[0]-halfW,c[1],c[2]]), r, col);
+  };
   const slab = (x0,x1,y,z0,z1,col) => {
     const c = [P([x0,y,z0]),P([x1,y,z0]),P([x1,y,z1]),P([x0,y,z1])];
     items.push({z:(c[0][2]+c[2][2])/2, f:()=>{
@@ -2354,29 +2408,43 @@ function drawProps3(items, list, J3, S, cam, fit, ctx, acc, line, t){
 
       if(impl === "bar" || impl === "barOnly"){
         const half = 62;
-        seg(P([cx,cy,-half]), P([cx,cy,half]), 3.2, line, "round");
+        /* knurled shaft, then a fatter sleeve, then the plates stacked inboard */
+        tube3([cx,cy,-half], [cx,cy,half], 2.4, line);
         if(impl === "bar"){
-          disc(P([cx,cy,-half+5]), 13, acc, 4.5);
-          disc(P([cx,cy, half-5]), 13, acc, 4.5);
+          for(const sgn of [-1, 1]){
+            tube3([cx,cy,sgn*(half-20)], [cx,cy,sgn*half], 3.4, steel);
+            plate3([cx,cy,sgn*(half-6)],  11.5, 2.0, steel);
+            plate3([cx,cy,sgn*(half-11)],  9.5, 1.7, steel);
+          }
         }
       } else if(impl === "db"){
         const put = (jx,jy,jz) => {
-          seg(P([jx,jy,jz-9]), P([jx,jy,jz+9]), 5, acc, "round");
-          solidDisc(P([jx,jy,jz-9]), 7, acc); solidDisc(P([jx,jy,jz+9]), 7, acc);
+          tube3([jx,jy,jz-7], [jx,jy,jz+7], 2.2, line);          /* handle */
+          plate3([jx,jy,jz-10], 7.5, 3.4, steel);               /* bells   */
+          plate3([jx,jy,jz+10], 7.5, 3.4, steel);
         };
         if(useTwoHands){ put(J3.wrR[0],J3.wrR[1],J3.wrR[2]); put(J3.wrL[0],J3.wrL[1],J3.wrL[2]); }
         else put(J3.wrR[0],J3.wrR[1],J3.wrR[2]);
       } else if(impl === "kb"){
         const w = J3.wrR;
-        solidDisc(P([w[0], w[1]+9, w[2]]), 10, acc);
-        seg(P([w[0]-5,w[1]-1,w[2]]), P([w[0]+5,w[1]-1,w[2]]), 3, acc, "round");
+        /* bell below the hand, squared handle above it */
+        box3(w[0], w[1]+11, w[2], 8.5, 8, 8.5, steel);
+        solidDisc(P([w[0], w[1]+13, w[2]]), 9.5, steel);
+        tube3([w[0]-6,w[1]-1,w[2]], [w[0]+6,w[1]-1,w[2]], 2.1, line);
+        tube3([w[0]-6,w[1]-1,w[2]], [w[0]-6,w[1]+4,w[2]], 2.1, line);
+        tube3([w[0]+6,w[1]-1,w[2]], [w[0]+6,w[1]+4,w[2]], 2.1, line);
       } else if(impl === "med"){
-        const w = J3.wrR; solidDisc(P([w[0],w[1],w[2]]), 11, acc);
+        const w = J3.wrR;
+        box3(w[0], w[1], w[2], 9, 9, 9, acc);
+        solidDisc(P([w[0],w[1],w[2]]), 11, acc);
       } else if(impl === "cable"){
         const w = J3.wrR, ay = Math.max(30, w[1]-26);
-        slab(184,196, ay-16, -8, 8, line);
-        seg(P([w[0],w[1],w[2]]), P([190, ay-16, 0]), 1.6, line, "butt");
-        solidDisc(P([w[0],w[1],w[2]]), 5, acc);
+        /* an actual stack: column, weight plates, pulley head */
+        box3(190, 120, 0, 11, 92, 15, line);
+        for(let i=0;i<7;i++) box3(190, 60+i*14, 0, 9, 5.4, 12, steel);
+        box3(190, ay-18, 0, 9, 8, 10, steel);
+        tube3([w[0],w[1],w[2]], [190, ay-18, 0], 1.3, line);
+        tube3([w[0]-5,w[1],w[2]], [w[0]+5,w[1],w[2]], 2.4, acc);
       } else if(impl === "band"){
         const w = J3.wrR;
         seg(P([w[0],w[1],w[2]]), P([w[0]-4,214,w[2]]), 2.4, acc, "round");
@@ -2388,14 +2456,22 @@ function drawProps3(items, list, J3, S, cam, fit, ctx, acc, line, t){
       case "bench": {
         const y = Math.max(J3.neck[1], J3.pelvis[1]) + 14;
         const x0 = Math.min(J3.neck[0], J3.pelvis[0]) - 26, x1 = Math.max(J3.neck[0], J3.pelvis[0]) + 20;
-        slab(x0, x1, y, -20, 20, line);
-        seg(P([x0+14,y,0]), P([x0+14,214,0]), 6, line, "butt");
-        seg(P([x1-14,y,0]), P([x1-14,214,0]), 6, line, "butt");
+        box3((x0+x1)/2, y+7, 0, (x1-x0)/2, 7, 20, line);          /* the pad */
+        tube3([x0+14,y+14,0], [x0+14,214,0], 4, line);
+        tube3([x1-14,y+14,0], [x1-14,214,0], 4, line);
+        tube3([x0+14,212,-16], [x0+14,212,16], 3, line);          /* feet */
+        tube3([x1-14,212,-16], [x1-14,212,16], 3, line);
+        tube3([x0+14,210,0], [x1-14,210,0], 3, line);             /* rail */
         break; }
       case "bench_low": {
         const y = J3.shR[1] + 14, x0 = J3.shR[0] - 32;
-        slab(x0, x0+84, y, -20, 20, line);
-        seg(P([x0+14,y,0]), P([x0+14,216,0]), 6, line, "butt");
+        box3(x0+42, y+7, 0, 42, 7, 20, line);                 /* back pad  */
+        box3(x0+96, y+34, 0, 22, 6, 18, line);                /* seat pad  */
+        tube3([x0+14,y+14,0], [x0+30,216,0], 4, line);        /* rear post */
+        tube3([x0+96,y+40,0], [x0+96,216,0], 4, line);        /* front post*/
+        tube3([x0+30,216,-17], [x0+30,216,17], 3.2, line);    /* feet      */
+        tube3([x0+96,216,-17], [x0+96,216,17], 3.2, line);
+        tube3([x0+30,214,0], [x0+96,214,0], 3, line);         /* rail      */
         break; }
       case "bench_incl": {
         const n = J3.neck, p = J3.pelvis;
@@ -2410,21 +2486,22 @@ function drawProps3(items, list, J3, S, cam, fit, ctx, acc, line, t){
         break; }
       case "seat": {
         const p = J3.pelvis;
-        slab(p[0]-30, p[0]+32, p[1]+13, -18, 18, line);
-        seg(P([p[0]+4,p[1]+13,0]), P([p[0]+4,212,0]), 6, line, "butt");
+        box3(p[0]+1, p[1]+19, 0, 31, 6, 18, line);
+        tube3([p[0]+4,p[1]+25,0], [p[0]+4,212,0], 4.5, line);
+        tube3([p[0]+4,210,-15], [p[0]+4,210,15], 3, line);
         break; }
       case "pullup_bar": {
         const w = J3.wrR;
-        seg(P([w[0],w[1],-58]), P([w[0],w[1],58]), 4.5, line, "round");
-        seg(P([w[0],w[1],-52]), P([w[0],2,-52]), 3.4, line, "butt");
-        seg(P([w[0],w[1], 52]), P([w[0],2, 52]), 3.4, line, "butt");
+        tube3([w[0],w[1],-58], [w[0],w[1],58], 3.2, line);
+        tube3([w[0],w[1],-52], [w[0],2,-52], 2.6, line);
+        tube3([w[0],w[1], 52], [w[0],2, 52], 2.6, line);
         break; }
       case "dip_bars": {
         const w = J3.wrR;
-        seg(P([w[0]-42,w[1],-24]), P([w[0]+42,w[1],-24]), 4.2, line, "round");
-        seg(P([w[0]-42,w[1], 24]), P([w[0]+42,w[1], 24]), 4.2, line, "round");
-        seg(P([w[0]-30,w[1],-24]), P([w[0]-30,216,-24]), 3.6, line, "butt");
-        seg(P([w[0]-30,w[1], 24]), P([w[0]-30,216, 24]), 3.6, line, "butt");
+        tube3([w[0]-42,w[1],-24], [w[0]+42,w[1],-24], 3, line);
+        tube3([w[0]-42,w[1], 24], [w[0]+42,w[1], 24], 3, line);
+        tube3([w[0]-30,w[1],-24], [w[0]-30,216,-24], 2.8, line);
+        tube3([w[0]-30,w[1], 24], [w[0]-30,216, 24], 2.8, line);
         break; }
       case "cable_high": {
         const w = J3.wrR;
@@ -2438,9 +2515,8 @@ function drawProps3(items, list, J3, S, cam, fit, ctx, acc, line, t){
         break; }
       case "box": {
         const a = J3.anR;
-        slab(a[0]-24, a[0]+46, a[1]+6, -26, 26, line);
-        seg(P([a[0]-20,a[1]+6,-24]), P([a[0]-20,218,-24]), 4, line, "butt");
-        seg(P([a[0]+42,a[1]+6,-24]), P([a[0]+42,218,-24]), 4, line, "butt");
+        /* a real box, not a lid on two posts */
+        box3(a[0]+11, (a[1]+6+218)/2, 0, 35, (218-(a[1]+6))/2, 26, line);
         break; }
       case "wheel": {
         const w = J3.wrR;
@@ -2518,13 +2594,16 @@ function tick(ts){
 }
 function mountRig(host, archKey, opts){
   const rig = makeRig(host, archKey, opts);
-  const inst = {rig, phase:0, speed:(opts&&opts.speed)||0.62, playing:!reduced,
-                orbit:false, onPhase:opts&&opts.onPhase};
+  /* Reduced motion runs the movement at a third speed rather than freezing it.
+     iOS reports that media query in Low Power Mode, and a still figure teaches
+     nobody how to do the lift. */
+  const inst = {rig, phase:0, speed:((opts&&opts.speed)||0.62) * (reduced ? 0.34 : 1),
+                playing:true, orbit:false, onPhase:opts&&opts.onPhase};
   RIGS.add(inst);
   if(!rafId) rafId = requestAnimationFrame(tick);
   /* paint once up front: rAF is throttled in background tabs and low-power
      mode, and a blank figure is worse than a still one */
-  rig.set(reduced ? 0.5 : 0);
+  rig.set(0);
   return inst;
 }
 function unmountAll(){ for(const r of RIGS){ if(r.rig.destroy) r.rig.destroy(); } RIGS.clear(); }
@@ -6498,13 +6577,16 @@ $("#resetBtn").addEventListener("click", () => {
 /* ------------------------------------------------------------------- tabs
    Four panes, one visible at a time. Create is what opens, because the whole
    point of the app is the box you type into. */
+/* assigned by the bootstrap IIFE below, but called from showTab out here */
+let syncChrome = null;
+
 function showTab(id){
   $$(".tabpane").forEach(p => p.classList.toggle("on", p.id === id));
   $$("#tabbar button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === id)));
   state.tab = id;
   if(id === "paneProfile") renderProfileDlg();
   window.scrollTo({top:0, behavior:"instant"});
-  syncChrome && syncChrome();
+  if(syncChrome) syncChrome();
 }
 $$("#tabbar button").forEach(b => b.addEventListener("click", () => showTab(b.dataset.tab)));
 
@@ -6611,7 +6693,7 @@ $("#brand").insertAdjacentHTML("afterbegin", logoMark(30));
   const float = $("#floatForge");
   $("#floatForgeBtn").addEventListener("click", doForge);
 
-  function syncChrome(){
+  syncChrome = function(){
     const vh = window.innerHeight;
     /* no floater while a mark is already on screen — the ask box has one too */
     const near = el => { const r = el.getBoundingClientRect();
@@ -6619,7 +6701,7 @@ $("#brand").insertAdjacentHTML("afterbegin", logoMark(30));
     float.classList.toggle("on", !near($("#forgeBtn")) && !near($("#askGo")));
     const bar = $(".finishbar");
     float.classList.toggle("lift", !!bar && bar.getBoundingClientRect().top < vh - 8);
-  }
+  };
   window.addEventListener("scroll", syncChrome, {passive:true});
   window.addEventListener("resize", syncChrome);
   syncChrome();
