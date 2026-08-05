@@ -1,7 +1,7 @@
 App/build
 App/Pods
 App/output
-App/App/public
+# App/App/public   <- committed: Xcode Cloud archives from a clean clone
 DerivedData
 xcuserdata
 
@@ -10,4 +10,4 @@ capacitor-cordova-ios-plugins
 
 # Generated Config files
 App/App/capacitor.config.json
-App/App/config.xml
+# App/App/config.xml   <- committed: Xcode Cloud archives from a clean clone

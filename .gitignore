@@ -5,7 +5,7 @@ _*.html
 # node / capacitor
 node_modules/
 www/
-ios/App/App/public/
+# ios/App/App/public/   <- committed: Xcode Cloud archives from a clean clone
 ios/App/Pods/
 ios/DerivedData/
 *.xcuserdatad
