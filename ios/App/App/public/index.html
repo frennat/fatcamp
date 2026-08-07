@@ -1146,14 +1146,37 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .remindbox{ margin-top:12px; padding:14px; border-radius:12px;
   border:1px solid color-mix(in srgb, var(--line) 60%, transparent);
-  background:color-mix(in srgb, var(--card) 60%, transparent); }
+  background:color-mix(in srgb, var(--bg-sunk) 60%, transparent); }
 .remindbox .setlab:first-child{ margin-top:0 }
 .timein{ font:inherit; font-size:1.05rem; padding:8px 12px; border-radius:10px;
   color:var(--ink); background:var(--bg);
   border:1px solid color-mix(in srgb, var(--line) 70%, transparent); }
 .rowtog{ display:flex; gap:10px; align-items:flex-start; margin-top:12px;
-  font-size:.92rem; color:var(--dim); cursor:pointer; }
-.rowtog input{ margin-top:3px; flex:0 0 auto; accent-color:var(--acc); }
+  font-size:.92rem; color:var(--ink-3); cursor:pointer; }
+.rowtog input{ margin-top:3px; flex:0 0 auto; accent-color:var(--accent); }
+/* The opening shot: the shape alone, then it flies down into the slot it
+   occupies on Create. Fixed and top-level so a transformed ancestor cannot
+   trap it in the wrong stacking context. */
+.splash{ position:fixed; inset:0; z-index:900; display:flex;
+  flex-direction:column; align-items:center; justify-content:center; gap:4px;
+  background:var(--bg); opacity:1;
+  transition:opacity .5s ease .35s, visibility 0s linear .85s; }
+.splash.gone{ opacity:0; visibility:hidden; pointer-events:none; }
+.splash-obj{ width:min(74vw, 340px); aspect-ratio:1; display:block;
+  transform-origin:50% 50%; will-change:transform;
+  transition:transform .85s cubic-bezier(.65,.02,.28,1); }
+.splash-hi, .splash-go{ margin:0; text-align:center; opacity:1;
+  transition:opacity .34s ease; }
+.splash.leaving .splash-hi, .splash.leaving .splash-go{ opacity:0 }
+.splash-hi{ font-size:clamp(1.5rem, 5.6vw, 2.1rem); font-weight:800;
+  letter-spacing:-.02em; color:var(--ink); }
+.splash-hi em{ font-style:normal; color:var(--accent) }
+.splash-go{ font-size:clamp(.95rem, 3.4vw, 1.1rem); color:var(--ink-3);
+  letter-spacing:.02em; }
+@media (prefers-reduced-motion: reduce){
+  .splash-obj{ transition-duration:.4s }
+  .splash{ transition:opacity .3s ease .2s, visibility 0s linear .5s }
+}
 </style>
 </head>
 <body>
@@ -1177,6 +1200,12 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
   </header>
 
   <main class="panes">
+  <div class="splash" id="splash" aria-hidden="true">
+    <p class="splash-hi">Welcome to <em>Lifted.AI</em></p>
+    <canvas class="splash-obj" id="splashObj"></canvas>
+    <p class="splash-go">Let&#8217;s get started</p>
+  </div>
+
   <div class="tabpane on" id="paneCreate">
   <section class="ask" id="askSec">
     <div class="ask-glow" aria-hidden="true"></div>
@@ -4841,17 +4870,20 @@ const ASKOBJ = (function(){
       if(!W && !size()) return;
       /* Reduced motion means gentler, not dead. iOS reports it whenever Low
          Power Mode is on, so hard-freezing turns a low battery into what looks
-         like a broken app. The camera stops and the morph crawls instead. */
-      const t = calm ? now * 0.22 : now;
+         like a broken app. Everything slows by the same factor — pinning the
+         camera instead left the shape completely still through each hold,
+         which reads as broken rather than as calm. */
+      const sl = calm ? 0.34 : 1;
+      const t = now * sl;
       const u = (t % (SH.length*STEP)) / STEP;
       const i = Math.floor(u);
       let f = u - i;
       f = f < HOLD/STEP ? 0 : (f - HOLD/STEP)/(MORPH/STEP);
       build(SH[i], SH[(i+1) % SH.length], f*f*(3-2*f));
 
-      const yaw   = calm ? 0.62 : now*0.00042,
-            pitch = calm ? 0.12 : Math.sin(now*0.00031)*0.30 + 0.12,
-            roll  = calm ? -0.42 : -0.42 + Math.sin(now*0.00019)*0.22;
+      const yaw   = t*0.00042,
+            pitch = Math.sin(t*0.00031)*0.30 + 0.12,
+            roll  = -0.42 + Math.sin(t*0.00019)*0.22;
       const cy1 = Math.cos(yaw), sy1 = Math.sin(yaw),
             cp = Math.cos(pitch), sp = Math.sin(pitch),
             cr = Math.cos(roll),  sr = Math.sin(roll), d = 5.2;
@@ -4922,10 +4954,50 @@ const ASKOBJ = (function(){
     const loop = now => { if(on) draw(now); raf = requestAnimationFrame(loop); };
     raf = requestAnimationFrame(loop);
     let rt = 0;
-    window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { W = 0; }, 120); });
+    const onResize = () => { clearTimeout(rt); rt = setTimeout(() => { W = 0; }, 120); };
+    window.addEventListener("resize", onResize);
+    /* the splash mounts a second copy of this and throws it away a moment
+       later; without a way to stop, its loop would spin for the whole session */
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", onResize); };
   }
   return {mount, SH, STEP, HOLD};
 })();
+
+/* The opening animation. The shape is the whole brand, so it gets the screen
+   to itself for a beat and then flies into the slot it lives in on Create —
+   the same object, not a picture of it handing off to the real one.
+
+   Measured rather than hard-coded: the target is wherever #askObj actually
+   landed after layout, so this survives any change to the Create screen. */
+function runSplash(target){
+  const sp = document.getElementById("splash");
+  const cv = document.getElementById("splashObj");
+  if(!sp || !cv || !target){ sp && sp.remove(); return; }
+
+  const stop = ASKOBJ.mount(cv);
+  const calm = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  let left = false;
+
+  function leave(){
+    if(left) return; left = true;
+    const from = cv.getBoundingClientRect(), to = target.getBoundingClientRect();
+    /* if Create has not been laid out yet there is nothing to fly to, so just
+       dissolve rather than animating to a garbage rect */
+    if(to.width > 8 && to.height > 8){
+      const k  = Math.min(to.width/from.width, to.height/from.height);
+      const dx = (to.left + to.width/2)  - (from.left + from.width/2);
+      const dy = (to.top  + to.height/2) - (from.top  + from.height/2);
+      cv.style.transform = "translate(" + dx + "px," + dy + "px) scale(" + k + ")";
+    }
+    sp.classList.add("leaving");
+    requestAnimationFrame(() => sp.classList.add("gone"));
+    setTimeout(() => { stop && stop(); sp.remove(); }, calm ? 700 : 1500);
+  }
+
+  /* tapping skips it — a splash you cannot dismiss is a splash people resent */
+  sp.addEventListener("click", leave, {once:true});
+  setTimeout(leave, calm ? 900 : 1700);
+}
 
 /* -------------------------------------------------------------- the agent
    A sentence in, the Workload above filled in. Deliberately literal: it takes
@@ -6787,6 +6859,7 @@ $("#brand").insertAdjacentHTML("afterbegin", logoMark(30));
   paintMarks();
   const cv = $("#askObj");
   if(cv) ASKOBJ.mount(cv);
+  runSplash(cv);
 
   /* The placeholder cycles through your own past sessions, phrased the way you
      would type them — every hint is a sentence the parser accepts, so it doubles
