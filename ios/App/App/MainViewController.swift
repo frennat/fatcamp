@@ -11,5 +11,6 @@ class MainViewController: CAPBridgeViewController {
     override func capacitorDidLoad() {
         bridge?.registerPluginInstance(HealthPlugin())
         bridge?.registerPluginInstance(NotifyPlugin())
+        if #available(iOS 15.0, *) { bridge?.registerPluginInstance(StorePlugin()) }
     }
 }

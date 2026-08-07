@@ -18,6 +18,7 @@
 		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
 		A1F0C0DE0000000000000002 /* HealthPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0C0DE0000000000000001 /* HealthPlugin.swift */; };
 		A1F0C0DE0000000000000009 /* NotifyPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0C0DE0000000000000008 /* NotifyPlugin.swift */; };
+		A1F0C0DE0000000000000011 /* StorePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0C0DE0000000000000010 /* StorePlugin.swift */; };
 		A1F0C0DE0000000000000007 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A1F0C0DE0000000000000006 /* PrivacyInfo.xcprivacy */; };
 		A1F0C0DE0000000000000005 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0C0DE0000000000000004 /* MainViewController.swift */; };
 /* End PBXBuildFile section */
@@ -36,6 +37,7 @@
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		A1F0C0DE0000000000000001 /* HealthPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthPlugin.swift; sourceTree = "<group>"; };
 		A1F0C0DE0000000000000008 /* NotifyPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotifyPlugin.swift; sourceTree = "<group>"; };
+		A1F0C0DE0000000000000010 /* StorePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorePlugin.swift; sourceTree = "<group>"; };
 		A1F0C0DE0000000000000003 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		A1F0C0DE0000000000000006 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A1F0C0DE0000000000000004 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
@@ -78,6 +80,7 @@
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				A1F0C0DE0000000000000001 /* HealthPlugin.swift */,
 				A1F0C0DE0000000000000008 /* NotifyPlugin.swift */,
+				A1F0C0DE0000000000000010 /* StorePlugin.swift */,
 				A1F0C0DE0000000000000004 /* MainViewController.swift */,
 				A1F0C0DE0000000000000003 /* App.entitlements */,
 				A1F0C0DE0000000000000006 /* PrivacyInfo.xcprivacy */,
@@ -176,6 +179,7 @@
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				A1F0C0DE0000000000000002 /* HealthPlugin.swift in Sources */,
 				A1F0C0DE0000000000000009 /* NotifyPlugin.swift in Sources */,
+				A1F0C0DE0000000000000011 /* StorePlugin.swift in Sources */,
 				A1F0C0DE0000000000000005 /* MainViewController.swift in Sources */,
 				9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */,
 			);

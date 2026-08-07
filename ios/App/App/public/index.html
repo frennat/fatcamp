@@ -1177,6 +1177,8 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
   .splash-obj{ transition-duration:.4s }
   .splash{ transition:opacity .3s ease .2s, visibility 0s linear .5s }
 }
+.storerow{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px }
+.storerow .btn.sm{ font-size:.85rem; padding:7px 12px }
 </style>
 </head>
 <body>
@@ -4999,6 +5001,86 @@ function runSplash(target){
   setTimeout(leave, calm ? 900 : 1700);
 }
 
+/* ── Purchases ──────────────────────────────────────────────────────────────
+   StoreKit 2 through the in-repo Store plugin. Off the App Store — the web
+   build, a browser, anything that is not the iOS app — there is no way to take
+   money, so plan buttons keep behaving exactly as they do today: they set
+   limits locally and charge nothing. That is the honest fallback.
+
+   Product ids must match App Store Connect exactly. None of this does anything
+   until those subscriptions exist and the Paid Applications agreement is signed. */
+const IAP = {
+  pro: "com.frennat.liftedai.pro.monthly",
+  max: "com.frennat.liftedai.max.monthly"
+};
+let _storeProxy = null;
+function storePlugin(){
+  const C = window.Capacitor;
+  if(!(C && C.isNativePlatform && C.isNativePlatform() && C.registerPlugin)) return null;
+  if(!_storeProxy) _storeProxy = C.registerPlugin("Store");
+  return _storeProxy;
+}
+/* Prices come from StoreKit in the storefront's own currency. The dollar
+   figures in PLANS are a fallback for the web build — showing "$10" to someone
+   billed in euros is both wrong and a review problem. */
+let storePrices = null;
+async function storeLoad(){
+  const S = storePlugin();
+  if(!S) return null;
+  try{
+    const avail = await S.isAvailable();
+    if(!avail.available) return null;
+    const res = await S.products({ids:[IAP.pro, IAP.max]});
+    const by = {};
+    for(const p of (res.products || [])){
+      if(p.id === IAP.pro) by.pro = p;
+      if(p.id === IAP.max) by.max = p;
+    }
+    storePrices = Object.keys(by).length ? by : null;
+    return storePrices;
+  }catch(e){ return null; }
+}
+function planPrice(k){
+  if(storePrices && storePrices[k]) return storePrices[k].price;
+  return "$" + PLANS[k].price;
+}
+/* The device's own view of what it is entitled to. Enough for an app whose
+   paid features are all local; anything the server paid out would need App
+   Store Server Notifications behind it instead. */
+async function storeSync(){
+  const S = storePlugin();
+  if(!S) return;
+  try{
+    const res = await S.entitlements();
+    const ids = (res.active || []).map(a => a.id);
+    const next = ids.indexOf(IAP.max) >= 0 ? "max"
+               : ids.indexOf(IAP.pro) >= 0 ? "pro" : null;
+    if(next !== vault.plan){ vault.plan = next; save(); applyPlanLimits(); }
+  }catch(e){}
+}
+async function storeBuy(key){
+  const S = storePlugin();
+  if(!S) throw new Error("Purchases are only available in the App Store version.");
+  const res = await S.purchase({id: IAP[key]});
+  if(res.status === "purchased"){ await storeSync(); return "purchased"; }
+  return res.status;              /* cancelled | pending | unverified */
+}
+async function storeRestore(){
+  const S = storePlugin();
+  if(!S) throw new Error("Purchases are only available in the App Store version.");
+  await S.restore(); await storeSync();
+}
+/* Shared by the plan buttons and by entitlement changes, so a renewal landing
+   while the app is open moves the same controls. */
+function applyPlanLimits(){
+  const lim = limitsOf();
+  if(state.cfg.count > lim.moves) state.cfg.count = lim.moves;
+  if(state.cfg.failureOn && !lim.failure) state.cfg.failureOn = false;
+  save(); syncControls();
+  if(typeof renderPlans === "function") renderPlans();
+  if(typeof renderWeek === "function") renderWeek();
+}
+
 /* -------------------------------------------------------------- the agent
    A sentence in, the Workload above filled in. Deliberately literal: it takes
    what it recognises and leaves the rest of your settings alone, so a half-formed
@@ -6764,11 +6846,15 @@ function renderPlans(){
           <li>${tier === "expired" ? "Your month is up — pick a lane" : days + " day" + (days === 1 ? "" : "s") + " left"}</li>
         </ul>
         ${vault.plan && days > 0 ? `<button class="btn ghost" type="button" data-plan="">Back to the first month</button>` : ""}
+        ${storePlugin() ? `<div class="storerow">
+          <button class="btn ghost sm" type="button" id="restoreBtn">Restore purchases</button>
+          ${vault.plan ? `<button class="btn ghost sm" type="button" id="manageBtn">Manage subscription</button>` : ""}
+        </div>` : ""}
       </div>
       <div class="plan ${cur("pro") ? "current" : ""}">
         <span class="rewtag">${cur("pro") ? "Current" : "Starter"}</span>
         <b>Pro</b>
-        <div class="price">$${PLANS.pro.price}<span class="per"> / month</span></div>
+        <div class="price">${planPrice("pro")}<span class="per"> / month</span></div>
         <p class="each">4 training days a week is <b>${pro.each}</b> a session — ${pro.n} a month.</p>
         <ul>
           <li>Unlimited sessions &amp; re-rolls</li>
@@ -6784,7 +6870,7 @@ function renderPlans(){
       <div class="plan ${cur("max") ? "current" : ""}">
         <span class="rewtag">${cur("max") ? "Current" : "Most complete"}</span>
         <b>Max</b>
-        <div class="price">$${PLANS.max.price}<span class="per"> / month</span></div>
+        <div class="price">${planPrice("max")}<span class="per"> / month</span></div>
         <p class="each">All 7 days is <b>${max.each}</b> a session — ${max.n} a month.</p>
         <ul>
           <li>Everything in Pro</li>
@@ -6803,16 +6889,49 @@ function renderPlans(){
       a gym you still have to think inside of — and Max is the cheapest per session of the three,
       because it buys nearly twice the training days. Billing is not wired up yet: this build is the
       founder period, so picking a plan applies its limits to feel each tier out and nothing is charged.</p>`;
-  $$("#planBody [data-plan]").forEach(b => b.addEventListener("click", () => {
-    vault.plan = b.dataset.plan || null;
-    const lim = limitsOf();
-    if(state.cfg.count > lim.moves) state.cfg.count = lim.moves;
-    if(state.cfg.failureOn && !lim.failure) state.cfg.failureOn = false;
-    save(); syncControls(); renderPlans(); renderWeek();
+  $$("#planBody [data-plan]").forEach(b => b.addEventListener("click", async () => {
+    const key = b.dataset.plan || null;
+
+    /* On the App Store build a plan change is a real purchase. Everywhere else
+       it stays what it has always been: limits applied, nothing charged. */
+    if(key && storePlugin()){
+      const was = b.textContent;
+      b.disabled = true; b.textContent = "Contacting the App Store\u2026";
+      try{
+        const r = await storeBuy(key);
+        b.disabled = false; b.textContent = was;
+        if(r === "purchased")      toast(PLANS[key].n + " active", "Thanks \u2014 your subscription is live.", "");
+        else if(r === "pending")   toast("Waiting on approval", "This purchase needs approval before it activates.", "");
+        else if(r === "unverified")toast("Could not verify", "The App Store could not confirm that purchase.", "");
+        return;                                   /* cancelled falls through silently */
+      }catch(e){
+        b.disabled = false; b.textContent = was;
+        toast("Purchase failed", e.message || "The App Store did not complete the purchase.", "");
+        return;
+      }
+    }
+
+    vault.plan = key;
+    applyPlanLimits();
     toast(vault.plan ? PLANS[vault.plan].n + " set" : "Back to the first month",
-          vault.plan ? "Limits applied. Billing arrives with the store release — nothing is charged today."
+          vault.plan ? "Limits applied. Billing arrives with the store release \u2014 nothing is charged today."
                      : trialDaysLeft() + " days of everything left.", "");
   }));
+
+  const rb = $("#restoreBtn");
+  if(rb) rb.addEventListener("click", async () => {
+    rb.disabled = true; rb.textContent = "Checking\u2026";
+    try{
+      await storeRestore(); renderPlans();
+      toast("Restored", vault.plan ? PLANS[vault.plan].n + " is active again."
+                                   : "No active subscription on this Apple ID.", "");
+    }catch(e){
+      rb.disabled = false; rb.textContent = "Restore purchases";
+      toast("Could not restore", e.message || "The App Store did not respond.", "");
+    }
+  });
+  const mb = $("#manageBtn");
+  if(mb) mb.addEventListener("click", () => { const S = storePlugin(); if(S) S.manage(); });
 }
 
 $("#resetBtn").addEventListener("click", () => {
@@ -6961,6 +7080,10 @@ $("#brand").insertAdjacentHTML("afterbegin", logoMark(30));
 if(healthOn()) setTimeout(() => healthSync().then(() => { renderLog(); renderHUD(); }), 900);
 /* the nudge window is a rolling fortnight; every launch pushes it forward */
 if(remindOn()) setTimeout(remindSync, 1200);
+/* Prices and entitlements before the plans screen is likely to be opened, so
+   it never flashes the fallback dollar figures at someone billed elsewhere. */
+if(storePlugin()) setTimeout(() => { storeLoad().then(() => {
+  storeSync().then(() => { if(typeof renderPlans === "function") renderPlans(); }); }); }, 600);
 if(consumeAuthFragment()) setTimeout(() => { syncNow(true); renderRewards();
   toast("Signed in", "Welcome back.", ""); $("#rewardsPanel").scrollIntoView({behavior:"smooth"}); }, 300);
 else if(signedIn()) setTimeout(() => syncNow(true), 400);
