@@ -157,6 +157,15 @@ dollars and conclude that posters do not work.
 
 ---
 
+## Reaching out to creators
+
+See [OUTREACH.md](OUTREACH.md). Short version: the accounts worth messaging
+right now are local coaches and gym owners at 1k–20k followers, not
+influencers — and the ask is "tell me what's wrong with it," not "please
+promote this."
+
+---
+
 ## Posters themselves
 
 I can design these — poster layouts, sticker sheets, the QR codes with the
