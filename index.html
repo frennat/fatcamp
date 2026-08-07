@@ -5048,6 +5048,18 @@ function planPrice(k){
   if(storePrices && storePrices[k]) return storePrices[k].price;
   return "$" + PLANS[k].price;
 }
+/* The first month is an introductory offer on the subscriptions themselves,
+   not a separate product, so its price comes off whichever plan StoreKit
+   knows about. Same reason as planPrice: the hard-coded figure is a dollar
+   amount, and not everyone is billed in dollars. */
+function firstMonthPrice(){
+  if(storePrices){
+    const p = (storePrices.max && storePrices.max.introPrice)
+           || (storePrices.pro && storePrices.pro.introPrice);
+    if(p) return p;
+  }
+  return "$" + FIRST_MONTH;
+}
 /* The device's own view of what it is entitled to. Enough for an app whose
    paid features are all local; anything the server paid out would need App
    Store Server Notifications behind it instead. */
@@ -6842,7 +6854,7 @@ function renderPlans(){
       <div class="plan ${cur("trial") ? "current" : ""}">
         <span class="rewtag">${cur("trial") ? "Current" : tier === "expired" ? "Ended" : "Start here"}</span>
         <b>First month</b>
-        <div class="price">$${FIRST_MONTH}<span class="per"> · one month</span></div>
+        <div class="price">${firstMonthPrice()}<span class="per"> · one month</span></div>
         <p class="each">Train all 7 days and that is <b>${first.each}</b> a session — ${first.n} of them.</p>
         <ul>
           <li>Everything in Max, unlocked</li>
