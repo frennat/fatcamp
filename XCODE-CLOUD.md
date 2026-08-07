@@ -1,155 +1,153 @@
-# Xcode Cloud → TestFlight
+# Shipping updates
 
-The goal: you describe a change, Claude edits and pushes to GitHub, Xcode Cloud
-builds it on Apple's machines, and TestFlight puts it on your phone.
+The pipeline works. Push to `main` → Xcode Cloud archives on Apple's hardware →
+TestFlight → your phone. First green build 2026-08-05.
 
-Getting there has five steps. Two of them are yours because they need your
-Apple ID; the rest are mine.
-
----
-
-## Where things stand on this Mac
-
-| | |
-| --- | --- |
-| Xcode | 26.2 — installed, command line tools pointed at it |
-| iPhone simulators | 5 available |
-| Node / npm | **not installed** — step 1 |
-| Homebrew | not installed |
-| Codesigning identities | **none** — no developer account attached yet |
-| Machine | Intel Core i5, macOS 15.7.4, 17 GB free |
-
-Two things follow from that last row.
-
-**Get the x64 build of Node**, not arm64. This is an Intel Mac, and nodejs.org
-will often offer the Apple Silicon build by default.
-
-**Xcode Cloud is the right call here, more than I realised.** Builds run on
-Apple's hardware, so a 1.4 GHz i5 never has to archive anything. Local builds
-on this machine would be slow enough to be a real tax on iteration.
+This is the runbook for *changing* the app now that it exists. Setup history is
+at the bottom.
 
 ---
 
-## Step 1 — Node (yours, five minutes)
+## Decide which kind of change it is first
 
-1. Go to **nodejs.org/en/download**.
-2. Choose **macOS**, then the **LTS** version, then **Installer (.pkg)**.
-3. Set the architecture to **x64** — *not* arm64. The page may preselect arm64;
-   change it. An arm64 build will not run on this Mac.
-4. Open the downloaded `.pkg` and follow it. It asks for your Mac password
-   because it writes to `/usr/local/bin`.
-5. Open a **new** Terminal window (the old one has a stale PATH) and check:
+This is the part that saves the most time.
 
-```
-node --version && npm --version
-```
+`index.html` **is** the app. GitHub Pages serves it and redeploys on every push,
+in about a minute. The iOS build bundles its own copy, which is why native
+builds are slower — they have to be rebuilt and re-uploaded.
 
-Two version numbers means you are done. Tell me and I will do step 3.
+| Changing | Goes live via | How long |
+| --- | --- | --- |
+| Movement rigs, copy, colours, layout, generator, pricing, parser | GitHub Pages | ~1 min |
+| Anything about feel, immersion, wording, tuning | GitHub Pages | ~1 min |
+| Plugins, permissions, app icon, splash, Info.plist, version | TestFlight | ~15–25 min |
 
-*Why the installer and not Homebrew:* Homebrew is not on this machine, and
-installing it is a bigger job than installing Node. The `.pkg` is one download.
+**For web changes, don't wait on TestFlight.** Push, wait a minute, open
+`frennat.github.io/lifted-ai` on your phone. Add it to the home screen and it
+runs full screen with its own icon, like the app.
 
----
+The exception: the home-screen version cannot test **Apple Health** or
+**notifications**. Those are native and need a real build.
 
-## Step 2 — Apple Developer Program (yours, start it now)
-
-**Do this today, in parallel with step 1** — approval takes 24–48 hours and
-everything else waits on it.
-
-1. **developer.apple.com/programs** → Enroll. $99/year.
-2. Enrol as an **individual** unless you already have an LLC. Individual is
-   approved fastest; the tradeoff is that your legal name shows as the seller
-   on the App Store listing. Enrolling as an organisation needs a D-U-N-S
-   number and takes noticeably longer.
-3. When it is approved: open Xcode → **Settings → Accounts → +** → sign in with
-   that Apple ID.
-
-You will know it worked when `security find-identity -p codesigning -v` stops
-saying "0 valid identities found".
-
-Xcode Cloud itself is free up to **25 compute hours a month**, which is a lot
-of builds for an app this size. It is included with the membership.
+A good rhythm is to iterate on the web all evening, then cut one TestFlight
+build when you want to check the whole batch inside the real shell.
 
 ---
 
-## Step 3 — The iOS project (mine, once Node exists)
+## The normal loop
 
-I run:
+1. You say what to change.
+2. Claude edits, runs `npm run sync`, commits, pushes to `main`.
+3. Xcode Cloud starts within a minute of the push.
+4. Archive takes about 4–8 minutes.
+5. TestFlight processes for another 5–15, then your phone gets a notification.
 
-```
-npm install @capacitor/core @capacitor/cli @capacitor/ios
-npx cap init "Lifted.AI" ai.lifted.app --web-dir=www
-npm run build
-npx cap add ios
+`npm run sync` matters — the iOS bundle carries its own copy of the web app at
+`ios/App/App/public/`, committed on purpose so Xcode Cloud can archive from a
+clean clone with no build step. `npm run verify` fails loudly if the two drift,
+and also checks `Package.resolved` is still present.
+
+### Installing the update
+
+Open **TestFlight** on your phone → Lifted.AI → **Update**. Builds do not
+install themselves.
+
+If it isn't there, it is still processing. App Store Connect shows
+"Processing" for a while after the archive goes green.
+
+---
+
+## Checking on a build without leaving the terminal
+
+Xcode Cloud reports status back to GitHub, which is readable without any
+App Store Connect login:
+
+```bash
+curl -s "https://api.github.com/repos/frennat/lifted-ai/commits/$(git -C ~/lifted-ai rev-parse HEAD)/check-runs" | python3 -m json.tool
 ```
 
-That produces `ios/App/App.xcworkspace` — a real Xcode project that loads the
-app from inside the bundle. It gets committed, because Xcode Cloud builds from
-what is in the repo.
+Look for `Lifted.AI | Default | Archive - iOS`. The useful fields are
+`status`, `conclusion`, and `output.text` — which carries the actual error when
+a build fails, in full, which the email does not.
 
-Already in place for this:
+`conclusion` values worth knowing:
 
-- **`package.json`** — `npm run build` stages `index.html`, `manifest.json` and
-  `icons/` into `www/`, which is what Capacitor packages. `sw.js` is
-  deliberately left out: Capacitor serves over `capacitor://`, the service
-  worker would never register, and a stale cache layer inside a native app is
-  a bug waiting to happen. The app already guards its own registration call, so
-  nothing breaks.
-- **`ci_scripts/ci_post_clone.sh`** — Xcode Cloud runs this after cloning. It
-  installs Node via Homebrew (Apple's build images have brew but not Node),
-  installs dependencies, stages the web app, and syncs it into the iOS project.
-- **`.gitignore`** — `node_modules/`, `www/` and the generated iOS artefacts.
-
-GitHub Pages keeps working exactly as it does now. `www/` is a build artefact;
-the app still lives at the repo root, so `frennat.github.io/lifted-ai/` is
-unaffected.
+- `success` — archived and handed to TestFlight.
+- `action_required` — the archive stopped on an error. Read `output.text`.
+- `failure` — the build itself failed.
 
 ---
 
-## Step 4 — Create the workflow (yours, ten minutes, GUI)
+## When a build breaks
 
-This part cannot be scripted — it is Xcode talking to App Store Connect with
-your credentials.
+Almost every failure so far has been a **file the repo needs but does not
+have**, not bad code. A local build passing proves less than it looks like,
+because your Mac has things Apple's build machine does not.
 
-1. Open `ios/App/App.xcworkspace` in Xcode.
-2. Select the **App** target → **Signing & Capabilities** → tick **Automatically
-   manage signing** and pick your team.
-3. **Product → Xcode Cloud → Create Workflow**.
-4. Xcode asks to connect a source repository. Choose **GitHub**, authorise it,
-   and grant access to `frennat/lifted-ai`.
-5. Set the workflow to:
-   - **Start Condition:** Branch Changes → `main`
-   - **Action:** Archive → iOS
-   - **Post-Action:** TestFlight (Internal Testing Only)
-6. Save. The first build kicks off immediately.
+Check in this order:
 
-Then in **App Store Connect → TestFlight → Internal Testing**, add yourself as
-a tester. Internal builds skip App Review entirely and arrive in the TestFlight
-app on your phone in minutes.
+1. **`Package.resolved` present?** At
+   `ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/`. Xcode
+   Cloud disables automatic dependency resolution and cannot build without it.
+   **Xcode deletes this file while it has the project open**, and a later
+   `git add -A` then commits the deletion. This broke the 2026-08-07 build.
+   `npm run verify` now catches it.
+2. **Web assets in sync?** `npm run verify`.
+3. **Anything new referenced but gitignored?** Capacitor generates
+   `public/`, `config.xml` and `capacitor.config.json` and ignores them by
+   default; they are committed deliberately.
+4. **A new Swift file added to the Xcode project properly?** It needs entries in
+   `project.pbxproj` — and the object ids must be genuinely unused, or the
+   project reads as "damaged".
 
----
-
-## Step 5 — From then on
-
-You tell me what to change. I edit, test, commit and push to `main`. Xcode Cloud
-sees the push, runs `ci_post_clone.sh`, archives, and hands the build to
-TestFlight. Your phone gets a notification.
-
-I can also drive the iOS Simulator on this Mac to check a build before pushing,
-which is faster than waiting on a cloud build for something small.
+**Do not add Capacitor plugins from npm.** They keep their Swift source in
+`node_modules`, and `Package.swift` then points at a path a clean clone does not
+have. Write the plugin in the app target and register it on the bridge in
+`MainViewController`, the way `HealthPlugin.swift` and `NotifyPlugin.swift` do.
 
 ---
 
-## What still is not solved
+## Version numbers
+
+`MARKETING_VERSION` is what TestFlight shows as the version (currently `1.1`).
+Bump it when a batch of changes is worth naming.
+
+`CURRENT_PROJECT_VERSION` is the build number, **pinned at 1**. If an upload is
+ever rejected for a duplicate build number, that is why, and the fix is a small
+`ci_pre_xcodebuild.sh` in `ios/App/ci_scripts/` setting it from
+`$CI_BUILD_NUMBER`.
+
+---
+
+## Still not solved
 
 - **No billing.** Choosing a plan applies its limits locally; nothing is
   charged. Subscriptions have to become StoreKit products before the app can
-  take money — that is a real piece of work, not a config change.
-- **No password reset.** Forget the password and there is currently no way back
-  into an account.
-- **No privacy policy page.** App Review requires a URL. It can be a page on the
-  marketing site; it does not exist yet.
+  take money — real work, not a config change.
+- **No password reset.** Forget the password and there is no way back in.
+- **Seller name.** The Developer Program enrolment is Individual, so the public
+  App Store listing will show a legal name. Changing it means registering a DBA
+  or converting to an Organization account. TestFlight shows nothing public, so
+  this only matters before release.
 - **Guideline 4.2.** A shell around a web app can be rejected as a website in a
-  wrapper. The offline-first argument is genuine here, but native hooks —
-  Apple Health, local notifications, haptics — make it much safer. Worth doing
-  before the first submission rather than after a rejection.
+  wrapper. Apple Health and local notifications make that argument much safer
+  than it was.
+
+---
+
+## How it got here
+
+Six configuration failures, each hiding the next, all worth knowing because they
+are the shape of every future break:
+
+1. No shared `.xcscheme` in the repo — the scheme `xcodebuild -list` shows can
+   be autocreated and absent from a clean clone.
+2. `public/`, `config.xml`, `capacitor.config.json` generated and gitignored but
+   referenced by the project.
+3. `ci_scripts` at the repo root instead of beside the `.xcodeproj`; then
+   `set -u` against an unset `CI_WORKSPACE`. Deleted the script entirely.
+4. `DEVELOPMENT_TEAM` was the Capacitor template's, not yours — hidden for three
+   builds because local builds passed the right team on the command line.
+5. The default workflow has a Test action; there are no test targets.
+6. Ad-hoc and development exports need a registered device or they exit 70, even
+   though app-store export succeeds.
