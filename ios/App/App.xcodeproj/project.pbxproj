@@ -17,16 +17,16 @@
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
 		A1F0C0DE0000000000000002 /* HealthPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0C0DE0000000000000001 /* HealthPlugin.swift */; };
+		A1F0C0DE0000000000000005 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0C0DE0000000000000004 /* MainViewController.swift */; };
+		A1F0C0DE0000000000000007 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A1F0C0DE0000000000000006 /* PrivacyInfo.xcprivacy */; };
 		A1F0C0DE0000000000000009 /* NotifyPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0C0DE0000000000000008 /* NotifyPlugin.swift */; };
 		A1F0C0DE0000000000000011 /* StorePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0C0DE0000000000000010 /* StorePlugin.swift */; };
-		A1F0C0DE0000000000000007 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A1F0C0DE0000000000000006 /* PrivacyInfo.xcprivacy */; };
-		A1F0C0DE0000000000000005 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0C0DE0000000000000004 /* MainViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
-		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		504EC3041FED79650016851F /* Fatcamp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Fatcamp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		504EC30C1FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		504EC30E1FED79650016851F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -36,11 +36,11 @@
 		9582B6822FE993A50072D4E8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		A1F0C0DE0000000000000001 /* HealthPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthPlugin.swift; sourceTree = "<group>"; };
+		A1F0C0DE0000000000000003 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
+		A1F0C0DE0000000000000004 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
+		A1F0C0DE0000000000000006 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A1F0C0DE0000000000000008 /* NotifyPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotifyPlugin.swift; sourceTree = "<group>"; };
 		A1F0C0DE0000000000000010 /* StorePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorePlugin.swift; sourceTree = "<group>"; };
-		A1F0C0DE0000000000000003 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
-		A1F0C0DE0000000000000006 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		A1F0C0DE0000000000000004 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,7 +67,7 @@
 		504EC3051FED79650016851F /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				504EC3041FED79650016851F /* App.app */,
+				504EC3041FED79650016851F /* Fatcamp.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -114,7 +114,7 @@
 				4D22ABE82AF431CB00220026 /* CapApp-SPM */,
 			);
 			productName = App;
-			productReference = 504EC3041FED79650016851F /* App.app */;
+			productReference = 504EC3041FED79650016851F /* Fatcamp.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -322,17 +322,17 @@
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 99PBVFK4M3;
+				DEVELOPMENT_TEAM = L69UH4X3PJ;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" \"-DDEBUG\"";
 				PRODUCT_BUNDLE_IDENTIFIER = com.frennat.fatcamp;
-				PRODUCT_NAME = "Fatcamp";
+				PRODUCT_NAME = Fatcamp;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -346,16 +346,16 @@
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 99PBVFK4M3;
+				DEVELOPMENT_TEAM = L69UH4X3PJ;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.frennat.fatcamp;
-				PRODUCT_NAME = "Fatcamp";
+				PRODUCT_NAME = Fatcamp;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
