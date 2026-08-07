@@ -1,4 +1,4 @@
--- Lifted.AI — Supabase schema
+-- Fatcamp — Supabase schema
 -- Paste the whole file into the Supabase SQL editor and run it once.
 --
 -- Privacy boundary, which is the important part of this file:

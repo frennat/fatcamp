@@ -4,17 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#17161A">
-<meta name="description" content="Lifted.AI — an agent that builds your session from what you've got and what you want to hit.">
+<meta name="description" content="Fatcamp — an agent that builds your session from what you've got and what you want to hit.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Lifted">
+<meta name="apple-mobile-web-app-title" content="Fatcamp">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-<title>Lifted.AI</title>
+<title>Fatcamp</title>
 <style>
 /* ============================================================
-   LIFTED.AI — "Calibrated Plate"
+   FATCAMP — "Calibrated Plate"
    Palette derives from IWF competition plate colors.
    ============================================================ */
 :root{
@@ -1185,7 +1185,7 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 <div class="shell">
 
   <header class="topbar">
-    <div class="brand" id="brand"><span class="wm">Lifted<span>.AI</span></span></div>
+    <div class="brand" id="brand"><span class="wm">Fatcamp</span></div>
     <div class="hud">
       <div class="hud-cell rank" title="Rank — earned with total XP">
         <small>Rank</small><b id="hudRank">Empty Bar</b>
@@ -1203,7 +1203,7 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 
   <main class="panes">
   <div class="splash" id="splash" aria-hidden="true">
-    <p class="splash-hi">Welcome to <em>Lifted.AI</em></p>
+    <p class="splash-hi">Welcome to <em>Fatcamp</em></p>
     <canvas class="splash-obj" id="splashObj"></canvas>
     <p class="splash-go">Let&#8217;s get started</p>
   </div>
@@ -1215,11 +1215,11 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
     <div class="ask-in">
       <p class="eyebrow">Your session built right in front of you</p>
       <h1>What are you <em>training</em> today?</h1>
-      <p class="ask-sub">Say it the way you'd say it out loud. Lifted.AI fills in the workload
+      <p class="ask-sub">Say it the way you'd say it out loud. Fatcamp fills in the workload
         below, then forges the session.</p>
 
       <div class="glass">
-        <textarea id="askBox" rows="2" maxlength="400" aria-label="Tell Lifted.AI what you want to train"
+        <textarea id="askBox" rows="2" maxlength="400" aria-label="Tell Fatcamp what you want to train"
           placeholder="Chest and triceps at home, six movements, go hard&#8230;"></textarea>
         <div class="glass-ft">
           <div class="askchips" id="askChips"></div>
@@ -1366,7 +1366,7 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
   </section>
 
   <footer style="margin-top:44px;padding-top:16px;border-top:1px solid var(--line);display:flex;gap:14px;flex-wrap:wrap;align-items:center">
-    <span class="tag">Lifted.AI</span>
+    <span class="tag">Fatcamp</span>
     <span style="font-size:12px;color:var(--ink-3)">Everything is stored on this device. Not medical advice — warm up, and leave a rep in the tank when the bar says so.</span>
     <a href="site/privacy.html" class="linkbtn" style="text-decoration:none">Privacy</a>
     <button class="linkbtn" id="resetBtn" type="button" style="margin-left:auto">Reset all progress</button>
@@ -1428,7 +1428,7 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 <script src="capacitor.js"></script>
 <script>
 /* ==========================================================================
-   LIFTED.AI
+   FATCAMP
    A coverage-first session generator with an articulated movement rig.
    No dependencies, no network, no build step.
    ========================================================================== */
@@ -1456,7 +1456,7 @@ function logoMark(size, opts){
   const accent2 = opts.accent2 || "var(--accent-2)";
   const ink     = opts.ink     || "var(--rig-lit)";
   return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 200 200" fill="none" '+
-    'xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Lifted.AI">'+
+    'xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Fatcamp">'+
     '<defs><linearGradient id="'+id+'" x1="55" y1="26" x2="160" y2="160" gradientUnits="userSpaceOnUse">'+
     '<stop offset="0" stop-color="'+accent2+'"/><stop offset="1" stop-color="'+accent+'"/></linearGradient></defs>'+
     '<path d="M100 8 L179.7 54 L179.7 146 L100 192 L20.3 146 L20.3 54 Z" stroke="'+accent+'" stroke-width="4" stroke-linejoin="round"/>'+
@@ -3461,7 +3461,11 @@ function nextMilestone(){
    server behind this app, so "signing in somewhere else" isn't a thing it can
    honestly offer — carrying a profile to another device is an explicit move,
    by code or by backup file. */
-const KEY = "liftedai.v2", OLD_KEY = "liftedai.v1";
+const KEY = "fatcamp.v2", OLD_KEY = "fatcamp.v1";
+/* Pre-rebrand keys. Everything was stored under liftedai.* until 2026-08-07,
+   and reading only the new key would have silently wiped every existing
+   install's sessions, streak and settings on first launch after the rename. */
+const LEGACY_KEY = "liftedai.v2", LEGACY_OLD_KEY = "liftedai.v1";
 const PROFILE_FIELDS = ["name","color","equip","customEquip","gymPhoto","xp","streak",
                         "freezes","lastDay","history","badges","limits","cfg","session",
                         "rewards","redeemed","calView","prs","prPick","unit","lastWeight",
@@ -3577,7 +3581,7 @@ function migrateProfile(p){
   return out;
 }
 function load(){
-  const rawV2 = store.get(KEY);
+  const rawV2 = store.get(KEY) || store.get(LEGACY_KEY);
   if(rawV2){
     try{
       const v = JSON.parse(rawV2);
@@ -3592,7 +3596,7 @@ function load(){
       }
     }catch(e){}
   }
-  const rawV1 = store.get(OLD_KEY);
+  const rawV1 = store.get(OLD_KEY) || store.get(LEGACY_OLD_KEY);
   if(rawV1){
     try{
       const d = JSON.parse(rawV1);
@@ -3657,13 +3661,13 @@ function encodeProfile(p, withPhoto){
   if(!withPhoto) o.gymPhoto = null;
   const json = JSON.stringify({lifted:1, p:o});
   /* btoa needs latin1, so widen through UTF-8 first */
-  return "LIFTED-" + btoa(unescape(encodeURIComponent(json))).replace(/=+$/,"");
+  return "FATCAMP-" + btoa(unescape(encodeURIComponent(json))).replace(/=+$/,"");
 }
 function decodeProfile(code){
-  const body = String(code).trim().replace(/^LIFTED-/,"").replace(/\s+/g,"");
+  const body = String(code).trim().replace(/^FATCAMP-/,"").replace(/\s+/g,"");
   const json = decodeURIComponent(escape(atob(body)));
   const o = JSON.parse(json);
-  if(!o || !o.p) throw new Error("not a Lifted.AI code");
+  if(!o || !o.p) throw new Error("not a Fatcamp code");
   return migrateProfile(o.p);
 }
 function importProfile(p, mode){
@@ -3692,7 +3696,7 @@ function importProfile(p, mode){
   }
 }
 function backupFilename(){
-  return "lifted-ai-" + state.name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") +
+  return "fatcamp-" + state.name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") +
          "-" + dayKey(new Date()) + ".json";
 }
 function saveBackup(){
@@ -4100,7 +4104,7 @@ function renderProfileDlg(){
 
     <div class="eqsec">
       <p class="eyebrow">Carry it to another device</p>
-      <p class="sub">Lifted.AI keeps everything on the device it runs on — there's no server to
+      <p class="sub">Fatcamp keeps everything on the device it runs on — there's no server to
         sign in to, which is why it works with no signal. Move a profile with a code or a backup file.</p>
       <div class="photorow">
         <button class="btn" id="pCode" type="button">Show transfer code</button>
@@ -4108,14 +4112,14 @@ function renderProfileDlg(){
       </div>
       <textarea id="pCodeBox" class="codebox" rows="3" readonly hidden
         aria-label="Transfer code"></textarea>
-      <p class="sub" id="pCodeNote" hidden>Copy this, open Lifted.AI on the other device, and paste it below.
+      <p class="sub" id="pCodeNote" hidden>Copy this, open Fatcamp on the other device, and paste it below.
         The code carries your progress and kit, but not the gym photo — use a backup file for that.</p>
     </div>
 
     <div class="eqsec">
       <p class="eyebrow">Bring a profile in</p>
       <div class="eqadd">
-        <textarea id="pPaste" rows="2" spellcheck="false" placeholder="Paste a LIFTED- code here"></textarea>
+        <textarea id="pPaste" rows="2" spellcheck="false" placeholder="Paste a FATCAMP- code here"></textarea>
         <button class="btn primary" id="pImport" type="button">Load</button>
       </div>
       <div class="photorow" style="margin-top:8px">
@@ -4165,7 +4169,7 @@ function renderProfileDlg(){
     box.focus(); box.select();
     if(navigator.clipboard && navigator.clipboard.writeText)
       navigator.clipboard.writeText(box.value).then(
-        () => toast("Code copied", "Paste it into Lifted.AI on your other device.", ""), () => {});
+        () => toast("Code copied", "Paste it into Fatcamp on your other device.", ""), () => {});
   });
   $("#pBackup").addEventListener("click", saveBackup);
   $("#pImport").addEventListener("click", () => {
@@ -4173,7 +4177,7 @@ function renderProfileDlg(){
     if(!raw){ $("#pResult").textContent = "Paste a code first."; return; }
     let p;
     try{ p = decodeProfile(raw); }
-    catch(e){ $("#pResult").textContent = "That doesn't look like a Lifted.AI transfer code."; return; }
+    catch(e){ $("#pResult").textContent = "That doesn't look like a Fatcamp transfer code."; return; }
     askImport(p);
   });
   $("#pFile").addEventListener("change", e => {
@@ -4185,7 +4189,7 @@ function renderProfileDlg(){
         const o = JSON.parse(fr.result);
         if(!o || !o.p) throw new Error();
         askImport(migrateProfile(o.p));
-      }catch(err){ $("#pResult").textContent = "That file isn't a Lifted.AI backup."; }
+      }catch(err){ $("#pResult").textContent = "That file isn't a Fatcamp backup."; }
     };
     fr.readAsText(f);
   });
@@ -4486,7 +4490,7 @@ function renderKit(){
 
     <div class="eqsec">
       <p class="eyebrow">Read it off a photo</p>
-      <p class="sub">Lifted.AI runs entirely on your device with no internet, so it can't look at
+      <p class="sub">Fatcamp runs entirely on your device with no internet, so it can't look at
         the photo itself. Keep the photo here as your reference and tick things off against it —
         or hand the photo to Claude and paste the answer into the box above.</p>
       <div class="photorow">
@@ -5010,8 +5014,8 @@ function runSplash(target){
    Product ids must match App Store Connect exactly. None of this does anything
    until those subscriptions exist and the Paid Applications agreement is signed. */
 const IAP = {
-  pro: "com.frennat.liftedai.pro.monthly",
-  max: "com.frennat.liftedai.max.monthly"
+  pro: "com.frennat.fatcamp.pro.monthly",
+  max: "com.frennat.fatcamp.max.monthly"
 };
 let _storeProxy = null;
 function storePlugin(){
@@ -6269,7 +6273,7 @@ function renderWeek(){
 
   if(!w || stale){
     host.innerHTML = `
-      <p class="sub weekintro">Pick a split and Lifted.AI builds every session in it at once.
+      <p class="sub weekintro">Pick a split and Fatcamp builds every session in it at once.
         The split is what gets saved — the movements are re-rolled each week, so the same
         routine keeps landing on different work.
         ${lim.weekDays < 7 ? `<b>Your plan builds up to ${lim.weekDays} training days a week.</b>` : ""}</p>

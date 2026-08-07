@@ -67,7 +67,7 @@ public class NotifyPlugin: CAPPlugin, CAPBridgedPlugin {
         for row in rows {
             guard let id = row["id"] as? Int else { continue }
             let content = UNMutableNotificationContent()
-            content.title = row["title"] as? String ?? "Lifted.AI"
+            content.title = row["title"] as? String ?? "Fatcamp"
             content.body  = row["body"]  as? String ?? ""
             content.sound = .default
 

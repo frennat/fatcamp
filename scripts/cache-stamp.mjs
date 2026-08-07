@@ -16,10 +16,10 @@ for (const f of files) h.update(readFileSync(f));
 const stamp = h.digest("hex").slice(0, 10);
 
 const sw = readFileSync("sw.js", "utf8");
-const next = sw.replace(/const CACHE = "[^"]*";/, `const CACHE = "lifted-ai-${stamp}";`);
+const next = sw.replace(/const CACHE = "[^"]*";/, `const CACHE = "fatcamp-${stamp}";`);
 
 if (next === sw) {
-  const has = /const CACHE = "lifted-ai-([^"]*)";/.exec(sw);
+  const has = /const CACHE = "fatcamp-([^"]*)";/.exec(sw);
   if (!has) {
     console.error("cache-stamp: no CACHE constant found in sw.js");
     process.exit(1);
@@ -27,5 +27,5 @@ if (next === sw) {
   console.log(`  cache unchanged (${has[1]})`);
 } else {
   writeFileSync("sw.js", next);
-  console.log(`  cache stamped lifted-ai-${stamp}`);
+  console.log(`  cache stamped fatcamp-${stamp}`);
 }

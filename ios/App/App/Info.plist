@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Lifted.AI</string>
+	<string>Fatcamp</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -27,9 +27,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Lifted.AI reads workouts recorded by other apps so they count toward your streak. It stays on your device.</string>
+	<string>Fatcamp reads workouts recorded by other apps so they count toward your streak. It stays on your device.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>Lifted.AI saves the sessions you finish to Health, so the rest of your rings and history know about them.</string>
+	<string>Fatcamp saves the sessions you finish to Health, so the rest of your rings and history know about them.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -1,5 +1,5 @@
 (async () => {
-  const V = JSON.parse(localStorage.getItem('liftedai.v2') || '{}');
+  const V = JSON.parse(localStorage.getItem('fatcamp.v2') || '{}');
   const a = V.auth;
   if (!a || !a.token) return console.log('Not signed in in this tab — open the app and sign in first.');
   const U = 'https://chghvwnytjlakuvkkluv.supabase.co';

@@ -1,8 +1,8 @@
 {
-  "name": "lifted-ai",
+  "name": "fatcamp",
   "version": "1.0.0",
   "private": true,
-  "description": "Lifted.AI \u2014 a coverage-first session generator with an articulated 3D movement rig.",
+  "description": "Fatcamp \u2014 a coverage-first session generator with an articulated 3D movement rig.",
   "scripts": {
     "build": "node scripts/cache-stamp.mjs && rm -rf www && mkdir -p www && cp index.html manifest.json capacitor.js www/ && cp -R icons www/",
     "sync": "npm run build && npx cap sync ios && (git checkout -- ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved 2>/dev/null || true) && npm run verify",

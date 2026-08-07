@@ -1,6 +1,6 @@
 {
-  "name": "Lifted.AI",
-  "short_name": "Lifted",
+  "name": "Fatcamp",
+  "short_name": "Fatcamp",
   "description": "Builds your session from the equipment you have, the muscles you want to hit, and how much you've got in the tank.",
   "start_url": "./index.html",
   "scope": "./",

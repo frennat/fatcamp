@@ -1,4 +1,4 @@
-# Lifted.AI
+# Fatcamp
 
 An agent that builds your training session from three things: what equipment you
 have, what you want to hit, and how much you've got in the tank. Then it shows
@@ -172,7 +172,7 @@ server behind this app — that is what lets it run with no signal — so it can
 offer a login that syncs by itself. Moving a profile to another device is an
 explicit, one-time act:
 
-- **Transfer code** — a `LIFTED-…` string you copy and paste into the app on
+- **Transfer code** — a `FATCAMP-…` string you copy and paste into the app on
   the other device. Carries progress, streak, history and kit; not the gym photo.
 - **Backup file** — a `.json` you can keep. Carries everything.
 

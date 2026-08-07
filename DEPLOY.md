@@ -1,4 +1,4 @@
-# Getting Lifted.AI onto your phone, and eventually into the App Store
+# Getting Fatcamp onto your phone, and eventually into the App Store
 
 Two separate jobs. The first one you can finish today; the second takes a
 developer account, a wrapper, and Apple's review queue.
@@ -17,19 +17,19 @@ over plain HTTP, so a local file or a `file://` link will not do it.
 
 ### Turn on GitHub Pages (about two minutes)
 
-1. Go to **github.com/frennat/lifted-ai → Settings → Pages**.
+1. Go to **github.com/frennat/fatcamp → Settings → Pages**.
 2. Under **Build and deployment → Source**, choose **Deploy from a branch**.
 3. Branch **main**, folder **/ (root)**. Save.
 4. Wait a minute. The app is then at:
-   - **App:** `https://frennat.github.io/lifted-ai/`
-   - **Marketing site:** `https://frennat.github.io/lifted-ai/site/`
+   - **App:** `https://frennat.github.io/fatcamp/`
+   - **Marketing site:** `https://frennat.github.io/fatcamp/site/`
 
 Every path in the app is relative, so the subfolder does not break anything —
 the manifest, the icons and the service worker all resolve correctly there.
 
 ### Add it to your home screen
 
-1. Open `https://frennat.github.io/lifted-ai/` in **Safari**. It has to be
+1. Open `https://frennat.github.io/fatcamp/` in **Safari**. It has to be
    Safari — Chrome on iOS cannot install web apps.
 2. Tap **Share** (the square with the arrow coming out of the top).
 3. Scroll down, tap **Add to Home Screen**, then **Add**.
@@ -44,7 +44,7 @@ To try a change without pushing, serve the folder from your Mac and open it
 from the phone on the same wifi:
 
 ```
-cd ~/lifted-ai && python3 -m http.server 8000
+cd ~/fatcamp && python3 -m http.server 8000
 ```
 
 Then browse to `http://<your-mac-ip>:8000` from the phone. The service worker
@@ -91,7 +91,7 @@ An iOS app has to be a native binary; you cannot upload HTML. Two routes:
 
 **3. Do not ship a bare wrapper.**
 App Review guideline **4.2 (Minimum Functionality)** exists specifically to
-reject apps that are a website in a shell. Lifted.AI has a real case to make —
+reject apps that are a website in a shell. Fatcamp has a real case to make —
 it runs entirely offline, it is not a view onto a server — but you want native
 hooks on top of it before you submit. The cheapest credible ones:
    - Apple Health: write workouts, read bodyweight.

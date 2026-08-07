@@ -1,10 +1,10 @@
-/* Lifted.AI service worker.
+/* Fatcamp service worker.
    The app is one HTML file plus a handful of icons, so the whole thing is
    precached on install. After that it runs with no network at all — which is
    the point, because the gym is in a basement.
 
    Bump CACHE when you change index.html, or installed copies keep the old one. */
-const CACHE = "lifted-ai-55609764de";
+const CACHE = "fatcamp-d8f87f6531";
 const SHELL = [
   "./",
   "./index.html",

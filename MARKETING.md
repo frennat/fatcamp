@@ -1,4 +1,4 @@
-# Getting the first hundred people to use Lifted.AI
+# Getting the first hundred people to use Fatcamp
 
 Written for a standing start: no social, no ad budget, no press. Posters,
 stickers, and people telling other people.
@@ -12,7 +12,7 @@ TestFlight, and TestFlight is a wall: a public link needs Beta App Review, and
 without one you are adding testers by Apple ID one at a time. Nobody scanning a
 poster in a coffee shop is going to do that.
 
-But `frennat.github.io/lifted-ai/` already works. It opens instantly in Safari,
+But `frennat.github.io/fatcamp/` already works. It opens instantly in Safari,
 it installs to the home screen, it works offline, and it needs no account. That
 is the QR target. The App Store version becomes the target later, and the same
 sticker keeps working because you control the URL.
@@ -90,7 +90,7 @@ approved ten beat the unapproved hundred.
 
 This is the highest-value thing in this document and it costs almost nothing.
 
-Give each location its own URL: `frennat.github.io/lifted-ai/?p=spot-coffee`,
+Give each location its own URL: `frennat.github.io/fatcamp/?p=spot-coffee`,
 `?p=jcu-rec`, `?p=elmwood-physio`. The app reads `p`, stores it, and you learn
 which five of your forty placements are doing all the work — so you print more
 of those and stop wasting paper on the rest.

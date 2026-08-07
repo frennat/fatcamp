@@ -23,7 +23,7 @@ builds are slower — they have to be rebuilt and re-uploaded.
 | Plugins, permissions, app icon, splash, Info.plist, version | TestFlight | ~15–25 min |
 
 **For web changes, don't wait on TestFlight.** Push, wait a minute, open
-`frennat.github.io/lifted-ai` on your phone. Add it to the home screen and it
+`frennat.github.io/fatcamp` on your phone. Add it to the home screen and it
 runs full screen with its own icon, like the app.
 
 The exception: the home-screen version cannot test **Apple Health** or
@@ -49,7 +49,7 @@ and also checks `Package.resolved` is still present.
 
 ### Installing the update
 
-Open **TestFlight** on your phone → Lifted.AI → **Update**. Builds do not
+Open **TestFlight** on your phone → Fatcamp → **Update**. Builds do not
 install themselves.
 
 If it isn't there, it is still processing. App Store Connect shows
@@ -63,10 +63,10 @@ Xcode Cloud reports status back to GitHub, which is readable without any
 App Store Connect login:
 
 ```bash
-curl -s "https://api.github.com/repos/frennat/lifted-ai/commits/$(git -C ~/lifted-ai rev-parse HEAD)/check-runs" | python3 -m json.tool
+curl -s "https://api.github.com/repos/frennat/fatcamp/commits/$(git -C ~/fatcamp rev-parse HEAD)/check-runs" | python3 -m json.tool
 ```
 
-Look for `Lifted.AI | Default | Archive - iOS`. The useful fields are
+Look for `Fatcamp | Default | Archive - iOS`. The useful fields are
 `status`, `conclusion`, and `output.text` — which carries the actual error when
 a build fails, in full, which the email does not.
 

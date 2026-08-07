@@ -7,7 +7,7 @@ import HealthKit
 /// Two jobs, both narrow on purpose:
 ///   * read workouts logged by *other* apps, so a run recorded by Strava or a
 ///     ride recorded by Peloton still counts toward the streak;
-///   * write Lifted.AI sessions back, so the rest of Health knows about them.
+///   * write Fatcamp sessions back, so the rest of Health knows about them.
 ///
 /// Nothing read here is transmitted anywhere. It is summarised into day keys
 /// and minute counts on the device and handed to the calendar, which is exactly
