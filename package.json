@@ -2,7 +2,7 @@
   "name": "lifted-ai",
   "version": "1.0.0",
   "private": true,
-  "description": "Lifted.AI \u2014 a coverage-first session generator with an articulated 3D movement rig.",
+  "description": "Lifted.AI — a coverage-first session generator with an articulated 3D movement rig.",
   "scripts": {
     "build": "rm -rf www && mkdir -p www && cp index.html manifest.json capacitor.js www/ && cp -R icons www/",
     "sync": "npm run build && npx cap sync ios && npm run verify",

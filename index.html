@@ -1144,6 +1144,16 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
   *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
 }
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.remindbox{ margin-top:12px; padding:14px; border-radius:12px;
+  border:1px solid color-mix(in srgb, var(--line) 60%, transparent);
+  background:color-mix(in srgb, var(--card) 60%, transparent); }
+.remindbox .setlab:first-child{ margin-top:0 }
+.timein{ font:inherit; font-size:1.05rem; padding:8px 12px; border-radius:10px;
+  color:var(--ink); background:var(--bg);
+  border:1px solid color-mix(in srgb, var(--line) 70%, transparent); }
+.rowtog{ display:flex; gap:10px; align-items:flex-start; margin-top:12px;
+  font-size:.92rem; color:var(--dim); cursor:pointer; }
+.rowtog input{ margin-top:3px; flex:0 0 auto; accent-color:var(--acc); }
 </style>
 </head>
 <body>
@@ -3920,9 +3930,38 @@ function settingsMarkup(){
             (Object.keys(state.health.days || {}).length === 1 ? "" : "s") +
             " picked up from other apps."
           : "Connected. Sync on the next session."}</p>` : ""}
-      <div class="permrow"><b>Notifications</b><small>A nudge when a streak is about to lapse.</small>
-        <span class="permstate">iOS build only</span></div>
+      <div class="permrow"><b>Notifications</b><small>${notifPlugin()
+        ? "A reminder on the days you train, and a nudge if a streak is about to lapse."
+        : "A reminder on the days you train. Available in the iOS app."}</small>
+        ${notifPlugin()
+          ? (remindOn()
+              ? `<button class="btn ghost" type="button" id="remindOff">Turn off</button>`
+              : `<button class="btn primary" type="button" id="remindGo">Turn on</button>`)
+          : `<span class="permstate">iOS build only</span>`}</div>
+      ${remindOn() ? remindEditor() : ""}
     </div>
+  </div>`;
+}
+
+/* When you train, and how late the nudge waits. Kept next to the permission
+   rather than in its own screen — the setting is meaningless without it. */
+function remindEditor(){
+  const r = remindCfg();
+  const DN = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const hh = String(r.hour).padStart(2,"0") + ":" + String(r.min).padStart(2,"0");
+  return `<div class="remindbox">
+    <p class="setlab">Remind me at</p>
+    <input type="time" id="remindAt" value="${hh}" class="timein">
+    <p class="setlab">On these days</p>
+    <div class="chips" id="remindDays">
+      ${DN.map((n,i) => `<button class="chip sm" type="button" data-d="${i}"
+        aria-pressed="${(r.days||[]).indexOf(i) >= 0}">${n}</button>`).join("")}
+    </div>
+    <label class="rowtog"><input type="checkbox" id="remindNudge" ${r.nudge ? "checked" : ""}>
+      <span>Also nudge me at 8:30pm if nothing is logged that day</span></label>
+    <p class="signnote">${(r.days||[]).length
+      ? "Reminding you " + (r.days||[]).length + " day" + ((r.days||[]).length===1?"":"s") + " a week."
+      : "No days picked — only the evening nudge will fire."}</p>
   </div>`;
 }
 /* how much of the library survives the current limitations, for the note above */
@@ -3939,6 +3978,42 @@ function wireSettings(){
   $$("#unitSeg button").forEach(b => b.addEventListener("click", () => {
     state.unit = b.dataset.u; save(); renderProfileDlg();
   }));
+  const rg = $("#remindGo");
+  if(rg) rg.addEventListener("click", async () => {
+    rg.disabled = true; rg.textContent = "Asking…";
+    try{
+      const ok = await remindConnect();
+      renderProfileDlg();
+      toast(ok ? "Reminders on" : "Reminders declined",
+            ok ? "Weekdays at 6pm. Change it below." : "You can turn them on later in Settings.", "");
+    }catch(e){
+      rg.disabled = false; rg.textContent = "Turn on";
+      toast("Reminders unavailable", e.message || "Could not schedule.", "");
+    }
+  });
+  const ro = $("#remindOff");
+  if(ro) ro.addEventListener("click", async () => {
+    await remindOff(); renderProfileDlg();
+    toast("Reminders off", "Nothing further is scheduled.", "");
+  });
+  const rat = $("#remindAt");
+  if(rat) rat.addEventListener("change", () => {
+    const [h,m] = rat.value.split(":").map(Number);
+    if(isNaN(h) || isNaN(m)) return;
+    const r = remindCfg(); r.hour = h; r.min = m; save(); remindSync();
+  });
+  $$("#remindDays [data-d]").forEach(b2 => b2.addEventListener("click", () => {
+    const r = remindCfg(), d = +b2.dataset.d;
+    r.days = r.days || [];
+    const i = r.days.indexOf(d);
+    if(i >= 0) r.days.splice(i,1); else r.days.push(d);
+    r.days.sort();
+    save(); renderProfileDlg(); remindSync();
+  }));
+  const rn = $("#remindNudge");
+  if(rn) rn.addEventListener("change", () => {
+    remindCfg().nudge = rn.checked; save(); remindSync();
+  });
   const hg = $("#healthGo");
   if(hg) hg.addEventListener("click", async () => {
     hg.disabled = true; hg.textContent = "Asking…";
@@ -5570,6 +5645,8 @@ function finishSession(){
   if(ratio === 0 && !confirm("No sets logged. Bank it anyway for partial credit?")) return;
 
   const st = bumpStreak();
+  /* today is now a trained day, so tonight's nudge is wrong — rebuild */
+  if(remindOn()) setTimeout(remindSync, 0);
   const sc = scoreSession(s, state.streak);
   const already = claimedTotal(s);
   const full = Math.round(sc.total * (0.4 + 0.6*ratio));
@@ -5674,6 +5751,108 @@ async function healthSave(session, minutes){
 }
 
 /* Every day that counts, from either source. */
+/* ── Reminders ──────────────────────────────────────────────────────────────
+   Local notifications, deliberately not push. There is no server to push
+   from, and the thing that decides whether to nudge you — which days you
+   train, whether today is already logged, how long the streak is — is data
+   that never leaves the device. A local schedule also keeps working on a
+   plane, which a push does not.
+
+   Two kinds. A standing reminder on the days you said you train, repeating
+   weekly so iOS owns the recurrence. And a late nudge that only exists on
+   days you have not logged yet; every sync rebuilds it, so banking a session
+   clears tonight's before it can fire. */
+let _notifProxy = null;
+function notifPlugin(){
+  const C = window.Capacitor;
+  if(!(C && C.isNativePlatform && C.isNativePlatform() && C.registerPlugin)) return null;
+  if(!_notifProxy) _notifProxy = C.registerPlugin("Notify");
+  return _notifProxy;
+}
+function remindCfg(){
+  state.remind = state.remind || {on:false, granted:false, hour:18, min:0,
+                                  days:[1,2,3,4,5], nudge:true};
+  return state.remind;
+}
+function remindOn(){ const r = remindCfg(); return !!(r.on && r.granted); }
+
+async function remindConnect(){
+  const N = notifPlugin();
+  if(!N) throw new Error("Reminders are only available in the iOS app.");
+  const res = await N.requestPermissions();
+  const r = remindCfg();
+  r.granted = res && res.display === "granted";
+  if(r.granted) r.on = true;
+  save();
+  if(r.granted) await remindSync();
+  return r.granted;
+}
+
+/* Rebuild the whole schedule from scratch. Idempotent on purpose — every
+   caller can just say "sync" without tracking what is already pending. */
+async function remindSync(){
+  const N = notifPlugin();
+  if(!N) return;
+  try{
+    const pend = await N.getPending();
+    const ids = ((pend && pend.notifications) || []).map(n => ({id:n.id}));
+    if(ids.length) await N.cancel({notifications:ids});
+  }catch(e){ /* nothing pending, or the OS revoked us; rescheduling is safe */ }
+
+  if(!remindOn()) return;
+  const r = remindCfg();
+  const days = (r.days && r.days.length) ? r.days : [0,1,2,3,4,5,6];
+  const list = [];
+
+  /* the standing reminder — weekday is 1=Sunday in both iOS and Capacitor */
+  for(const d of days) list.push({
+    id: 100 + d,
+    title: "Time to train",
+    body: remindLine(),
+    schedule: {on:{weekday:d + 1, hour:r.hour, minute:r.min}, allowWhileIdle:true}
+  });
+
+  /* the nudge — only on days with nothing logged, and only ahead of now */
+  if(r.nudge){
+    const trained = allTrainedKeys(), now = new Date();
+    for(let k = 0; k < 14; k++){
+      const at = new Date(now.getFullYear(), now.getMonth(), now.getDate() + k, 20, 30, 0);
+      if(at <= now || trained[dayKey(at)]) continue;
+      list.push({
+        id: 200 + k,
+        title: k === 0 ? "Streak closes at midnight" : "Nothing logged today",
+        body: nudgeLine(k),
+        schedule: {at:at.getTime(), allowWhileIdle:true}
+      });
+    }
+  }
+  try{ await N.schedule({notifications:list}); }catch(e){}
+}
+
+/* Copy that knows what you have done. A generic "time to work out" gets
+   swiped away; the streak number is the part people actually respond to. */
+function remindLine(){
+  const n = state.streak || 0;
+  if(n >= 100) return n + " days deep. Keep it.";
+  if(n > 0)    return "Day " + (n + 1) + " is waiting. Forge a session.";
+  return "Pick a slot and forge a session — it takes about a minute.";
+}
+function nudgeLine(k){
+  const n = state.streak || 0;
+  if(k === 0 && n > 1) return "Your " + n + "-day streak ends tonight unless something lands.";
+  if(k === 0)          return "Still time. Even an easy day counts.";
+  return "A rest day is allowed. Two in a row is not.";
+}
+async function remindOff(){
+  const N = notifPlugin();
+  remindCfg().on = false; save();
+  if(!N) return;
+  try{
+    const pend = await N.getPending();
+    const ids = ((pend && pend.notifications) || []).map(n => ({id:n.id}));
+    if(ids.length) await N.cancel({notifications:ids});
+  }catch(e){}
+}
 function allTrainedKeys(){
   const set = {};
   for(const h of (state.history || [])) set[dayKey(new Date(h.date))] = 1;
@@ -6707,6 +6886,8 @@ $("#brand").insertAdjacentHTML("afterbegin", logoMark(30));
   syncChrome();
 })();
 if(healthOn()) setTimeout(() => healthSync().then(() => { renderLog(); renderHUD(); }), 900);
+/* the nudge window is a rolling fortnight; every launch pushes it forward */
+if(remindOn()) setTimeout(remindSync, 1200);
 if(consumeAuthFragment()) setTimeout(() => { syncNow(true); renderRewards();
   toast("Signed in", "Welcome back.", ""); $("#rewardsPanel").scrollIntoView({behavior:"smooth"}); }, 300);
 else if(signedIn()) setTimeout(() => syncNow(true), 400);
