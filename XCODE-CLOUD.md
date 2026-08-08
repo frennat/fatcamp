@@ -52,8 +52,20 @@ and also checks `Package.resolved` is still present.
 Open **TestFlight** on your phone → Fatcamp → **Update**. Builds do not
 install themselves.
 
-If it isn't there, it is still processing. App Store Connect shows
-"Processing" for a while after the archive goes green.
+**If the build is not offered at all, check the tester group first.** A build
+can archive, upload and process perfectly and still be invisible on the phone
+because it was never distributed to anyone. Nothing reports this as an error —
+Xcode Cloud goes green, App Store Connect lists the build, and the phone simply
+has nothing new. It cost most of 2026-08-08 and several wrong theories about
+build numbers.
+
+Turn it on once: **App Store Connect → TestFlight → Internal Testing → your
+group → Automatically distribute builds.** The same thing can be set as the
+workflow's TestFlight post-action, but the group setting applies however the
+build arrives.
+
+Only after that is worth suspecting processing time, which runs 5–15 minutes
+past the archive going green.
 
 ---
 
