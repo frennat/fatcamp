@@ -1239,6 +1239,17 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
   .tabbar .tabforge .fmark{ width:58px; height:58px; margin-top:-27px }
 }
 .brandmark{width:30px;height:30px;flex:none;display:block;border-radius:7px}
+/* The target reads before the input, because it is the answer — the box below
+   exists only to correct it. */
+.target{display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin:12px 0 2px;
+  padding:11px 13px;border-radius:12px;
+  border:1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+  background:color-mix(in srgb, var(--accent) 9%, transparent)}
+.target .tw{font-family:var(--f-mono);font-size:1.45rem;font-weight:600;color:var(--ink);line-height:1}
+.target .tw small{font-size:.62em;margin-left:2px;color:var(--ink-3)}
+.target .twhy{flex:1;min-width:9ch;font-size:.86rem;color:var(--ink-2);line-height:1.35}
+.target .btn.sm{font-size:.8rem;padding:6px 12px}
+.firstload{margin:12px 0 2px}
 </style>
 </head>
 <body>
@@ -3606,7 +3617,7 @@ const KEY = "fatcamp.v2", OLD_KEY = "fatcamp.v1";
 const LEGACY_KEY = "liftedai.v2", LEGACY_OLD_KEY = "liftedai.v1";
 const PROFILE_FIELDS = ["name","color","equip","customEquip","gymPhoto","xp","streak",
                         "freezes","lastDay","history","badges","limits","cfg","session",
-                        "rewards","redeemed","calView","prs","prPick","unit","lastWeight",
+                        "rewards","redeemed","calView","prs","prPick","unit","lastWeight","load",
                         "week","savedSplits","boardScope"];
 const PROFILE_COLORS = ["var(--p25)","var(--p20)","var(--p15)","var(--p10)"];
 /* Movement limitations. Each one names the muscles and patterns to keep out of
@@ -3641,7 +3652,7 @@ function blankProfile(name, color){
           equip:HOME_DEFAULT.slice(), customEquip:[], gymPhoto:null,
           xp:0, streak:0, freezes:0, lastDay:null, history:[], badges:[], limits:[],
           rewards:[], redeemed:[], calView:"month",
-          prs:[], prPick:null, unit:"lb", lastWeight:{}, week:null, savedSplits:[], boardScope:"global",
+          prs:[], prPick:null, unit:"lb", lastWeight:{}, load:{}, week:null, savedSplits:[], boardScope:"global",
           cfg:Object.assign({}, DEFAULT_CFG), session:null};
 }
 let vault = {v:2, active:"p1", theme:null, plan:null, firstUse:null, auth:null, cloud:null, profiles:{}};
@@ -3712,6 +3723,7 @@ function migrateProfile(p){
   if(!Array.isArray(out.prs)) out.prs = [];
   if(!out.unit) out.unit = "lb";
   if(!out.lastWeight || typeof out.lastWeight !== "object") out.lastWeight = {};
+  if(!out.load || typeof out.load !== "object") out.load = {};
   if(!Array.isArray(out.savedSplits)) out.savedSplits = [];
   if(out.week && Array.isArray(out.week.days))
     out.week.days.forEach(d => { if(d.session) unpackSession(d.session); });
@@ -3885,6 +3897,67 @@ function addPr(ex, name, w, r){
   if($("#pBody") && $("#prSection")) renderPRs();
 }
 function lastWeightFor(id){ return (state.lastWeight || {})[id] || ""; }
+
+/* ── Next Lift ──────────────────────────────────────────────────────────────
+   The generator answers "what should I do today". It never answered "how
+   heavy", which is the question people actually stand in the gym guessing at,
+   and the one that decides whether the session did anything.
+
+   Everything needed was already being written down — the weight typed into
+   each movement, and which sets got ticked. It was only ever read back as a
+   placeholder. This turns that history into a target with a reason attached,
+   and steps it on its own.
+
+   Rules kept deliberately blunt, because a lifter has to be able to predict
+   them. Clear every set, the bar goes up one notch. Miss a couple, it holds.
+   Miss badly, it comes down a tenth. Nothing here is auto-regulation or a
+   1RM model — it is the progression a decent coach would write on paper. */
+function loadStore(){ return (state.load = state.load || {}); }
+
+/* Jump size follows what the movement can actually be loaded in. Big lower
+   body moves on a barbell take real plates; anything driven by a dumbbell
+   moves in whatever the rack steps in, and that is the smallest honest jump. */
+function stepFor(x){
+  const kg = (state.unit || "lb") === "kg";
+  const db = x.eq && (x.eq.includes("dumbbell") || x.eq.includes("kettlebell"));
+  const bigLower = x.big && (x.pat === "squat" || x.pat === "hinge");
+  if(db)        return kg ? 2   : 5;
+  if(bigLower)  return kg ? 5   : 10;
+  if(x.cls === "comp") return kg ? 2.5 : 5;
+  return kg ? 2 : 5;                       /* isolation */
+}
+function roundTo(v, step){ return Math.max(step, Math.round(v/step)*step); }
+
+/* A target, and the sentence explaining it. Returns null when there is no
+   history — inventing a number for someone whose strength we have never seen
+   is worse than admitting we do not know it yet. */
+function suggestLoad(x){
+  const rec = loadStore()[x.id];
+  const prev = rec && parseFloat(rec.w);
+  if(!prev || !isFinite(prev)) return null;
+  const step = stepFor(x);
+  const when = rec.at ? new Date(rec.at).toLocaleDateString([], {month:"short", day:"numeric"}) : null;
+  if(rec.ratio >= 1){
+    return {w: roundTo(prev + step, step), why: "up " + step + " on " + (when || "last time") + " — you cleared every set"};
+  }
+  if(rec.ratio >= 0.6){
+    return {w: roundTo(prev, step), why: "same as " + (when || "last time") + " — finish it this time"};
+  }
+  return {w: roundTo(prev * 0.9, step), why: "down a notch — " + (when || "last time") + " got away from you"};
+}
+
+/* Called once a session is banked. Ratio, not a pass/fail, so the difference
+   between "missed one rep" and "abandoned it" survives to the next session. */
+function recordLoads(sess){
+  const store = loadStore();
+  for(const m of sess.moves){
+    const w = parseFloat(m.weight);
+    if(!w || !isFinite(w)) continue;
+    const done = m.doneSets.filter(Boolean).length;
+    store[m.id] = {w: m.weight, ratio: m.sets ? done/m.sets : 0, at: new Date().toISOString()};
+  }
+  save();
+}
 function setLastWeight(id, w){
   state.lastWeight = state.lastWeight || {};
   if(w) state.lastWeight[id] = w; else delete state.lastWeight[id];
@@ -5711,9 +5784,18 @@ function buildDrawer(row, m){
           <button class="btn ghost swapbtn" type="button" data-swap>Swap</button>
           <button class="btn ghost" type="button" data-surprise title="Something you haven't done lately">Surprise me</button>
         </div>
+        ${(() => {
+          const t = suggestLoad(x);
+          return t ? `<div class="target" data-target="${t.w}">
+            <span class="tw num">${t.w}<small>${esc(state.unit||"lb")}</small></span>
+            <span class="twhy">${esc(t.why)}</span>
+            <button class="btn ghost sm" type="button" data-usetarget>Use it</button>
+          </div>` : `<p class="signnote firstload">First time on this one \u2014 log what you lift and
+            Fatcamp takes it from here.</p>`;
+        })()}
         <div class="loadrow">
           <span class="lbl">Load</span>
-          <input class="wt" data-wt placeholder="${esc(String(lastWeightFor(m.id) || "weight"))}"
+          <input class="wt" data-wt placeholder="${esc(String((suggestLoad(x)||{}).w || lastWeightFor(m.id) || "weight"))}"
                  value="${esc(m.weight||"")}" inputmode="decimal" aria-label="Weight used">
           <span class="unitpick" role="group" aria-label="Unit">
             <button type="button" data-unit="lb" aria-pressed="${(state.unit||"lb")==="lb"}">lb</button>
@@ -5787,6 +5869,16 @@ function buildDrawer(row, m){
   d.querySelector("[data-swap]").addEventListener("click", () => swapMove(m));
   d.querySelector("[data-surprise]").addEventListener("click", () => surpriseMove(m));
 
+  const tBtn = d.querySelector("[data-usetarget]");
+  if(tBtn) tBtn.addEventListener("click", () => {
+    const t = d.querySelector(".target"), w = t && t.dataset.target;
+    if(!w) return;
+    const el = d.querySelector("[data-wt]");
+    el.value = w;
+    /* the field listens on input, not change — dispatching the wrong one left
+       the button looking like it worked while saving nothing */
+    el.dispatchEvent(new Event("input", {bubbles:true}));
+  });
   const wtEl = d.querySelector("[data-wt]"), repsEl = d.querySelector("[data-reps]"),
         prNote = d.querySelector("[data-prnote]");
   function paintPr(){
@@ -5992,6 +6084,8 @@ function finishSession(){
   const ratio = total ? done/total : 0;
   if(ratio === 0 && !confirm("No sets logged. Bank it anyway for partial credit?")) return;
 
+  recordLoads(s);            /* before the session is cleared, so the next one
+                                opens knowing what happened in this one */
   const st = bumpStreak();
   /* today is now a trained day, so tonight's nudge is wrong — rebuild */
   if(remindOn()) setTimeout(remindSync, 0);
