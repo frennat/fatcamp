@@ -1250,6 +1250,48 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
 .target .twhy{flex:1;min-width:9ch;font-size:.86rem;color:var(--ink-2);line-height:1.35}
 .target .btn.sm{font-size:.8rem;padding:6px 12px}
 .firstload{margin:12px 0 2px}
+/* Workload was one long column of seven stacked fields. Everything is still
+   here — the three you touch every session stay open, the rest fold away
+   behind a summary of their own state, so the screen can be read without
+   scrolling and nothing is more than one tap deep. */
+.fgroup{border:1px solid var(--line);border-radius:var(--r);background:var(--bg-sunk);
+  margin:0 0 10px;overflow:hidden}
+.fgroup > summary{
+  list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;
+  padding:12px 14px;-webkit-tap-highlight-color:transparent;user-select:none}
+.fgroup > summary::-webkit-details-marker{display:none}
+.fgroup > summary::after{
+  content:"";flex:none;width:8px;height:8px;margin-left:auto;
+  border-right:2px solid var(--ink-3);border-bottom:2px solid var(--ink-3);
+  transform:rotate(45deg) translate(-2px,-2px);transition:transform .18s}
+.fgroup[open] > summary::after{transform:rotate(-135deg) translate(-2px,-2px)}
+.fgroup > summary:hover{background:color-mix(in srgb, var(--line) 30%, transparent)}
+.gname{font-family:var(--f-display);font-weight:800;font-size:1rem;letter-spacing:-.01em;
+  text-transform:uppercase;color:var(--ink)}
+/* the summary is the point of collapsing — it has to say what is set inside */
+.gsum{font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.fgroup .field{padding:0 14px 14px}
+.fgroup .field:first-of-type{padding-top:2px}
+/* the always-open trio sits flush, no chrome, so it reads as the main form */
+.criteria > .field{padding:0 0 16px}
+.presets{padding:0 10px 12px;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+/* Four tiles across instead of four stacked cards. The descriptions were the
+   bulk of the height and are read once, if ever — the name and the bolt count
+   already say which is which, and the copy is still there on the long press
+   tooltip and the first run. */
+.presets .preset{padding:10px 8px;min-height:0;--mw:0px}
+.presets .preset .pd{display:none}
+.presets .preset b{font-size:14px;line-height:1.05}
+.presets .preset .pmark svg{height:26px}
+.presets .preset .pmark svg.run{height:26px}
+@media (max-width:430px){
+  .presets .preset b{font-size:12px}
+  .presets .preset .pmark svg,.presets .preset .pmark svg.run{height:22px}
+}
+@media (max-width:520px){
+  .presets{grid-template-columns:1fr 1fr}
+}
 </style>
 </head>
 <body>
@@ -1307,15 +1349,15 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
   <div class="tabpane" id="paneWorkload">
   <section class="panel" id="setupPanel">
     <div class="panel-head">
-      <h2>Get in the slot</h2>
-      <div class="hint">One tap fills everything below.<br>Tune it after, or don't.</div>
-    </div>
-    <div class="presets" id="presets"></div>
-
-    <div class="panel-head" style="margin-top:28px">
       <h2>Workload</h2>
       <div class="hint" id="criteriaHint">Nothing loaded yet</div>
     </div>
+
+    <details class="fgroup slots" id="grpSlots" open>
+      <summary><span class="gname">Get in the slot</span>
+        <span class="gsum">One tap fills everything</span></summary>
+      <div class="presets" id="presets"></div>
+    </details>
 
     <div class="criteria">
       <div class="field">
@@ -1350,6 +1392,8 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
         <p class="sub" id="effortNote" style="margin:8px 0 0"></p>
       </div>
 
+      <details class="fgroup" id="grpFocus">
+      <summary><span class="gname">Focus</span><span class="gsum" id="sumFocus"></span></summary>
       <div class="field">
         <p class="eyebrow">Target muscle groups</p>
         <p class="sub">Pick what you want to hit. The generator fills the gaps around it.</p>
@@ -1362,6 +1406,10 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
         <div class="chips" id="compoundChips"></div>
       </div>
 
+      </details>
+
+      <details class="fgroup" id="grpExtras">
+      <summary><span class="gname">Failure &amp; conditioning</span><span class="gsum" id="sumExtras"></span></summary>
       <div class="field">
         <p class="eyebrow">Failure mode</p>
         <div class="locrow">
@@ -1379,6 +1427,7 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
           <div class="chips" id="cardioChips" style="margin-left:auto"></div>
         </div>
       </div>
+      </details>
     </div>
 
     <div class="forgebar">
@@ -4473,7 +4522,7 @@ function presetMarkW(k){
 }
 function renderPresets(){
   $("#presets").innerHTML = Object.entries(PRESETS).map(([k,p]) => `
-    <button class="preset" type="button" data-preset="${k}" style="--pc:${p.c};--mw:${presetMarkW(k)}px" aria-pressed="${state.cfg.preset===k}">
+    <button class="preset" type="button" data-preset="${k}" style="--pc:${p.c};--mw:${presetMarkW(k)}px" aria-pressed="${state.cfg.preset===k}" title="${esc(p.d)}">
       <span class="pmark">${presetIcon(k)}</span>
       <b>${p.n}</b>
       <span class="pd">${esc(p.d)}</span>
@@ -4538,7 +4587,27 @@ function renderCardioChips(){
     state.cfg.cstyle = b.dataset.cs; state.cfg.cardioOn = true; state.cfg.preset = null; syncControls(); save();
   }));
 }
+/* A fold that hides its own state is worse than no fold, so each closed group
+   reports what is set inside it. */
+function paintGroupSummaries(){
+  const f = $("#sumFocus"), e = $("#sumExtras");
+  if(f){
+    const foc = (state.cfg.focus || []).filter(k => k !== "full");
+    const comp = (state.cfg.compounds || []).length;
+    const bits = [];
+    bits.push(foc.length ? foc.length + " group" + (foc.length===1?"":"s") : "Full body");
+    if(comp) bits.push(comp + " lift" + (comp===1?"":"s") + " pinned");
+    f.textContent = bits.join(" · ");
+  }
+  if(e){
+    const bits = [];
+    if(state.cfg.failureOn) bits.push("Failure on");
+    if(state.cfg.cardioOn)  bits.push("Cardio on");
+    e.textContent = bits.length ? bits.join(" · ") : "Both off";
+  }
+}
 function syncControls(){
+  try{ paintGroupSummaries(); }catch(e){}
   const c = state.cfg;
   $$("#presets .preset").forEach(b => b.setAttribute("aria-pressed", String(c.preset === b.dataset.preset)));
   $$("#locSeg button").forEach(b => b.setAttribute("aria-pressed", String(c.loc === b.dataset.loc)));
