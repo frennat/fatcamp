@@ -264,7 +264,7 @@ h1,h2,h3,h4{font-family:var(--f-display);font-weight:800;margin:0;text-wrap:bala
   filter:drop-shadow(0 9px 20px color-mix(in srgb,var(--accent) 48%,transparent));
   transition:transform .16s cubic-bezier(.2,.9,.3,1.5),filter .2s;
 }
-.fmark svg{display:block;width:100%;height:100%}
+.fmark svg,.fmark img{display:block;width:100%;height:100%;border-radius:50%}
 .fmark:hover{transform:scale(1.08) rotate(-7deg)}
 .fmark:active{transform:scale(.93)}
 .fmark:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
@@ -1232,6 +1232,7 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
 @media (max-width:360px){
   .tabbar .tabforge .fmark{ width:58px; height:58px; margin-top:-27px }
 }
+.brandmark{width:30px;height:30px;flex:none;display:block;border-radius:7px}
 </style>
 </head>
 <body>
@@ -4803,7 +4804,16 @@ function forgeMarkSVG(){
       '<path d="' + bolt + '" fill="#F6F1E5" stroke="#F6F1E5" stroke-width="2.6"/>' +
     '</g></svg>';
 }
-function paintMarks(){ $$(".fmark").forEach(b => { if(!b.firstChild) b.innerHTML = forgeMarkSVG(); }); }
+/* Every mark is the badge now — the Create tab, the ask box, the forge button
+   in Workload. forgeMarkSVG() is left in place: it is the only version that
+   stays crisp at tab-bar size, so it is the fallback worth returning to if the
+   artwork proves too busy small. */
+function paintMarks(){
+  $$(".fmark").forEach(b => {
+    if(b.firstChild) return;
+    b.innerHTML = '<img src="icons/icon-512.png" alt="" decoding="async">';
+  });
+}
 
 /* ------------------------------------------------------------- the ask object
    The shape behind the box. A bicycle, a bench and a treadmill cannot be made
@@ -7144,15 +7154,12 @@ load();
 applyTheme();
 renderPresets(); renderFocus(); renderCardioChips(); syncControls();
 renderHUD(); renderLog(); renderSession(false); renderProfileBtn(); renderPlans(); renderWeek();
-$("#brand").insertAdjacentHTML("afterbegin", logoMark(30));
-(function setFavicon(){
-  const svg = logoMark(64, {accent:"#E8503F", accent2:"#FF8A72", ink:"#F0EDE6"})
-    .replace("<svg ", '<svg style="background:#17161A" ');
-  const l = document.querySelector('link[rel="icon"]') || document.createElement("link");
-  l.rel = "icon"; l.type = "image/svg+xml";
-  l.href = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-  document.head.appendChild(l);
-})();
+/* The badge is artwork now rather than a generated mark, so the header and the
+   favicon both point at the same file the home screen uses. logoMark() stays
+   defined — it redraws itself per theme and is worth keeping if a flat
+   monochrome mark is ever wanted again. */
+$("#brand").insertAdjacentHTML("afterbegin",
+  '<img class="brandmark" src="icons/icon-192.png" alt="" width="30" height="30" decoding="async">');
 (function askScene(){
   paintMarks();
   const cv = $("#askObj");
