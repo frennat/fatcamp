@@ -1292,6 +1292,13 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
 @media (max-width:520px){
   .presets{grid-template-columns:1fr 1fr}
 }
+.bodygrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.bodygrid label{display:flex;flex-direction:column;gap:5px;min-width:0}
+.bodygrid span{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3)}
+.bodygrid input,.bodygrid select{font:inherit;font-size:1rem;padding:9px 11px;border-radius:10px;
+  color:var(--ink);background:var(--bg);min-width:0;
+  border:1px solid color-mix(in srgb, var(--line) 70%, transparent)}
 </style>
 </head>
 <body>
@@ -3666,7 +3673,7 @@ const KEY = "fatcamp.v2", OLD_KEY = "fatcamp.v1";
 const LEGACY_KEY = "liftedai.v2", LEGACY_OLD_KEY = "liftedai.v1";
 const PROFILE_FIELDS = ["name","color","equip","customEquip","gymPhoto","xp","streak",
                         "freezes","lastDay","history","badges","limits","cfg","session",
-                        "rewards","redeemed","calView","prs","prPick","unit","lastWeight","load",
+                        "rewards","redeemed","calView","prs","prPick","unit","lastWeight","load","body",
                         "week","savedSplits","boardScope"];
 const PROFILE_COLORS = ["var(--p25)","var(--p20)","var(--p15)","var(--p10)"];
 /* Movement limitations. Each one names the muscles and patterns to keep out of
@@ -3701,7 +3708,7 @@ function blankProfile(name, color){
           equip:HOME_DEFAULT.slice(), customEquip:[], gymPhoto:null,
           xp:0, streak:0, freezes:0, lastDay:null, history:[], badges:[], limits:[],
           rewards:[], redeemed:[], calView:"month",
-          prs:[], prPick:null, unit:"lb", lastWeight:{}, load:{}, week:null, savedSplits:[], boardScope:"global",
+          prs:[], prPick:null, unit:"lb", lastWeight:{}, load:{}, body:{}, week:null, savedSplits:[], boardScope:"global",
           cfg:Object.assign({}, DEFAULT_CFG), session:null};
 }
 let vault = {v:2, active:"p1", theme:null, plan:null, firstUse:null, auth:null, cloud:null, profiles:{}};
@@ -3773,6 +3780,7 @@ function migrateProfile(p){
   if(!out.unit) out.unit = "lb";
   if(!out.lastWeight || typeof out.lastWeight !== "object") out.lastWeight = {};
   if(!out.load || typeof out.load !== "object") out.load = {};
+  if(!out.body || typeof out.body !== "object") out.body = {};
   if(!Array.isArray(out.savedSplits)) out.savedSplits = [];
   if(out.week && Array.isArray(out.week.days))
     out.week.days.forEach(d => { if(d.session) unpackSession(d.session); });
@@ -3962,6 +3970,55 @@ function lastWeightFor(id){ return (state.lastWeight || {})[id] || ""; }
    Miss badly, it comes down a tenth. Nothing here is auto-regulation or a
    1RM model — it is the progression a decent coach would write on paper. */
 function loadStore(){ return (state.load = state.load || {}); }
+
+/* ── Energy cost ────────────────────────────────────────────────────────────
+   Calories from the ACSM metabolic equation: kcal = MET x 3.5 x kg / 200 x min.
+   Body mass and duration do nearly all the work in that formula, which is why
+   weight is the one field this cannot run without.
+
+   Sex, height and age are not decoration. Two people at the same weight burn
+   differently because they carry different lean mass, so the MET figure is
+   scaled by resting metabolic rate against a reference body — Mifflin-St Jeor,
+   the same equation a dietitian would use. Without those fields the scale is
+   simply 1 and the estimate falls back to weight and time alone.
+
+   It is an estimate and the app says so. Anyone wanting a real number wears a
+   strap; this is here to make effort legible, not to be audited. */
+function bodyOf(){
+  return (state.body = state.body || {sex:"", cm:0, kg:0, age:0});
+}
+function bodyKg(){
+  const b = bodyOf();
+  return b.kg > 0 ? b.kg : 0;
+}
+function bmr(b){
+  if(!b.kg || !b.cm || !b.age || !b.sex) return 0;
+  const base = 10*b.kg + 6.25*b.cm - 5*b.age;
+  return b.sex === "f" ? base - 161 : base + 5;
+}
+/* MET by how hard the session actually is. Resistance training sits around 3.5
+   easy to 6 hard; a conditioning block pushes the whole session up. */
+function sessionMET(sess){
+  const eff = (sess.cfg && sess.cfg.effort) || 2;
+  let met = [3.5, 4.3, 5.2, 6.0][Math.max(0, Math.min(3, eff-1))];
+  if(sess.cfg && sess.cfg.cardioOn) met += 1.6;
+  if(sess.moves && sess.moves.some(m => m.failure)) met += 0.3;
+  return met;
+}
+function sessionCalories(sess, minutes){
+  const kg = bodyKg();
+  if(!kg) return 0;
+  const mins = minutes || sess.minutes || 0;
+  if(!mins) return 0;
+  const b = bodyOf();
+  const kcal = sessionMET(sess) * 3.5 * kg / 200 * mins;
+  /* scale against a reference body of the same sex, so height and age move the
+     number in the direction they actually move expenditure */
+  const mine = bmr(b);
+  const ref  = bmr({sex:b.sex || "m", kg, cm: b.sex === "f" ? 164 : 178, age: 30});
+  const scale = (mine && ref) ? Math.max(0.85, Math.min(1.15, mine/ref)) : 1;
+  return Math.round(kcal * scale);
+}
 
 /* Jump size follows what the movement can actually be loaded in. Big lower
    body moves on a barbell take real plates; anything driven by a dumbbell
@@ -4201,6 +4258,30 @@ function settingsMarkup(){
       ? lim.length + " limitation" + (lim.length===1?"":"s") + " active — " + poolLeft() + " movements still available."
       : "None set. Everything your kit supports is on the table."}</p>
 
+    <p class="setlab">Your body</p>
+    <p class="sub">Used to estimate what a session costs you. Weight does nearly all
+      the work; the rest sharpens it. Stored on this device and sent nowhere.</p>
+    <div class="bodygrid">
+      <label><span>Sex</span>
+        <select id="bSex">
+          <option value=""  ${!bodyOf().sex ? "selected" : ""}>—</option>
+          <option value="m" ${bodyOf().sex==="m" ? "selected" : ""}>Male</option>
+          <option value="f" ${bodyOf().sex==="f" ? "selected" : ""}>Female</option>
+        </select></label>
+      <label><span>Age</span>
+        <input id="bAge" type="number" inputmode="numeric" min="13" max="99"
+               value="${bodyOf().age || ""}" placeholder="—"></label>
+      <label><span>Height (cm)</span>
+        <input id="bCm" type="number" inputmode="numeric" min="120" max="230"
+               value="${bodyOf().cm || ""}" placeholder="—"></label>
+      <label><span>Weight (kg)</span>
+        <input id="bKg" type="number" inputmode="decimal" min="30" max="250"
+               value="${bodyOf().kg || ""}" placeholder="—"></label>
+    </div>
+    <p class="signnote">${bodyKg()
+      ? "Calories will show on every session you forge."
+      : "Add your weight and sessions start showing an estimated calorie burn."}</p>
+
     <p class="setlab">Units</p>
     <div class="seg" id="unitSeg" role="group" aria-label="Units">
       <button type="button" data-u="lb" aria-pressed="${(state.unit||"lb")==="lb"}">Pounds</button>
@@ -4273,6 +4354,15 @@ function wireSettings(){
   $$("#unitSeg button").forEach(b => b.addEventListener("click", () => {
     state.unit = b.dataset.u; save(); renderProfileDlg();
   }));
+  [["bSex","sex"],["bAge","age"],["bCm","cm"],["bKg","kg"]].forEach(([id,key]) => {
+    const el = $("#" + id);
+    if(!el) return;
+    el.addEventListener("change", () => {
+      const b = bodyOf();
+      b[key] = key === "sex" ? el.value : (parseFloat(el.value) || 0);
+      save(); renderProfileDlg(); renderSession(false);
+    });
+  });
   const rg = $("#remindGo");
   if(rg) rg.addEventListener("click", async () => {
     rg.disabled = true; rg.textContent = "Asking…";
@@ -5646,6 +5736,11 @@ function renderSession(animate){
         <div class="stat"><b class="num">${s.minutes}<small style="font-size:11px"> min</small></b><small>Est. time</small></div>
         <div class="stat"><b class="num">${totalSets}</b><small>Work sets</small></div>
         <div class="stat"><b class="num">${s.coverage}<small style="font-size:11px">%</small></b><small>${(s.cfg.focus.length?s.cfg.focus:["full"]).includes("full")?"Body covered":"Target covered"}</small></div>
+        ${(() => {
+          const c = sessionCalories(s);
+          return c ? `<div class="stat"><b class="num">${c}<small style="font-size:11px"> kcal</small></b>
+            <small>Est. burn</small></div>` : "";
+        })()}
         <div class="stat"><b class="num" style="color:var(--accent)">${proj.total}</b><small>Points on offer</small></div>
       </div>
       <div class="coverwrap">
@@ -6169,7 +6264,7 @@ function finishSession(){
                          loc:s.cfg.loc, cardio:!!s.cardio,   /* so the ask box can quote it back */
                          mids:s.moves.map(m => m.id)});
   state.history = state.history.slice(0, 40);
-  healthSave(s, s.minutes);            /* let the rings know */
+  healthSave(s, s.minutes, sessionCalories(s));   /* let the rings know */
   const newBadges = checkBadges();
   if(state.week && typeof s.weekDay === "number" && state.week.days[s.weekDay]){
     state.week.days[s.weekDay].doneDate = new Date().toISOString();
@@ -6255,10 +6350,11 @@ async function healthSync(){
   }
 }
 
-async function healthSave(session, minutes){
+async function healthSave(session, minutes, calories){
   const H = healthPlugin();
   if(!H || !healthOn() || !minutes) return;
-  try{ await H.saveWorkout({minutes:Math.round(minutes)}); }catch(e){}
+  /* the Swift side has always accepted calories; nothing was ever sending any */
+  try{ await H.saveWorkout({minutes:Math.round(minutes), calories:Math.round(calories||0)}); }catch(e){}
 }
 
 /* Every day that counts, from either source. */
