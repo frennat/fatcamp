@@ -1627,7 +1627,10 @@ const POSE = (j,l2,a2) => ({j,l2:l2||null,a2:a2||null});
 const ARCH = {
   squat:{v:"side",pr:["bb_back"],
     a:POSE(J(98,32, 99,52, 97,59, 86,74, 93,57, 99,110, 99,115, 100,166, 98,212, 112,218)),
-    b:POSE(J(112,106, 106,124, 109,132, 96,156, 103,130, 76,176, 77,181, 127,176, 97,212, 112,218))},
+    /* Hips were 21 behind the heel — a figure falling over backwards. Now 9
+       behind the ankle, where they sit with a forward torso lean. Depth is
+       unchanged and still below parallel: hip y 179 vs knee y 174. */
+    b:POSE(J(108,104, 103,122, 106,130, 94,154, 101,128, 88,174, 89,179, 124,174, 97,212, 112,218))},
   frontsquat:{v:"side",pr:["bb_front"],
     a:POSE(J(100,32, 101,52, 99,59, 108,80, 110,58, 100,110, 100,115, 101,166, 99,212, 113,218)),
     b:POSE(J(90,97, 88,116, 90,124, 104,144, 98,122, 77,175, 78,180, 126,176, 98,212, 112,218))},
@@ -1636,13 +1639,20 @@ const ARCH = {
     b:POSE(J(132,102, 118,117, 116,124, 114,152, 112,180, 69,151, 69,156, 118,172, 96,212, 110,218))},
   rdl:{v:"side",pr:["bb_hands"],
     a:POSE(J(100,32, 101,52, 99,59, 98,88, 97,116, 100,110, 100,115, 100,166, 98,212, 112,218)),
-    b:POSE(J(155,98, 141,105, 139,111, 137,139, 135,167, 82,118, 82,123, 90,168, 96,212, 110,218))},
+    /* Bar tracks the thigh. It used to drift 38 forward of where it starts,
+       finishing 45 in front of the shin — a bar path nobody should copy.
+       Hips go back rather than down: 30 of travel, 4 of drop, shins near
+       vertical. Hips dropping is what made this read as a squat. */
+    b:POSE(J(136,92, 123,100, 120,107, 115,134, 111,162, 70,114, 70,119, 92,168, 96,212, 110,218))},
   swing:{v:"side",pr:["kb_hands"],
     a:POSE(J(118,62, 111,73, 109,79, 107,108, 103,136, 87,118, 87,123, 96,167, 96,212, 110,218)),
     b:POSE(J(100,30, 100,50, 100,58, 112,72, 132,62, 100,110, 100,115, 100,166, 98,212, 112,218))},
   bench:{v:"side",root:"pelvis",pr:["bench","bb_hands"],
-    a:POSE(J(58,138, 74,142, 82,145, 96,131, 85,122, 122,150, 126,152, 152,176, 146,208, 160,214)),
-    b:POSE(J(58,138, 74,142, 82,145, 84,120, 85,94,  122,150, 126,152, 152,176, 146,208, 160,214))},
+    /* The bar used to stop 23 above the chest and travel only 28 — a short
+       floaty press that never touched. It now comes to the chest and the
+       press runs 49, which is what makes the rep legible. */
+    a:POSE(J(58,138, 74,142, 82,145, 97,142, 86,137, 122,150, 126,152, 152,176, 146,208, 160,214)),
+    b:POSE(J(58,138, 74,142, 82,145, 84,116, 85,88,  122,150, 126,152, 152,176, 146,208, 160,214))},
   inclinebench:{v:"side",root:"pelvis",pr:["bench_incl","db_hands"],
     a:POSE(J(56,120, 72,128, 80,132, 94,120, 84,110, 118,152, 122,155, 170,180, 150,220, 166,224)),
     b:POSE(J(56,120, 72,128, 80,132, 82,108, 82,84,  118,152, 122,155, 170,180, 150,220, 166,224))},
