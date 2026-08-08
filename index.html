@@ -751,16 +751,22 @@ input[type=range]::-moz-range-thumb{
 .calhd{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .calseg{margin-left:auto}
 .calseg button{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.12em;padding:6px 12px}
-.cal-week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;max-width:620px}
+/* minmax(0,1fr), not 1fr. A bare 1fr will not shrink below its content's
+   min-content width, so a planned-day label like "Shoulders" widens its
+   own column and pushes the whole week outside the card. Month view only
+   ever holds a number, which is why this was week-only. */
+.cal-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;max-width:620px}
 .wk{border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface-2);padding:9px 4px;
-  text-align:center;min-height:66px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  text-align:center;min-height:66px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  min-width:0;overflow:hidden}
 .wk small{font-family:var(--f-mono);font-size:8.5px;letter-spacing:.1em;color:var(--ink-3)}
 .wk b{font-family:var(--f-mono);font-size:15px;font-weight:600}
-.wk i{font-family:var(--f-mono);font-size:9px;font-style:normal;color:var(--accent-ink);opacity:.9}
+.wk i{font-family:var(--f-mono);font-size:9px;font-style:normal;color:var(--accent-ink);opacity:.9;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
 .wk.on{background:var(--c);border-color:var(--c)}
 .wk.on small,.wk.on b,.wk.on i{color:#fff;mix-blend-mode:normal}
 .wk.fut{opacity:.35}
-.cal-month{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;max-width:400px}
+.cal-month{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;max-width:400px}
 .cal-month .dow{font-family:var(--f-mono);font-size:8.5px;letter-spacing:.1em;color:var(--ink-3);
   text-align:center;padding-bottom:2px}
 .mo{aspect-ratio:1;max-height:50px;display:grid;place-items:center;border-radius:7px;border:1px solid var(--line);

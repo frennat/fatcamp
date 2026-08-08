@@ -10,7 +10,13 @@
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 
-const files = ["index.html", "manifest.json"];
+/* Everything the service worker serves has to feed the stamp, not just the
+   shell. Icons were left out at first, so replacing the logo changed no hash,
+   the cache name stayed put, and installed copies kept serving the old mark
+   forever with nothing to indicate why. */
+const files = ["index.html", "manifest.json",
+               "icons/icon-192.png", "icons/icon-512.png",
+               "icons/icon-180.png", "icons/maskable-512.png"];
 const h = createHash("sha256");
 for (const f of files) h.update(readFileSync(f));
 const stamp = h.digest("hex").slice(0, 10);
