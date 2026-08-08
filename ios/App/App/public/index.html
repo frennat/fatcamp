@@ -1033,11 +1033,11 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 /* the bar is fixed, so every pane has to end above it */
 .panes{padding-bottom:calc(74px + env(safe-area-inset-bottom, 0px))}
 .tabbar{
-  position:fixed;left:0;right:0;bottom:0;z-index:60;display:grid;grid-template-columns:repeat(4,1fr);
+  position:fixed;left:0;right:0;bottom:0;z-index:60;display:grid;grid-template-columns:repeat(5,1fr);
   background:color-mix(in srgb, var(--bg) 82%, transparent);
   -webkit-backdrop-filter:blur(22px) saturate(1.7);backdrop-filter:blur(22px) saturate(1.7);
   border-top:1px solid var(--line);
-  padding:7px 6px calc(7px + env(safe-area-inset-bottom, 0px));
+  padding:7px 2px calc(7px + env(safe-area-inset-bottom, 0px));
 }
 .tabbar button{
   appearance:none;border:0;background:transparent;cursor:pointer;color:var(--ink-3);
@@ -1045,9 +1045,10 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
   border-radius:var(--r-sm);-webkit-tap-highlight-color:transparent;
   transition:color .16s;font:inherit;
 }
-.tabbar svg{width:23px;height:23px;flex:none}
+.tabbar svg{width:21px;height:21px;flex:none}
 .tabbar span{
-  font-family:var(--f-mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;line-height:1;
+  font-family:var(--f-mono);font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;line-height:1;
+  white-space:nowrap;
 }
 .tabbar button[aria-selected="true"]{color:var(--accent)}
 .tabbar button[aria-selected="true"] svg{filter:drop-shadow(0 0 7px color-mix(in srgb,var(--accent) 55%,transparent))}
@@ -1195,6 +1196,19 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 }
 .storerow{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px }
 .storerow .btn.sm{ font-size:.85rem; padding:7px 12px }
+/* Create sits proud of the bar. The mark overhangs the top edge rather than
+   sitting inside the row, which is what makes it read as the primary action
+   instead of a fifth equal tab. */
+.tabbar .tabforge{ position:relative; overflow:visible }
+.tabbar .tabforge .fmark{
+  width:54px; height:54px; margin:-24px 0 1px;
+  box-shadow:0 6px 18px -4px color-mix(in srgb, var(--accent) 55%, transparent);
+  pointer-events:none;                    /* the button itself owns the tap */
+}
+.tabbar .tabforge > span:last-child{ display:block }
+@media (max-width:360px){
+  .tabbar .tabforge .fmark{ width:46px; height:46px; margin-top:-19px }
+}
 </style>
 </head>
 <body>
@@ -1336,6 +1350,12 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
     </div>
   </section>
 
+
+  <section class="panel" id="sessionPanel" hidden></section>
+
+  </div>
+
+  <div class="tabpane" id="paneSplit">
   <section class="panel" id="weekPanel">
     <div class="panel-head">
       <h2>Build the week</h2>
@@ -1343,9 +1363,6 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
     </div>
     <div id="weekBody"></div>
   </section>
-
-  <section class="panel" id="sessionPanel" hidden></section>
-
   </div>
 
   <div class="tabpane" id="paneLog">
@@ -1397,25 +1414,27 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
   </main>
 
   <nav class="tabbar" id="tabbar" role="tablist" aria-label="Sections">
+    <button type="button" role="tab" data-tab="paneSplit" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="15" rx="2.4"/><path d="M9 4.5v15M15 4.5v15"/></svg>
+      <span>Split</span></button>
+    <button type="button" role="tab" data-tab="paneWorkload" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 9v6M3.5 10.5v3M17.5 9v6M20.5 10.5v3M6.5 12h11"/></svg>
+      <span>Workload</span></button>
+    <!-- Create is the raised mark now; this replaces the floating forge
+         button, which had nowhere sensible to sit once the bar had a
+         centre slot of its own. -->
+    <button type="button" role="tab" class="tabforge" data-tab="paneCreate" aria-selected="true">
+      <span class="fmark live" id="tabForgeMark" aria-hidden="true"></span>
+      <span>Create</span></button>
+    <button type="button" role="tab" data-tab="paneLog" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4"/></svg>
+      <span>Logbook</span></button>
     <button type="button" role="tab" data-tab="paneProfile" aria-selected="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.2-3.7 4-5.5 7.5-5.5s6.3 1.8 7.5 5.5"/></svg>
       <span>Profile</span></button>
-    <button type="button" role="tab" data-tab="paneCreate" aria-selected="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/></svg>
-      <span>Create</span></button>
-    <button type="button" role="tab" data-tab="paneLog" aria-selected="false">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4"/><path d="M7.5 14h2.5M14 14h2.5M7.5 17.5h2.5M14 17.5h2.5"/></svg>
-      <span>Logbook</span></button>
-    <button type="button" role="tab" data-tab="paneWorkload" aria-selected="false">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 9v6M17.5 9v6M3.5 10.5v3M20.5 10.5v3M6.5 12h11"/></svg>
-      <span>Workload</span></button>
   </nav>
 
-<div class="ffloat" id="floatForge">
-  <button class="fmark xl live" id="floatForgeBtn" type="button" aria-label="Forge the session"></button>
-  <i class="ffchev" aria-hidden="true"></i>
-  <span class="fftxt">Forge the<br>session</span>
-</div>
+
 
 <dialog id="equipDlg">
   <form method="dialog">
@@ -7078,6 +7097,7 @@ function showTab(id){
   $$("#tabbar button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === id)));
   state.tab = id;
   if(id === "paneProfile") renderProfileDlg();
+  if(id === "paneSplit" && typeof renderWeek === "function") renderWeek();
   window.scrollTo({top:0, behavior:"instant"});
   if(syncChrome) syncChrome();
 }
@@ -7180,25 +7200,10 @@ $("#brand").insertAdjacentHTML("afterbegin", logoMark(30));
   });
 
 
-  /* The forge follows you down the page: it appears the moment the real button
-     leaves, and lifts out of the way of the session's own sticky bar. Measured
-     on scroll rather than observed — the finish bar comes and goes with the
-     session, and three rect reads are cheaper than keeping observers in sync. */
-  const float = $("#floatForge");
-  $("#floatForgeBtn").addEventListener("click", doForge);
-
-  syncChrome = function(){
-    const vh = window.innerHeight;
-    /* no floater while a mark is already on screen — the ask box has one too */
-    const near = el => { const r = el.getBoundingClientRect();
-                         return r.bottom > 40 && r.top < vh - 40; };
-    float.classList.toggle("on", !near($("#forgeBtn")) && !near($("#askGo")));
-    const bar = $(".finishbar");
-    float.classList.toggle("lift", !!bar && bar.getBoundingClientRect().top < vh - 8);
-  };
-  window.addEventListener("scroll", syncChrome, {passive:true});
-  window.addEventListener("resize", syncChrome);
-  syncChrome();
+  /* The floating forge button is gone. It existed to keep a mark reachable
+     while scrolling, and the tab bar now carries one permanently in its centre
+     — two marks on screen at once read as two different actions. syncChrome
+     tracked only that button, so it goes with it; showTab's call is guarded. */
 })();
 if(healthOn()) setTimeout(() => healthSync().then(() => { renderLog(); renderHUD(); }), 900);
 /* the nudge window is a rolling fortnight; every launch pushes it forward */
