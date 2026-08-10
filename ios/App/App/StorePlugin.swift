@@ -30,8 +30,39 @@ public class StorePlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "purchase",     returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "entitlements", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "restore",      returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "manage",       returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "manage",       returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "firstInstall", returnType: CAPPluginReturnPromise)
     ]
+
+    /// When this Apple ID first downloaded the app, read from the signed app
+    /// receipt. This is the anchor the paid first month gets measured from.
+    ///
+    /// A date kept in local storage is not good enough once the month actually
+    /// locks something: delete the app, reinstall, and local storage is empty
+    /// again — another free month, repeatable forever. `AppTransaction` is
+    /// signed by Apple, belongs to the Apple ID rather than the install, and
+    /// survives both a reinstall and a new phone, so the month can only be had
+    /// once without a server having to remember anything.
+    @objc func firstInstall(_ call: CAPPluginCall) {
+        Task {
+            guard #available(iOS 16.0, *) else {
+                call.resolve(["date": NSNull(), "reason": "needs iOS 16"])
+                return
+            }
+            do {
+                guard case .verified(let appTransaction) = try await AppTransaction.shared else {
+                    call.resolve(["date": NSNull(), "reason": "unverified"])
+                    return
+                }
+                call.resolve(["date": ISO8601DateFormatter().string(from: appTransaction.originalPurchaseDate)])
+            } catch {
+                /* Offline, or the receipt needs a refresh. The caller falls back
+                   to its own stored date — locking somebody out of a session
+                   because their train went into a tunnel is the worse failure. */
+                call.resolve(["date": NSNull(), "reason": error.localizedDescription])
+            }
+        }
+    }
 
     /// Transactions can arrive when the app is not asking — a renewal, a
     /// purchase finished on another device, a parent approving Ask to Buy. If

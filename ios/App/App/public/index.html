@@ -4472,13 +4472,22 @@ function perSession(price, daysAWeek){
   return {n:Math.round(n), each:c < 1 ? Math.round(c*100) + "¢" : "$" + c.toFixed(2)};
 }
 function trialDaysLeft(){          /* the paid first month, not a free trial */
-  const t0 = new Date(vault.firstUse || Date.now()).getTime();
+  /* Clamped to now, because a start date in the future makes the subtraction
+     negative and hands out more than thirty days — a wrong device clock or an
+     edited storage entry would otherwise buy an unlimited month. */
+  const t0 = Math.min(new Date(vault.firstUse || Date.now()).getTime(), Date.now());
   return Math.max(0, 30 - Math.floor((Date.now() - t0) / 86400000));
 }
 function tierOf(){
   if(vault.plan === "pro" || vault.plan === "max") return vault.plan;
   return trialDaysLeft() > 0 ? "trial" : "expired";
 }
+/* Expired means expired: the sheet stops being generated until there is a
+   subscription. Kept as its own predicate rather than folded into limitsOf,
+   because limits shape a session and this decides whether there is one at
+   all — and limitsOf is read in a dozen places that all still need a sane
+   answer while the paywall is up. */
+function locked(){ return tierOf() === "expired"; }
 function limitsOf(){
   const t = tierOf();
   return (t === "max" || t === "trial") ? PLANS.max : PLANS.pro;  /* expired -> Pro limits */
@@ -6236,6 +6245,28 @@ async function storeSync(){
     if(next !== vault.plan){ vault.plan = next; save(); applyPlanLimits(); }
   }catch(e){}
 }
+/* Anchor the paid first month to the App Store receipt where there is one.
+   vault.firstUse is written on first launch, which is fine until the month
+   starts locking something — then deleting the app and reinstalling it clears
+   local storage and grants another month, repeatable forever. The receipt date
+   belongs to the Apple ID and survives that.
+
+   The anchor only ever moves earlier. A receipt reading later than what is
+   already recorded would hand back days somebody has already used. */
+async function anchorTrial(){
+  const S = storePlugin();
+  if(!S) return;
+  try{
+    const r = await S.firstInstall();
+    const t = r && r.date ? Date.parse(r.date) : NaN;
+    if(!Number.isFinite(t)) return;
+    const have = vault.firstUse ? Date.parse(vault.firstUse) : NaN;
+    if(!Number.isFinite(have) || t < have){
+      vault.firstUse = new Date(t).toISOString();
+      save();
+    }
+  }catch(e){}
+}
 async function storeBuy(key){
   const S = storePlugin();
   if(!S) throw new Error("Purchases are only available in the App Store version.");
@@ -6467,6 +6498,22 @@ function askApply(raw){
 
 /* ---------------------------------------------------------------- session */
 function doForge(){
+  /* The paid first month is up and nothing is subscribed — this is the
+     paywall, and it is the only thing in the app that hard-stops.
+     Deliberately gated on making a *new* sheet: everything already forged
+     and logged stays readable, because taking a session away from somebody
+     mid-workout is a worse thing to do than asking them to subscribe. */
+  if(locked()){
+    showTab("paneProfile");
+    if(typeof renderPlans === "function") renderPlans();
+    requestAnimationFrame(() => {
+      const p = $("#planBody");
+      if(p) p.scrollIntoView({behavior:"smooth", block:"center"});
+    });
+    toast("Your first month is up",
+          "Pick a plan to keep forging sessions. Everything you have already logged stays put.", "");
+    return;
+  }
   const cfg = JSON.parse(JSON.stringify(state.cfg));
   cfg.seed = (Math.random()*1e9)|0;
   state.session = generate(cfg);
@@ -8147,11 +8194,14 @@ function renderPlans(){
       }
     }
 
-    vault.plan = key;
-    applyPlanLimits();
-    toast(vault.plan ? PLANS[vault.plan].n + " set" : "Back to the first month",
-          vault.plan ? "Limits applied. Billing arrives with the store release \u2014 nothing is charged today."
-                     : trialDaysLeft() + " days of everything left.", "");
+    /* Off the App Store there is no way to take money, so there is no way to
+       grant a paid tier either. This used to just set the plan and say nothing
+       was charged \u2014 harmless while the web build was a private sandbox, wrong
+       now that the marketing site sends people here. Subscriptions belong to
+       an Apple ID, so this points at the app rather than faking one. */
+    toast("Subscriptions live in the app",
+          "The web version runs the first month so you can try everything. "
+        + "Pro and Max are bought through the App Store, on your Apple ID.", "");
   }));
 
   const rb = $("#restoreBtn");
@@ -8688,6 +8738,11 @@ if(remindOn()) setTimeout(remindSync, 1200);
    it never flashes the fallback dollar figures at someone billed elsewhere. */
 if(storePlugin()) setTimeout(() => { storeLoad().then(() => {
   storeSync().then(() => { if(typeof renderPlans === "function") renderPlans(); }); }); }, 600);
+/* Pull the first-month anchor off the receipt before anything can lock, so a
+   reinstall cannot mint a fresh month. Runs early and independently of the
+   product load, which needs the network and may be slower. */
+if(storePlugin()) setTimeout(() => { anchorTrial().then(() => {
+  if(typeof renderPlans === "function") renderPlans(); }); }, 200);
 if(consumeAuthFragment()) setTimeout(() => { syncNow(true); renderRewards();
   toast("Signed in", "Welcome back.", ""); $("#rewardsPanel").scrollIntoView({behavior:"smooth"}); }, 300);
 else if(signedIn()) setTimeout(() => syncNow(true), 400);
