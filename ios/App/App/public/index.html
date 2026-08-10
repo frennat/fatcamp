@@ -255,7 +255,72 @@ h1,h2,h3,h4{font-family:var(--f-display);font-weight:800;margin:0;text-wrap:bala
   color:var(--ink-3);margin:2px 0 0;min-height:1.3em;max-width:64ch;line-height:1.5;
 }
 .ask-note.on{color:var(--accent)}
+.ask-note.bad{color:var(--p15)}
 @media(max-width:560px){.askchips{display:none}}
+
+/* ---------- or ----------
+   Two doors into the same forge. The rule stays hairline-thin on purpose: it
+   has to separate the two without becoming a third thing to look at. */
+.orsep{display:flex;align-items:center;gap:14px;width:min(720px,100%);margin:4px auto 0}
+.orsep::before,.orsep::after{
+  content:"";flex:1;height:1px;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--ink) 16%,transparent),transparent);
+}
+.orsep span{
+  font-family:var(--f-mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);
+}
+
+/* ---------- upload media ----------
+   Same slab as the ask box so the two read as one pair of options, but the
+   inside is a target rather than a field. Until a file is chosen the whole
+   dashed area is the button; after that it is a preview and gets out of the way. */
+.upload{position:relative;padding:20px 0 8px}
+.up-in{position:relative;z-index:1;display:grid;gap:12px;justify-items:center;text-align:center}
+.up-in h2{font-size:clamp(21px,4.2vw,32px);line-height:1;text-transform:uppercase;letter-spacing:-.028em;margin:0}
+.up-sub{color:var(--ink-2);font-size:14px;line-height:1.55;margin:0;max-width:46ch}
+
+.up-drop{
+  display:grid;place-items:center;gap:9px;margin:4px;padding:26px 18px;border-radius:22px;cursor:pointer;
+  border:1.5px dashed color-mix(in srgb,var(--ink) 20%,transparent);
+  transition:border-color .2s,background .2s;-webkit-tap-highlight-color:transparent;
+}
+.up-drop:hover,.up-drop.over{
+  border-color:color-mix(in srgb,var(--accent) 60%,transparent);
+  background:color-mix(in srgb,var(--accent) 7%,transparent);
+}
+.up-drop.has{border-style:solid;padding:10px;cursor:default;gap:12px}
+.up-drop.has:hover{background:transparent;border-color:color-mix(in srgb,var(--ink) 20%,transparent)}
+.up-cta{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);margin:0}
+.up-hint{font-size:12.5px;color:var(--ink-3);margin:0;max-width:40ch;line-height:1.5}
+.up-clip{
+  width:64px;height:64px;border-radius:16px;display:grid;place-items:center;
+  border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);color:var(--ink-3);
+}
+.up-clip svg{width:26px;height:26px;display:block}
+
+/* the chosen file, once there is one */
+.up-shot{display:flex;align-items:center;gap:12px;width:100%;text-align:left}
+.up-thumb{
+  flex:none;width:74px;height:74px;border-radius:14px;object-fit:cover;display:block;
+  background:color-mix(in srgb,var(--ink) 8%,transparent);
+  border:1px solid color-mix(in srgb,var(--ink) 12%,transparent);
+}
+.up-facts{min-width:0;display:grid;gap:3px}
+.up-name{font-size:14px;color:var(--ink);margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.up-size{font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin:0}
+.up-swap{
+  justify-self:start;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+  border:1px solid color-mix(in srgb,var(--ink) 17%,transparent);background:transparent;color:var(--ink-2);
+  padding:5px 10px;border-radius:var(--r-pill);cursor:pointer;transition:border-color .15s,color .15s;
+}
+.up-swap:hover{border-color:var(--accent);color:var(--accent)}
+
+/* a thin determinate bar while frames are pulled and sent */
+.up-bar{position:relative;height:2px;border-radius:2px;margin:0 10px 8px;overflow:hidden;background:color-mix(in srgb,var(--ink) 10%,transparent);display:none}
+.upload.busy .up-bar{display:block}
+.up-bar i{position:absolute;inset:0;width:var(--up-p,8%);background:var(--accent);border-radius:inherit;transition:width .3s ease}
+.upload.busy .up-drop{opacity:.6;pointer-events:none}
+.upload.busy .fmark{animation:none;opacity:.55;pointer-events:none}
 
 /* ---------- the mark: hammer and dumbbell, and the only thing you press ---------- */
 .fmark{
@@ -1351,6 +1416,39 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
     </div>
   </section>
 
+  <div class="orsep"><span>or</span></div>
+
+  <section class="upload" id="uploadSec">
+    <div class="up-in">
+      <p class="eyebrow">Seen a session worth stealing</p>
+      <h2>Upload Media</h2>
+      <p class="up-sub">A screenshot or a reel from Instagram, YouTube or Snapchat. Fatcamp reads the
+        movements out of it and forges the session around them.</p>
+
+      <div class="glass">
+        <input type="file" id="upInput" accept="image/*,video/*" hidden>
+        <div class="up-drop" id="upDrop" role="button" tabindex="0"
+             aria-label="Choose a photo or video from your camera roll">
+          <span class="up-clip" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+              <circle cx="8.5" cy="8.5" r="1.6"></circle>
+              <path d="M21 15l-5-5L5 21"></path>
+            </svg>
+          </span>
+          <p class="up-cta">Choose photo or video</p>
+          <p class="up-hint">Works best when the lifts are clearly in frame, or the names are on screen.</p>
+        </div>
+        <div class="up-bar" aria-hidden="true"><i></i></div>
+        <div class="glass-ft">
+          <button class="fmark lg live" id="upGo" type="button" aria-label="Read this and forge the session"></button>
+        </div>
+      </div>
+      <p class="ask-note" id="upNote" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+
   </div>
 
   <div class="tabpane" id="paneWorkload">
@@ -1911,7 +2009,66 @@ const ARCH = {
            J(122,156, 116,202, 130,206))},
   stretch:{v:"side",pr:[],
     a:POSE(J(100,30, 100,50, 100,58, 100,86, 100,114, 100,110, 100,115, 100,166, 98,212, 112,218)),
-    b:POSE(J(118,56, 112,68, 110,74, 108,102, 106,130, 92,112, 92,117, 94,166, 96,212, 110,218))}
+    b:POSE(J(118,56, 112,68, 110,74, 108,102, 106,130, 92,112, 92,117, 94,166, 96,212, 110,218))},
+
+  /* ---------------------------------------------------- suspension & rope
+     On a strap the hands barely move — they hang off a fixed anchor and the
+     body travels to meet them. So both poses keep the wrists near the anchor
+     line and swing the torso instead, which is the opposite of how a bar row
+     is built and the reason these need their own archetypes. */
+  trxrow:{v:"side",pr:["trx_straps"],
+    a:POSE(J(58,112, 70,124, 76,130, 90,110, 102,92, 100,168, 104,172, 124,196, 134,214, 146,216)),
+    b:POSE(J(70,98,  82,110, 88,116, 94,104, 102,92, 108,156, 112,160, 128,190, 136,214, 148,216))},
+  ringrow:{v:"side",pr:["rings_straps"],
+    a:POSE(J(58,112, 70,124, 76,130, 90,110, 102,92, 100,168, 104,172, 124,196, 134,214, 146,216)),
+    b:POSE(J(70,98,  82,110, 88,116, 94,104, 102,92, 108,156, 112,160, 128,190, 136,214, 148,216))},
+  trxpush:{v:"side",pr:["trx_straps"],
+    a:POSE(J(52,120, 64,130, 70,136, 86,124, 100,112, 110,180, 114,184, 140,206, 152,216, 164,218)),
+    b:POSE(J(44,132, 58,140, 66,146, 86,140, 100,112, 108,186, 112,190, 138,210, 152,218, 164,220))},
+  ringdip:{v:"side",root:"wrist",pr:["rings_straps"],
+    a:POSE(J(100,52, 101,68, 100,76, 100,102, 98,128, 102,124, 103,129, 118,166, 108,196, 122,200)),
+    b:POSE(J(98,78,  100,94, 99,102, 112,124, 98,128, 100,150, 101,155, 116,190, 106,214, 120,218))},
+  /* The ropes carry the motion in the prop, so the figure only has to hold a
+     credible athletic base — a big arm swing here fights the wave. */
+  ropewave:{v:"side",pr:["battle_ropes"],
+    a:POSE(J(100,44, 100,62, 100,70, 108,96, 116,118, 98,124, 98,129, 96,172, 96,212, 110,218)),
+    b:POSE(J(100,42, 100,60, 100,68, 110,90, 118,96,  98,122, 98,127, 96,170, 96,212, 110,218))},
+  ropeslam:{v:"side",pr:["battle_ropes"],
+    a:POSE(J(100,34, 100,52, 100,60, 100,36, 100,14, 100,110, 100,115, 100,166, 98,212, 112,218)),
+    b:POSE(J(112,86, 108,102, 106,109, 116,132, 124,158, 92,144, 92,149, 98,180, 96,212, 110,218))},
+  ballslam:{v:"side",pr:["slam_ball"],
+    a:POSE(J(100,34, 100,52, 100,60, 100,36, 100,14, 100,110, 100,115, 100,166, 98,212, 112,218)),
+    b:POSE(J(112,86, 108,102, 106,109, 116,132, 124,158, 92,144, 92,149, 98,180, 96,212, 110,218))},
+
+  /* ------------------------------------------------------- odd implements */
+  landminepress:{v:"side",pr:["landmine_bar"],
+    a:POSE(J(96,40, 98,58, 98,66, 108,86, 114,74,  98,118, 98,123, 98,168, 96,212, 110,218)),
+    b:POSE(J(96,42, 98,60, 98,68, 118,58, 140,40,  98,118, 98,123, 98,168, 96,212, 110,218))},
+  sandbagclean:{v:"side",pr:["sandbag_hold"],
+    a:POSE(J(118,96, 112,112, 110,119, 112,146, 114,172, 94,146, 94,151, 104,180, 96,212, 110,218)),
+    b:POSE(J(100,32, 100,50, 100,58, 110,80,  104,66,  100,110, 100,115, 100,166, 98,212, 112,218))},
+  skierg:{v:"side",pr:["skierg_frame"],
+    a:POSE(J(100,44, 100,62, 100,70, 104,44,  108,22,  100,120, 100,125, 100,170, 98,212, 112,218)),
+    b:POSE(J(106,74, 104,90, 103,97, 108,124, 112,150, 94,140, 94,145, 98,180, 96,212, 110,218))},
+  ghdraise:{v:"side",root:"pelvis",pr:["ghd_pad"],
+    a:POSE(J(76,168, 88,158, 94,153, 94,138, 92,124, 122,124, 126,122, 152,150, 148,196, 162,202)),
+    b:POSE(J(58,126, 76,124, 84,124, 88,110, 88,96,  122,124, 126,122, 152,150, 148,196, 162,202))},
+  sbcurl:{v:"side",root:"pelvis",pr:["swiss_ball"],
+    a:POSE(J(46,196, 62,194, 70,193, 80,206, 90,214, 110,182, 114,182, 152,182, 186,184, 196,178)),
+    b:POSE(J(46,196, 62,194, 70,193, 80,206, 90,214, 110,176, 114,176, 146,158, 152,196, 160,202))},
+  lsit:{v:"side",root:"wrist",pr:["parallettes"],
+    a:POSE(J(72,96, 76,114, 78,122, 78,150, 78,178, 86,172, 90,174, 124,172, 156,170, 168,166)),
+    b:POSE(J(72,92, 76,110, 78,118, 78,148, 78,178, 86,166, 90,168, 126,164, 158,160, 170,156))},
+
+  /* ------------------------------------------------------------ bodyweight */
+  pistol:{v:"side",pr:[],
+    a:POSE(J(100,32, 100,50, 100,58, 108,80,  116,96,  100,110, 100,115, 100,166, 98,212, 112,218),
+           J(124,150, 150,150, 162,146)),
+    b:POSE(J(108,96, 104,114, 104,122, 118,132, 132,138, 92,172, 92,177, 118,182, 98,212, 112,218),
+           J(128,168, 156,158, 168,154))},
+  bearcrawl:{v:"side",root:"wrist",pr:[],
+    a:POSE(J(56,146, 70,152, 78,156, 80,182, 82,208, 128,168, 132,170, 146,192, 150,212, 162,214)),
+    b:POSE(J(60,142, 74,148, 82,152, 92,176, 100,204, 130,164, 134,166, 152,188, 158,210, 170,212))}
 };
 
 const lerp = (a,b,t) => a + (b-a)*t;
@@ -2584,6 +2741,15 @@ function drawProps3(items, list, J3, S, cam, fit, ctx, acc, line, t){
     ctx.fillStyle = col; ctx.beginPath();
     ctx.ellipse(c[0], c[1], Math.max(.6, r*fit.s*c[3]*Math.abs(Math.cos(cam.yaw))), r*fit.s*c[3], 0, 0, 7);
     ctx.fill(); }});
+  /* A ball is the one round prop that must not squash as the camera orbits —
+     a plate is a disc seen edge-on, a slam ball is a sphere and reads the same
+     from every angle. Using disc() for one leaves it looking like a dropped plate. */
+  const ball = (c, r, col) => items.push({z:c[2], f:()=>{
+    ctx.fillStyle = col; ctx.beginPath();
+    ctx.arc(c[0], c[1], Math.max(.8, r*fit.s*c[3]), 0, 7); ctx.fill(); }});
+  const ballLine = (c, r, col) => items.push({z:c[2], f:()=>{
+    ctx.strokeStyle = col; ctx.lineWidth = 3*fit.s*c[3]; ctx.beginPath();
+    ctx.arc(c[0], c[1], Math.max(.8, r*fit.s*c[3]), 0, 7); ctx.stroke(); }});
   /* A filled 3D quad, painter-sorted with everything else. `lift` shades it:
      positive lightens, negative darkens, so a box reads as a solid with a lit
      top rather than an outline. Works with any colour string. */
@@ -2795,6 +2961,95 @@ function drawProps3(items, list, J3, S, cam, fit, ctx, acc, line, t){
         seg(P([180,214,-14]), P([180,214,14]), 4, line, "round");
         seg(P([w[0],w[1],w[2]]), P([178,158,0]), 2.5, line, "butt");
         break; }
+      /* ---- suspension, ropes and the rest of the kit that isn't iron ---- */
+      /* Straps hang from a fixed anchor overhead, so they run near-vertical
+         from the ceiling down to wherever the hands currently are — that
+         changing angle is what makes a suspension row read as suspended
+         rather than as a cable pull. */
+      case "trx_straps": {
+        const wr = J3.wrR, wl = J3.wrL || J3.wrR;
+        tube3([84,8,0], [116,8,0], 2.6, line);
+        seg(P([wr[0],10,wr[2]]), P([wr[0],wr[1]-7,wr[2]]), 1.5, line, "butt");
+        seg(P([wl[0],10,wl[2]]), P([wl[0],wl[1]-7,wl[2]]), 1.5, line, "butt");
+        seg(P([wr[0],wr[1],wr[2]-5]), P([wr[0],wr[1],wr[2]+5]), 4.5, acc, "round");
+        seg(P([wl[0],wl[1],wl[2]-5]), P([wl[0],wl[1],wl[2]+5]), 4.5, acc, "round");
+        break; }
+      case "rings_straps": {
+        const wr = J3.wrR, wl = J3.wrL || J3.wrR;
+        tube3([80,8,0], [120,8,0], 2.6, line);
+        seg(P([wr[0],10,wr[2]]), P([wr[0],wr[1]-10,wr[2]]), 1.4, line, "butt");
+        seg(P([wl[0],10,wl[2]]), P([wl[0],wl[1]-10,wl[2]]), 1.4, line, "butt");
+        ballLine(P([wr[0],wr[1]-3,wr[2]]), 7, acc);
+        ballLine(P([wl[0],wl[1]-3,wl[2]]), 7, acc);
+        break; }
+      /* Two ropes, driven a half cycle apart so they alternate the way they
+         actually do in the hands — in phase they read as one thick cable. */
+      case "battle_ropes": {
+        const wr = J3.wrR, wl = J3.wrL || J3.wrR;
+        const anx = 192, any = 216;
+        const strand = (hand, z, phase) => {
+          const a = P([hand[0], hand[1], z]);
+          const m = P([(hand[0]+anx)/2, hand[1] + 46 + Math.sin(t*Math.PI*2 + phase)*34, z]);
+          const b = P([anx, any, z]);
+          items.push({z:m[2], f:()=>{
+            ctx.strokeStyle = acc; ctx.lineWidth = 3.4*fit.s; ctx.lineCap = "round";
+            ctx.beginPath(); ctx.moveTo(a[0],a[1]);
+            ctx.quadraticCurveTo(m[0],m[1],b[0],b[1]); ctx.stroke(); }});
+        };
+        strand(wr, -13, 0); strand(wl, 13, Math.PI);
+        tube3([anx-7,any-5,-22], [anx-7,any-5,22], 4.5, line);
+        break; }
+      /* One end pinned to the floor, so the bar swings on an arc instead of
+         travelling straight — the pivot is the whole point of a landmine. */
+      case "landmine_bar": {
+        const w = J3.wrR;
+        tube3([182,215,0], [w[0],w[1],w[2]], 2.6, line);
+        solidDisc(P([w[0],w[1],w[2]]), 6, acc);
+        tube3([176,215,-9], [176,215,9], 3.4, line);
+        break; }
+      case "slam_ball": {
+        const wr = J3.wrR, wl = J3.wrL || J3.wrR;
+        ball(P([(wr[0]+wl[0])/2, (wr[1]+wl[1])/2 + 7, (wr[2]+wl[2])/2]), 13, acc);
+        break; }
+      case "sandbag_hold": {
+        const wr = J3.wrR, wl = J3.wrL || J3.wrR;
+        box3((wr[0]+wl[0])/2, (wr[1]+wl[1])/2 + 2, (wr[2]+wl[2])/2, 17, 11, 14, acc);
+        break; }
+      case "swiss_ball": {
+        /* Tracks the feet across the floor but never leaves it — anchoring the
+           centre to the ankle instead lifts the ball into the air as the knees
+           bend, which is the one thing a ball on the ground cannot do. Drawn in
+           steel rather than the line colour: at this size a near-black outline
+           reads as a hole in the picture instead of a ball behind the heels. */
+        const a = J3.anR;
+        ballLine(P([a[0], 194, 0]), 21, steel);
+        break; }
+      case "parallettes": {
+        const w = J3.wrR;
+        for(const z of [-23, 23]){
+          tube3([w[0]-15,w[1],z], [w[0]+15,w[1],z], 2.6, line);
+          tube3([w[0]-11,w[1],z], [w[0]-11,218,z], 2.2, line);
+          tube3([w[0]+11,w[1],z], [w[0]+11,218,z], 2.2, line);
+        }
+        break; }
+      case "skierg_frame": {
+        const w = J3.wrR;
+        tube3([178,34,0], [178,214,0], 3.2, line);
+        disc(P([178,50,0]), 15, line, 3);
+        seg(P([174,58,-9]), P([w[0],w[1],-9]), 1.4, line, "butt");
+        seg(P([174,58, 9]), P([w[0],w[1], 9]), 1.4, line, "butt");
+        seg(P([w[0],w[1],-13]), P([w[0],w[1],-6]), 4.5, acc, "round");
+        seg(P([w[0],w[1],  6]), P([w[0],w[1], 13]), 4.5, acc, "round");
+        break; }
+      case "ghd_pad": {
+        /* Thin, steel, and low. A thick pad in the line colour swallows the
+           hips — which are the joint the whole movement is about. */
+        const p = J3.pelvis, a = J3.anR;
+        seg(P([p[0],p[1]+10,-12]), P([p[0],p[1]+10,12]), 7, steel, "round");
+        seg(P([a[0],a[1],-13]), P([a[0],a[1],13]), 6, acc, "round");
+        tube3([p[0],p[1]+15,0], [p[0],216,0], 2, steel);
+        tube3([p[0]-6,216,0], [a[0],216,0], 2, steel);
+        break; }
     }
   }
 }
@@ -2865,19 +3120,29 @@ const EQUIP = {
   kettlebell:{n:"Kettlebell",         g:"Free weight"},
   trapbar:   {n:"Trap bar",           g:"Free weight"},
   medball:   {n:"Medicine ball",      g:"Free weight"},
+  slamball:  {n:"Slam ball",          g:"Free weight"},
+  sandbag:   {n:"Sandbag",            g:"Free weight"},
+  landmine:  {n:"Landmine",           g:"Free weight"},
   pullupbar: {n:"Pull-up bar",        g:"Bodyweight"},
   dipbar:    {n:"Dip bars",           g:"Bodyweight"},
   bands:     {n:"Resistance bands",   g:"Bodyweight"},
   abwheel:   {n:"Ab wheel",           g:"Bodyweight"},
   box:       {n:"Box / bench step",   g:"Bodyweight"},
+  trx:       {n:"Suspension trainer", g:"Bodyweight"},
+  rings:     {n:"Gymnastic rings",    g:"Bodyweight"},
+  parallette:{n:"Parallettes",        g:"Bodyweight"},
+  swissball: {n:"Swiss ball",         g:"Bodyweight"},
   cable:     {n:"Cable stack",        g:"Machines"},
   machine:   {n:"Selectorized machines",g:"Machines"},
   smith:     {n:"Smith machine",      g:"Machines"},
   legpress:  {n:"Leg press",          g:"Machines"},
+  ghd:       {n:"GHD / hyper bench",  g:"Machines"},
   treadmill: {n:"Treadmill",          g:"Cardio"},
   bike:      {n:"Bike / assault bike",g:"Cardio"},
   rower:     {n:"Rowing erg",         g:"Cardio"},
+  skierg:    {n:"Ski erg",            g:"Cardio"},
   jumprope:  {n:"Jump rope",          g:"Cardio"},
+  battlerope:{n:"Battle ropes",       g:"Cardio"},
   sled:      {n:"Sled / prowler",     g:"Cardio"}
 };
 const EQUIP_IDS = Object.keys(EQUIP);
@@ -2895,6 +3160,397 @@ function availFor(loc){
    pri/sec: muscles, weighted 1.0 / 0.5 for coverage
    ---------------------------------------------------------------------- */
 const X = [
+/* ======================================================================
+   The pool is the variety. Two sessions differ because the generator had
+   room to choose differently, not because it shuffled the same twelve
+   lifts — so breadth inside each pattern matters more than total count.
+   ====================================================================== */
+
+/* --- suspension trainer --------------------------------------------- */
+{id:"trxrow",n:"TRX Row",arch:"trxrow",eq:["trx"],cls:"comp",pat:"pull_h",
+ pri:["upperback","lats"],sec:["biceps","delt_r","abs","forearms"],
+ cue:"Squeeze the shoulder blades first, then pull — walk the feet forward to make it harder."},
+{id:"trxfacepull",n:"TRX Face Pull",arch:"trxrow",eq:["trx"],cls:"iso",pat:"iso_delt",
+ pri:["delt_r"],sec:["upperback","traps"],
+ cue:"Pull to the forehead with the elbows high and wide, not to the chest."},
+{id:"trxcurl",n:"TRX Biceps Curl",arch:"trxrow",eq:["trx"],cls:"iso",pat:"iso_arm",
+ pri:["biceps"],sec:["forearms"],
+ cue:"Elbows locked in front of you at shoulder height — only the forearms move."},
+{id:"trxpush",n:"TRX Push-Up",arch:"trxpush",eq:["trx"],cls:"comp",pat:"push_h",
+ pri:["chest","triceps"],sec:["delt_f","abs","serratus"],
+ cue:"The straps wobble on purpose — brace hard and stop the handles drifting apart."},
+{id:"trxfly",n:"TRX Chest Fly",arch:"trxpush",eq:["trx"],cls:"iso",pat:"push_h",
+ pri:["chest"],sec:["delt_f","abs"],
+ cue:"Arms wide in a big arc, elbows soft and fixed. Small range beats collapsing."},
+{id:"trxtricep",n:"TRX Triceps Press",arch:"trxpush",eq:["trx"],cls:"iso",pat:"iso_arm",
+ pri:["triceps"],sec:["delt_f","abs"],
+ cue:"Elbows stay high and pointed forward; drive the hands away, not down."},
+{id:"trxpike",n:"TRX Pike",arch:"trxpush",eq:["trx"],cls:"core",pat:"core",
+ pri:["abs","hipflex"],sec:["serratus","delt_f"],
+ cue:"Hips to the ceiling with the legs straight — this is a hip fold, not a crunch."},
+
+/* --- rings ----------------------------------------------------------- */
+{id:"ringrow",n:"Ring Row",arch:"ringrow",eq:["rings"],cls:"comp",pat:"pull_h",
+ pri:["upperback","lats"],sec:["biceps","delt_r","abs"],
+ cue:"Rings turn as you pull — finish with the palms facing you and the elbows tight."},
+{id:"ringdip",n:"Ring Dip",arch:"ringdip",eq:["rings"],cls:"comp",pat:"push_v",big:1,
+ pri:["chest","triceps"],sec:["delt_f","abs"],
+ cue:"Fight the rings turning out at the bottom. Lock out and turn them out at the top."},
+{id:"ringpush",n:"Ring Push-Up",arch:"trxpush",eq:["rings"],cls:"acc",pat:"push_h",
+ pri:["chest","triceps"],sec:["delt_f","abs","serratus"],
+ cue:"Set the rings low and keep them from drifting — the wobble is the work."},
+{id:"muscleup",n:"Muscle-Up",arch:"pullup",eq:["rings"],cls:"comp",pat:"pull_v",big:1,
+ pri:["lats","chest","triceps"],sec:["upperback","biceps","abs"],
+ cue:"Pull to the sternum, then drive the elbows back and roll the wrists over."},
+
+/* --- battle ropes ---------------------------------------------------- */
+{id:"ropewave",n:"Battle Rope Waves",arch:"ropewave",eq:["battlerope"],cls:"cardio",pat:"cardio",unit:"sec",fin:1,
+ pri:["delt_f","forearms"],sec:["abs","upperback","quads"],
+ cue:"Short fast pumps from the shoulders, knees soft. Keep the waves reaching the anchor."},
+{id:"ropeslam",n:"Battle Rope Slams",arch:"ropeslam",eq:["battlerope"],cls:"cardio",pat:"cardio",unit:"sec",fin:1,
+ pri:["lats","abs"],sec:["delt_f","glutes","forearms"],
+ cue:"Rope overhead, then throw it into the floor with the hips, not just the arms."},
+{id:"ropecircle",n:"Battle Rope Circles",arch:"ropewave",eq:["battlerope"],cls:"cardio",pat:"cardio",unit:"sec",fin:1,
+ pri:["delt_s","forearms"],sec:["obliques","upperback"],
+ cue:"Draw big outward circles. Ribs down so the shoulders do the work, not the low back."},
+{id:"ropeint",n:"Battle Rope Intervals",arch:"ropewave",eq:["battlerope"],cls:"cardio",pat:"cardio",
+ pri:["delt_f","abs"],sec:["forearms","upperback","quads"],
+ cue:"Thirty seconds all out, thirty easy. The grip fails before the lungs do."},
+
+/* --- slam ball, sandbag, landmine ------------------------------------ */
+{id:"ballslam",n:"Slam Ball Slams",arch:"ballslam",eq:["slamball"],cls:"cardio",pat:"cardio",fin:1,
+ pri:["abs","lats"],sec:["delt_f","glutes","quads"],
+ cue:"Reach tall, then fold at the hips and put the ball through the floor."},
+{id:"mbtwist",n:"Med Ball Russian Twist",arch:"twist",eq:["medball"],cls:"core",pat:"core",
+ pri:["obliques","abs"],sec:["hipflex"],
+ cue:"Turn from the ribcage and let the eyes follow the ball. The knees stay still."},
+{id:"sandbagclean",n:"Sandbag Clean",arch:"sandbagclean",eq:["sandbag"],cls:"comp",pat:"hinge",big:1,
+ pri:["glutes","hams","upperback"],sec:["quads","lowerback","biceps","forearms"],
+ cue:"Hug it, hinge, and stand up hard. The bag is meant to be awkward — don't fight it neatly."},
+{id:"sandbagover",n:"Sandbag Shoulder-Over",arch:"sandbagclean",eq:["sandbag"],cls:"acc",pat:"hinge",uni:1,fin:1,
+ pri:["glutes","abs"],sec:["hams","traps","upperback"],
+ cue:"Alternate shoulders. Every rep starts from the floor, not from a bounce."},
+{id:"sandbagsquat",n:"Sandbag Front Squat",arch:"frontsquat",eq:["sandbag"],cls:"comp",pat:"squat",big:1,
+ pri:["quads","abs"],sec:["glutes","upperback","adductors"],
+ cue:"Bag high on the chest, elbows up. It will pull you forward — don't let it."},
+{id:"sandbagcarry",n:"Bear Hug Carry",arch:"carry",eq:["sandbag"],cls:"acc",pat:"carry",fin:1,
+ pri:["abs","upperback"],sec:["traps","forearms","quads","glutes"],
+ cue:"Crush it into your chest and breathe shallow. Walk tall until you can't."},
+{id:"landminepress",n:"Landmine Press",arch:"landminepress",eq:["landmine","barbell"],cls:"comp",pat:"push_v",uni:1,
+ pri:["delt_f","triceps"],sec:["chest_up","abs","serratus","upperback"],
+ cue:"Press up and away on the bar's arc. Kinder to the shoulder than a strict overhead."},
+{id:"landminesquat",n:"Landmine Goblet Squat",arch:"frontsquat",eq:["landmine","barbell"],cls:"acc",pat:"squat",
+ pri:["quads","glutes"],sec:["abs","upperback","adductors"],
+ cue:"The bar's arc pulls you upright — use it to sit straight down between the knees."},
+{id:"landminetwist",n:"Landmine Rotation",arch:"twist",eq:["landmine","barbell"],cls:"core",pat:"core",
+ pri:["obliques","abs"],sec:["delt_f","lowerback"],
+ cue:"Arms long, turn through the hips and let the back foot pivot. Control the return."},
+
+/* --- swiss ball, parallettes, GHD ------------------------------------ */
+{id:"sbcurl",n:"Swiss Ball Leg Curl",arch:"sbcurl",eq:["swissball"],cls:"iso",pat:"iso_leg",
+ pri:["hams"],sec:["glutes","calves","abs"],
+ cue:"Hips high the whole set. Drag the heels in, then lower slower than you pulled."},
+{id:"sbrollout",n:"Swiss Ball Rollout",arch:"abwheel",eq:["swissball"],cls:"core",pat:"core",
+ pri:["abs"],sec:["lats","obliques","hipflex"],
+ cue:"Roll out only as far as the ribs stay down. The low back arching is the stop signal."},
+{id:"sbpike",n:"Swiss Ball Pike",arch:"plank",eq:["swissball"],cls:"core",pat:"core",
+ pri:["abs","hipflex"],sec:["serratus","delt_f"],
+ cue:"Hips up, legs straight, ball rolls to the toes. Lower without letting the hips sag."},
+{id:"lsit",n:"L-Sit Hold",arch:"lsit",eq:["parallette"],cls:"core",pat:"core",unit:"sec",
+ pri:["abs","hipflex"],sec:["triceps","quads","serratus"],
+ cue:"Push the floor away hard and lock the knees. Tuck the legs if the hips won't hold."},
+{id:"parallettepush",n:"Parallette Push-Up",arch:"pushup",eq:["parallette"],cls:"acc",pat:"push_h",
+ pri:["chest","triceps"],sec:["delt_f","abs"],
+ cue:"The extra depth is the point — sink until the chest passes the handles."},
+{id:"tuckplanche",n:"Tuck Planche Hold",arch:"lsit",eq:["parallette"],cls:"core",pat:"core",unit:"sec",
+ pri:["delt_f","abs"],sec:["chest","serratus","triceps"],
+ cue:"Lean the shoulders past the hands until the feet float. Protract hard."},
+{id:"ghdraise",n:"GHD Hip Extension",arch:"ghdraise",eq:["ghd"],cls:"acc",pat:"hinge",
+ pri:["glutes","hams"],sec:["lowerback","upperback"],
+ cue:"Round up one vertebra at a time and stop level. Hyperextending buys nothing."},
+{id:"glutehamraise",n:"Glute-Ham Raise",arch:"ghdraise",eq:["ghd"],cls:"comp",pat:"hinge",big:1,
+ pri:["hams","glutes"],sec:["calves","lowerback"],
+ cue:"Lower as slowly as you can, then pull yourself back with the hamstrings alone."},
+{id:"ghdsitup",n:"GHD Sit-Up",arch:"crunch",eq:["ghd"],cls:"core",pat:"core",
+ pri:["abs","hipflex"],sec:["quads","obliques"],
+ cue:"Start with a short range. This one punishes ego more than almost anything else."},
+
+/* --- ski erg ---------------------------------------------------------- */
+{id:"ski_int",n:"Ski Erg Intervals",arch:"skierg",eq:["skierg"],cls:"cardio",pat:"cardio",
+ pri:["lats","abs"],sec:["triceps","glutes","hams"],
+ cue:"Hinge and drive down through the handles. It's a hip snap, not an arm pull."},
+{id:"ski_steady",n:"Ski Erg Steady",arch:"skierg",eq:["skierg"],cls:"cardio",pat:"cardio",
+ pri:["lats","abs"],sec:["triceps","glutes","upperback"],
+ cue:"Long relaxed strokes you could hold a conversation through."},
+
+/* --- squat pattern, extended ----------------------------------------- */
+{id:"pausesquat",n:"Paused Back Squat",arch:"squat",eq:["barbell","rack"],cls:"comp",pat:"squat",big:1,
+ pri:["quads","glutes"],sec:["abs","lowerback","adductors"],
+ cue:"Two full seconds at the bottom, still braced, then drive. No bounce to borrow."},
+{id:"zercher",n:"Zercher Squat",arch:"frontsquat",eq:["barbell","rack"],cls:"comp",pat:"squat",big:1,
+ pri:["quads","abs"],sec:["glutes","upperback","biceps","adductors"],
+ cue:"Bar in the elbow crease. It hurts; that's the tax for how upright it keeps you."},
+{id:"hacksquat",n:"Hack Squat Machine",arch:"legext",eq:["machine"],cls:"comp",pat:"squat",big:1,
+ pri:["quads"],sec:["glutes","adductors"],
+ cue:"Feet low on the platform to bias the quads. Never let the hips tuck under."},
+{id:"sissysquat",n:"Sissy Squat",arch:"squat",eq:["bw"],cls:"iso",pat:"iso_leg",
+ pri:["quads"],sec:["hipflex","abs"],
+ cue:"Knees travel forward, hips stay under the shoulders. Lean back as you sink."},
+{id:"bbsplitsquat",n:"Barbell Split Squat",arch:"lunge",eq:["barbell","rack"],cls:"comp",pat:"lunge",uni:1,big:1,
+ pri:["quads","glutes"],sec:["adductors","abs","hams"],
+ cue:"Back knee straight down under the hip. The front shin can travel — let it."},
+{id:"jumplunge",n:"Jumping Lunge",arch:"lunge",eq:["bw"],cls:"cardio",pat:"cardio",uni:1,fin:1,
+ pri:["quads","glutes"],sec:["calves","hams","abs"],
+ cue:"Switch legs in the air and land soft. Quiet feet, every rep."},
+{id:"boxjump",n:"Box Jump",arch:"stepup",eq:["box"],cls:"cardio",pat:"cardio",fin:1,
+ pri:["quads","glutes"],sec:["calves","hams"],
+ cue:"Land softly in a quarter squat. Step down every time — jumping down buys nothing."},
+
+/* --- hinge pattern, extended ----------------------------------------- */
+{id:"sumodl",n:"Sumo Deadlift",arch:"hinge",eq:["barbell"],cls:"comp",pat:"hinge",big:1,
+ pri:["glutes","quads","adductors"],sec:["lowerback","traps","forearms","hams"],
+ cue:"Wide stance, knees pushed out over the toes, chest up. Push the floor apart."},
+{id:"deficitdl",n:"Deficit Deadlift",arch:"hinge",eq:["barbell"],cls:"comp",pat:"hinge",big:1,
+ pri:["hams","glutes","lowerback"],sec:["quads","traps","forearms"],
+ cue:"Stand on a plate or two. Longer pull, lighter bar — the start is the whole point."},
+{id:"rackpull",n:"Rack Pull",arch:"hinge",eq:["barbell","rack"],cls:"comp",pat:"hinge",big:1,
+ pri:["traps","upperback","glutes"],sec:["lowerback","forearms","hams"],
+ cue:"Bar just below the knee. Heavier than a deadlift, so keep the ribs stacked."},
+{id:"snatchrdl",n:"Snatch-Grip RDL",arch:"rdl",eq:["barbell"],cls:"acc",pat:"hinge",
+ pri:["hams","upperback"],sec:["glutes","lowerback","traps","forearms"],
+ cue:"Wide grip, long torso. You'll need far less weight than a normal RDL."},
+{id:"kbdeadlift",n:"Kettlebell Deadlift",arch:"hinge",eq:["kettlebell"],cls:"acc",pat:"hinge",
+ pri:["glutes","hams"],sec:["lowerback","quads","forearms"],
+ cue:"Bell between the arches, push the hips back, then stand tall and squeeze."},
+{id:"kbclean",n:"Kettlebell Clean",arch:"swing",eq:["kettlebell"],cls:"acc",pat:"hinge",uni:1,fin:1,
+ pri:["glutes","hams","traps"],sec:["upperback","forearms","abs"],
+ cue:"Guide the bell around the wrist, don't let it flip over and bang. Tame the arc."},
+{id:"kbsnatch",n:"Kettlebell Snatch",arch:"swing",eq:["kettlebell"],cls:"acc",pat:"hinge",uni:1,fin:1,
+ pri:["glutes","delt_f"],sec:["hams","traps","abs","forearms"],
+ cue:"One arc from between the legs to locked overhead. Punch through at the top."},
+{id:"barbellhighpull",n:"Barbell High Pull",arch:"uprightrow",eq:["barbell"],cls:"acc",pat:"pull_h",fin:1,
+ pri:["traps","delt_s"],sec:["upperback","biceps","glutes"],
+ cue:"Hips first, then elbows high and outside. The bar never leaves the body."},
+
+/* --- horizontal press, extended -------------------------------------- */
+{id:"floorpress",n:"Floor Press",arch:"bench",eq:["barbell"],cls:"comp",pat:"push_h",big:1,
+ pri:["chest","triceps"],sec:["delt_f"],
+ cue:"Triceps touch the floor, pause, press. No leg drive and no stretch to bounce out of."},
+{id:"spotopress",n:"Spoto Press",arch:"bench",eq:["barbell","bench"],cls:"acc",pat:"push_h",
+ pri:["chest","triceps"],sec:["delt_f"],
+ cue:"Stop an inch off the chest, hold, then press. Kills the bounce entirely."},
+{id:"declinedb",n:"Decline Dumbbell Press",arch:"bench",eq:["dumbbell","incline"],cls:"acc",pat:"push_h",
+ pri:["chest"],sec:["triceps","delt_f"],
+ cue:"Lower to the lower chest and keep the elbows tucked closer than you would flat."},
+{id:"cgdbpress",n:"Close-Grip Dumbbell Press",arch:"bench",eq:["dumbbell","bench"],cls:"acc",pat:"push_h",
+ pri:["triceps","chest"],sec:["delt_f"],
+ cue:"Bells touching the whole set, elbows brushing the ribs."},
+{id:"machinefly",n:"Pec Deck",arch:"fly",eq:["machine"],cls:"iso",pat:"push_h",
+ pri:["chest"],sec:["delt_f"],
+ cue:"Squeeze for a beat where the hands meet — that's where the tension actually is."},
+{id:"dbpullover",n:"Dumbbell Pullover",arch:"pullover",eq:["dumbbell","bench"],cls:"iso",pat:"pull_v",
+ pri:["lats","chest"],sec:["serratus","triceps","abs"],
+ cue:"Ribs down as the bell goes back, or the low back takes the stretch instead of the lats."},
+
+/* --- overhead press, extended ---------------------------------------- */
+{id:"zpress",n:"Z Press",arch:"ohp",eq:["barbell","rack"],cls:"comp",pat:"push_v",big:1,
+ pri:["delt_f","triceps"],sec:["abs","upperback","traps"],
+ cue:"Seated on the floor, legs straight. Nothing to cheat with but the shoulders."},
+{id:"arnold",n:"Arnold Press",arch:"ohp",eq:["dumbbell"],cls:"acc",pat:"push_v",
+ pri:["delt_f","delt_s"],sec:["triceps","upperback"],
+ cue:"Start palms-in, rotate as you press. Slow the turn down — that's the whole exercise."},
+{id:"seateddbpress",n:"Seated Dumbbell Press",arch:"ohp",eq:["dumbbell","incline"],cls:"comp",pat:"push_v",big:1,
+ pri:["delt_f"],sec:["triceps","delt_s","upperback"],
+ cue:"Back flat on the pad, ribs down. Press the bells to meet, not to clash."},
+{id:"kbpress",n:"Kettlebell Overhead Press",arch:"ohp",eq:["kettlebell"],cls:"acc",pat:"push_v",uni:1,
+ pri:["delt_f","triceps"],sec:["abs","obliques","upperback"],
+ cue:"Bell rests on the forearm. Squeeze the opposite glute to stop the side-bend."},
+{id:"pushjerk",n:"Push Jerk",arch:"pushpress",eq:["barbell","rack"],cls:"comp",pat:"push_v",big:1,fin:1,
+ pri:["delt_f","quads"],sec:["triceps","glutes","abs","traps"],
+ cue:"Dip, drive, then drop under the bar and catch it locked out. Two dips, one press."},
+{id:"bradford",n:"Bradford Press",arch:"ohp",eq:["barbell","rack"],cls:"acc",pat:"push_v",
+ pri:["delt_f","delt_s"],sec:["triceps","upperback"],
+ cue:"Alternate front and back, never locking out. Light bar, constant tension."},
+
+/* --- horizontal pull, extended --------------------------------------- */
+{id:"tbarrow",n:"T-Bar Row",arch:"row",eq:["barbell"],cls:"comp",pat:"pull_h",big:1,
+ pri:["upperback","lats"],sec:["biceps","delt_r","lowerback","forearms"],
+ cue:"Chest proud, pull to the navel. Let the shoulder blades travel — don't lock them."},
+{id:"meadowsrow",n:"Meadows Row",arch:"dbrow",eq:["barbell"],cls:"acc",pat:"pull_h",uni:1,
+ pri:["lats","upperback"],sec:["biceps","delt_r","forearms"],
+ cue:"Stand side-on to the bar end. The stretch at the bottom is the reason it works."},
+{id:"krocrow",n:"Kroc Row",arch:"dbrow",eq:["dumbbell","bench"],cls:"acc",pat:"pull_h",uni:1,fin:1,
+ pri:["lats","upperback"],sec:["biceps","forearms","traps"],
+ cue:"Heavy and high rep with a little body english. Grip usually quits first."},
+{id:"renegaderow",n:"Renegade Row",arch:"dbrow",eq:["dumbbell"],cls:"acc",pat:"pull_h",uni:1,
+ pri:["lats","abs"],sec:["upperback","obliques","biceps"],
+ cue:"Feet wide, hips dead level. If they rock, the weight is too heavy."},
+{id:"gorillarow",n:"Gorilla Row",arch:"dbrow",eq:["kettlebell"],cls:"acc",pat:"pull_h",uni:1,
+ pri:["lats","upperback"],sec:["biceps","abs","obliques"],
+ cue:"Hinged over two bells, row one while the other braces the floor."},
+{id:"machinehighrow",n:"Machine High Row",arch:"dbrow",eq:["machine"],cls:"acc",pat:"pull_h",
+ pri:["lats","upperback"],sec:["biceps","delt_r"],
+ cue:"Pull down and back toward the hips to bias the lats over the traps."},
+
+/* --- vertical pull, extended ----------------------------------------- */
+{id:"neutralpulldown",n:"Neutral-Grip Pulldown",arch:"pulldown",eq:["cable"],cls:"acc",pat:"pull_v",
+ pri:["lats"],sec:["biceps","upperback","forearms"],
+ cue:"Palms facing, elbows drive to the back pockets. Easiest grip on the shoulder."},
+{id:"straightarm",n:"Straight-Arm Pulldown",arch:"pulldown",eq:["cable"],cls:"iso",pat:"pull_v",
+ pri:["lats"],sec:["triceps","abs","serratus"],
+ cue:"Elbows locked soft the whole way. Pure lat — the biceps get to sit this one out."},
+{id:"archerpullup",n:"Archer Pull-Up",arch:"pullup",eq:["pullupbar"],cls:"comp",pat:"pull_v",uni:1,big:1,
+ pri:["lats","upperback"],sec:["biceps","abs","forearms"],
+ cue:"Pull to one hand while the other arm stays long. The step before a one-arm."},
+{id:"commandopullup",n:"Commando Pull-Up",arch:"pullup",eq:["pullupbar"],cls:"acc",pat:"pull_v",
+ pri:["lats","biceps"],sec:["upperback","obliques","abs"],
+ cue:"Straddle the bar and pull to alternate shoulders. The obliques get an unexpected bill."},
+{id:"scappullup",n:"Scapular Pull-Up",arch:"pullup",eq:["pullupbar"],cls:"iso",pat:"pull_v",
+ pri:["lats","upperback"],sec:["traps"],
+ cue:"Arms stay straight — only the shoulder blades move. Best warm-up there is for pulling."},
+
+/* --- arms, extended --------------------------------------------------- */
+{id:"preachercurl",n:"Preacher Curl",arch:"curl",eq:["ezbar","incline"],cls:"iso",pat:"iso_arm",
+ pri:["biceps"],sec:["forearms"],
+ cue:"Never fully straighten at the bottom under load, and don't let the elbows lift."},
+{id:"inclinecurl",n:"Incline Dumbbell Curl",arch:"curl",eq:["dumbbell","incline"],cls:"iso",pat:"iso_arm",
+ pri:["biceps"],sec:["forearms"],
+ cue:"Arms hang behind the body — the stretch is what this variation is for."},
+{id:"concentration",n:"Concentration Curl",arch:"curl",eq:["dumbbell","bench"],cls:"iso",pat:"iso_arm",uni:1,
+ pri:["biceps"],sec:["forearms"],
+ cue:"Elbow braced on the thigh. Turn the pinky up hard at the top."},
+{id:"spidercurl",n:"Spider Curl",arch:"curl",eq:["dumbbell","incline"],cls:"iso",pat:"iso_arm",
+ pri:["biceps"],sec:["forearms"],
+ cue:"Chest on the pad, arms straight down. No swing available, which is the point."},
+{id:"zottman",n:"Zottman Curl",arch:"curl",eq:["dumbbell"],cls:"iso",pat:"iso_arm",
+ pri:["biceps","forearms"],sec:[],
+ cue:"Curl up palms-up, rotate at the top, lower palms-down. Slow on the way down."},
+{id:"reversecurl",n:"Reverse Curl",arch:"curl",eq:["ezbar"],cls:"iso",pat:"iso_arm",
+ pri:["forearms","biceps"],sec:[],
+ cue:"Knuckles to the ceiling. Go far lighter than a normal curl and don't cheat it up."},
+{id:"cablecurl",n:"Cable Curl",arch:"curl",eq:["cable"],cls:"iso",pat:"iso_arm",
+ pri:["biceps"],sec:["forearms"],
+ cue:"Tension never drops, top or bottom. Step back far enough to feel it at full stretch."},
+{id:"kickback",n:"Triceps Kickback",arch:"pushdown",eq:["dumbbell"],cls:"iso",pat:"iso_arm",uni:1,
+ pri:["triceps"],sec:[],
+ cue:"Upper arm pinned parallel to the floor. Straighten fully and hold for a beat."},
+{id:"ropepushdown",n:"Rope Pushdown",arch:"pushdown",eq:["cable"],cls:"iso",pat:"iso_arm",
+ pri:["triceps"],sec:["forearms"],
+ cue:"Spread the rope apart at the bottom — that last few degrees is where the lock-out lives."},
+{id:"jmpress",n:"JM Press",arch:"lyingext",eq:["barbell","bench"],cls:"acc",pat:"iso_arm",
+ pri:["triceps"],sec:["chest","delt_f"],
+ cue:"Half skull crusher, half close-grip press. Bar tracks to the throat, then press back."},
+{id:"tatepress",n:"Tate Press",arch:"lyingext",eq:["dumbbell","bench"],cls:"iso",pat:"iso_arm",
+ pri:["triceps"],sec:["chest"],
+ cue:"Elbows flared, bells lower to the chest turning inward. Strange, and it works."},
+{id:"benchdip",n:"Bench Dip",arch:"dip",eq:["bench"],cls:"acc",pat:"push_v",
+ pri:["triceps"],sec:["chest","delt_f"],
+ cue:"Hips close to the bench. If the shoulders complain, cut the depth, not the reps."},
+{id:"wristcurl",n:"Wrist Curl",arch:"curl",eq:["dumbbell","bench"],cls:"iso",pat:"iso_arm",
+ pri:["forearms"],sec:[],
+ cue:"Forearms on the thighs, let the bells roll to the fingertips, then curl them back."},
+
+/* --- delts, extended -------------------------------------------------- */
+{id:"leaninglateral",n:"Leaning Lateral Raise",arch:"lateral",eq:["dumbbell"],cls:"iso",pat:"iso_delt",uni:1,
+ pri:["delt_s"],sec:["traps"],
+ cue:"Hang off an upright and lean away. Loads the bottom of the range where it's usually empty."},
+{id:"machinelateral",n:"Machine Lateral Raise",arch:"lateral",eq:["machine"],cls:"iso",pat:"iso_delt",
+ pri:["delt_s"],sec:["traps"],
+ cue:"Lead with the elbows and stop at shoulder height. Above that the traps take over."},
+{id:"platefront",n:"Plate Front Raise",arch:"frontraise",eq:["barbell"],cls:"iso",pat:"iso_delt",
+ pri:["delt_f"],sec:["chest_up","abs"],
+ cue:"Hold the plate at three and nine o'clock and raise to eye level. Ribs stay down."},
+{id:"reversepecdeck",n:"Reverse Pec Deck",arch:"rearfly",eq:["machine"],cls:"iso",pat:"iso_delt",
+ pri:["delt_r"],sec:["upperback","traps"],
+ cue:"Thumbs back, arms wide. Think of pulling the handles apart, not back."},
+{id:"cablerearfly",n:"Cable Rear Fly",arch:"rearfly",eq:["cable"],cls:"iso",pat:"iso_delt",uni:1,
+ pri:["delt_r"],sec:["upperback"],
+ cue:"Cross the cables and sweep wide. The rear delt likes constant tension more than heavy."},
+{id:"bandpullapart",n:"Band Pull-Apart",arch:"rearfly",eq:["bands"],cls:"iso",pat:"iso_delt",
+ pri:["delt_r","upperback"],sec:["traps"],
+ cue:"Arms straight, stretch the band to the chest. Free, endless, and worth doing daily."},
+{id:"dbshrug",n:"Dumbbell Shrug",arch:"shrug",eq:["dumbbell"],cls:"iso",pat:"iso_delt",
+ pri:["traps"],sec:["forearms"],
+ cue:"Straight up, pause at the top. Rolling the shoulders adds nothing but wear."},
+
+/* --- legs, extended --------------------------------------------------- */
+{id:"seatedcalf",n:"Seated Calf Raise",arch:"calf",eq:["machine"],cls:"iso",pat:"iso_leg",
+ pri:["calves"],sec:[],
+ cue:"Bent knee shifts it to the soleus. Full stretch at the bottom, pause at the top."},
+{id:"singlecalf",n:"Single-Leg Calf Raise",arch:"calf",eq:["bw"],cls:"iso",pat:"iso_leg",uni:1,
+ pri:["calves"],sec:["tibialis"],
+ cue:"Off a step, full range. Hold something for balance so the calf does the work."},
+{id:"adductor",n:"Adductor Machine",arch:"legext",eq:["machine"],cls:"iso",pat:"iso_leg",
+ pri:["adductors"],sec:["glutes"],
+ cue:"Squeeze the knees together and hold. Unglamorous, and groins prefer it that way."},
+{id:"abductor",n:"Abductor Machine",arch:"legext",eq:["machine"],cls:"iso",pat:"iso_leg",
+ pri:["glutes"],sec:["adductors"],
+ cue:"Lean forward slightly to bias the upper glute. Slow on the way in."},
+{id:"reversehyper",n:"Reverse Hyper",arch:"hyperext",eq:["ghd"],cls:"acc",pat:"hinge",
+ pri:["glutes","hams"],sec:["lowerback"],
+ cue:"Swing under control and stop level. Great after heavy pulling, terrible done fast."},
+{id:"frogpump",n:"Frog Pump",arch:"hipthrust",eq:["bw"],cls:"iso",pat:"hip",fin:1,
+ pri:["glutes"],sec:["hams"],
+ cue:"Soles together, knees out. High reps until it burns — that's the whole prescription."},
+{id:"bandwalk",n:"Banded Lateral Walk",arch:"carry",eq:["bands"],cls:"iso",pat:"iso_leg",fin:1,
+ pri:["glutes"],sec:["adductors","quads"],
+ cue:"Band above the knees, half squat, small steps. Don't let the knees cave in."},
+{id:"pistol",n:"Pistol Squat",arch:"pistol",eq:["bw"],cls:"comp",pat:"squat",uni:1,big:1,
+ pri:["quads","glutes"],sec:["abs","adductors","calves","hipflex"],
+ cue:"Free leg long and low, arms as a counterweight. Sit back, not down."},
+{id:"shrimpsquat",n:"Shrimp Squat",arch:"pistol",eq:["bw"],cls:"acc",pat:"squat",uni:1,
+ pri:["quads"],sec:["glutes","abs","adductors"],
+ cue:"Hold the back foot behind you and touch the knee down softly."},
+
+/* --- core, extended --------------------------------------------------- */
+{id:"pallof",n:"Pallof Press",arch:"twist",eq:["cable"],cls:"core",pat:"core",uni:1,
+ pri:["obliques","abs"],sec:["delt_f","glutes"],
+ cue:"The point is refusing to rotate. Press out slow and let the cable try to turn you."},
+{id:"cablecrunch",n:"Cable Crunch",arch:"crunch",eq:["cable"],cls:"core",pat:"core",
+ pri:["abs"],sec:["obliques"],
+ cue:"Curl the ribs to the hips with the hips fixed. It's a spinal flexion, not a hip fold."},
+{id:"hangingknee",n:"Hanging Knee Raise",arch:"hanglegraise",eq:["pullupbar"],cls:"core",pat:"core",
+ pri:["hipflex","abs"],sec:["forearms","lats"],
+ cue:"Knees to the chest with a small posterior tilt at the top. Kill the swing first."},
+{id:"toestobar",n:"Toes-to-Bar",arch:"hanglegraise",eq:["pullupbar"],cls:"core",pat:"core",fin:1,
+ pri:["abs","hipflex"],sec:["lats","forearms","obliques"],
+ cue:"Push the bar away with straight arms as the feet come up. That's what makes it possible."},
+{id:"windshield",n:"Windshield Wiper",arch:"legraise",eq:["bw"],cls:"core",pat:"core",
+ pri:["obliques","abs"],sec:["hipflex","lowerback"],
+ cue:"Legs up, rotate side to side under control. Shoulders stay pinned to the floor."},
+{id:"sidebend",n:"Dumbbell Side Bend",arch:"twist",eq:["dumbbell"],cls:"core",pat:"core",uni:1,
+ pri:["obliques"],sec:["lowerback","forearms"],
+ cue:"One bell only. Bend straight sideways — no leaning forward or turning."},
+{id:"vup",n:"V-Up",arch:"crunch",eq:["bw"],cls:"core",pat:"core",fin:1,
+ pri:["abs","hipflex"],sec:["quads","obliques"],
+ cue:"Hands and feet meet over the hips. Lower everything without touching down."},
+{id:"birddog",n:"Bird Dog",arch:"bearcrawl",eq:["bw"],cls:"core",pat:"core",uni:1,
+ pri:["abs","lowerback"],sec:["glutes","delt_f","obliques"],
+ cue:"Opposite hand and foot, hips dead level. Slow beats far every time."},
+{id:"copenhagen",n:"Copenhagen Plank",arch:"plank",eq:["bench"],cls:"core",pat:"core",uni:1,unit:"sec",
+ pri:["adductors","obliques"],sec:["abs","glutes"],
+ cue:"Top leg on the bench, hips high. Start with the knee down — the full version is brutal."},
+{id:"weightedplank",n:"Weighted Plank",arch:"plank",eq:["bw"],cls:"core",pat:"core",unit:"sec",
+ pri:["abs"],sec:["obliques","delt_f","glutes"],
+ cue:"Plate on the upper back, ribs down, glutes tight. Squeeze rather than sag."},
+
+/* --- conditioning, extended ------------------------------------------- */
+{id:"bearcrawl",n:"Bear Crawl",arch:"bearcrawl",eq:["bw"],cls:"cardio",pat:"cardio",unit:"sec",fin:1,
+ pri:["abs","delt_f"],sec:["quads","serratus","triceps"],
+ cue:"Knees an inch off the floor, hips low. Opposite hand and foot, short steps."},
+{id:"shuttlerun",n:"Shuttle Run",arch:"run",eq:["bw"],cls:"cardio",pat:"cardio",fin:1,
+ pri:["quads","calves"],sec:["glutes","hams","abs"],
+ cue:"The turns are the work. Get low, plant hard, and accelerate out."},
+{id:"doubleunders",n:"Double Unders",arch:"jumprope",eq:["jumprope"],cls:"cardio",pat:"cardio",fin:1,
+ pri:["calves","forearms"],sec:["quads","abs"],
+ cue:"Small fast wrists, jump a little higher than a single. Relax the shoulders."},
+{id:"sleddrag",n:"Sled Drag",arch:"sled",eq:["sled"],cls:"cardio",pat:"cardio",fin:1,
+ pri:["hams","glutes"],sec:["quads","upperback","biceps"],
+ cue:"Walk backwards, arms long, lean away from it. Kind on the knees, cruel on the lungs."},
+{id:"assaultbike_int",n:"Assault Bike Sprints",arch:"bike",eq:["bike"],cls:"cardio",pat:"cardio",fin:1,
+ pri:["quads","delt_f"],sec:["glutes","hams","abs","upperback"],
+ cue:"Ten to twenty seconds flat out. Arms drive as hard as the legs."},
+
 /* --- squat pattern --- */
 {id:"backsquat",n:"Back Squat",arch:"squat",eq:["barbell","rack"],cls:"comp",pat:"squat",big:1,
  pri:["quads","glutes"],sec:["hams","lowerback","abs","adductors","calves"],
@@ -3378,6 +4034,22 @@ function coverageOf(act, scope){
 
 /* Rolling read of what recent sessions have actually trained. Muscles that keep
    getting skipped build up a debt, and the generator pays it down. */
+/* Which lifts you have actually done lately, 1 for the last session fading to
+   0 six back. The generator already refuses to repeat a movement pattern inside
+   one session; this is the same instinct stretched across days. Without it a
+   big catalogue still collapses onto the same dozen favourites, because the
+   coverage maths scores an exercise the same whether or not you did it
+   yesterday. Gated with the rest of the history-aware programming. */
+function recentLifts(){
+  if(!limitsOf().adaptive) return {};
+  const recent = (state.history || []).slice(0, 6), seen = {};
+  recent.forEach((h, i) => {
+    const w = 1 - i / (recent.length + 1);
+    (h.mids || []).forEach(id => { seen[id] = Math.max(seen[id] || 0, w); });
+  });
+  return seen;
+}
+
 function muscleDebt(){
   if(!limitsOf().adaptive){
     const debt = {}; MUSCLE_IDS.forEach(m => debt[m] = 0);
@@ -3434,6 +4106,7 @@ function generate(cfg){
   const trimmedTo = Math.min(cfg.count, Math.max(1, usePool.length));
 
   const {debt} = muscleDebt();
+  const fresh = recentLifts();
   const picked = [];
   const usedArch = new Set();
   const patCount = {};
@@ -3489,6 +4162,7 @@ function generate(cfg){
       if(cfg.effort <= 1 && x.pat === "core") s += 1.5;
       if(cfg.cardioOn && x.fin) s -= 4;
       if(x.uni) s += 1.2;                 /* unilateral work earns its slot */
+      s -= (fresh[x.id] || 0) * 7;        /* did it lately — let something else in */
       s += rnd() * 5.5;                   /* variety between rolls */
       if(s > bestScore){ bestScore = s; best = x; bestGot = newlyCovered(x); }
     }
@@ -4768,9 +5442,9 @@ const EQ_SYN = {
   dumbbell:  ["dumbbell","dumbell","dumbbells","dumbells","db","dbs","adjustable dumbbells","hex dumbbells","powerblocks","bowflex"],
   kettlebell:["kettlebell","kettle bell","kb","kbs","kettlebells"],
   trapbar:   ["trap bar","hex bar","deadlift bar"],
-  medball:   ["medicine ball","med ball","slam ball","wall ball","dead ball"],
+  medball:   ["medicine ball","med ball","wall ball","dead ball"],
   pullupbar: ["pull up bar","pullup bar","pull-up bar","chin up bar","chinup bar","doorway bar","chin bar"],
-  dipbar:    ["dip bar","dip bars","dip station","parallettes","parallel bars","dip belt"],
+  dipbar:    ["dip bar","dip bars","dip station","parallel bars","dip belt"],
   bands:     ["band","bands","resistance band","resistance bands","loop band","loop bands","tube bands","mini bands","therabands"],
   abwheel:   ["ab wheel","ab roller","roller wheel"],
   box:       ["box","plyo box","plyometric box","step","stepper","aerobic step","bench step","stool"],
@@ -4781,8 +5455,26 @@ const EQ_SYN = {
   treadmill: ["treadmill","running machine","tread"],
   bike:      ["bike","exercise bike","assault bike","air bike","spin bike","stationary bike","echo bike","peloton","airdyne"],
   rower:     ["rower","rowing machine","rowing erg","erg","concept 2","concept2","c2"],
+  /* Singular "rope" stays the jump rope — that is what most people mean typing
+     one word. Plural "ropes" goes to the battle ropes, because nobody calls a
+     skipping rope that. The exact-match lookup is tried before the singulariser,
+     so the two never collide. */
   jumprope:  ["jump rope","jumprope","skipping rope","skip rope","speed rope","rope"],
-  sled:      ["sled","prowler","push sled","weight sled"]
+  battlerope:["battle rope","battle ropes","ropes","battleropes","heavy ropes","conditioning ropes"],
+  sled:      ["sled","prowler","push sled","weight sled"],
+  /* "trx machine" is spelled out because the fallback matcher picks the longest
+     synonym inside the phrase, and "machine" is longer than "trx" — without it,
+     someone typing their TRX gets a cable stack. */
+  trx:       ["trx","trx machine","trx trainer","suspension trainer","suspension straps",
+              "suspension","suspension system","jungle gym","trx straps"],
+  rings:     ["rings","gymnastic rings","gym rings","olympic rings"],
+  parallette:["parallette","parallettes","paralettes","push up bars","pushup bars","p bars"],
+  swissball: ["swiss ball","stability ball","exercise ball","yoga ball","physio ball","gym ball","bosu"],
+  slamball:  ["slam ball","slamball"],
+  sandbag:   ["sandbag","sand bag","sandbags","strongman bag","bulgarian bag"],
+  landmine:  ["landmine","land mine","landmine attachment","corner bar"],
+  ghd:       ["ghd","glute ham developer","glute-ham developer","hyper bench","hyperextension bench","roman chair","back extension bench"],
+  skierg:    ["ski erg","skierg","ski machine","ski ergometer"]
 };
 const EQ_LOOKUP = (() => {
   const t = {};
@@ -5525,6 +6217,37 @@ const ASK_FOCUS = {
   core:      ["core","abs","oblique","obliques","midsection","six pack","stomach"]
 };
 const ASK_LIFTS = [
+  /* Order is load-bearing: each match is struck out of the sentence before the
+     next is tried, so anything containing a shorter lift's name has to come
+     first. "hack squat" below "squat" would be heard as a back squat. */
+  ["trxrow",      ["trx row","suspension row"]],
+  ["trxpush",     ["trx push up","trx push-up","suspension push up"]],
+  ["ringrow",     ["ring row"]],
+  ["ringdip",     ["ring dip"]],
+  ["muscleup",    ["muscle up","muscle-up","muscleup"]],
+  ["ropeslam",    ["rope slam","battle rope","battle ropes"]],
+  ["ballslam",    ["slam ball","ball slam"]],
+  ["landminepress",["landmine press","landmine"]],
+  ["sandbagclean",["sandbag clean","sandbag"]],
+  ["pistol",      ["pistol squat","pistol"]],
+  ["lsit",        ["l-sit","l sit"]],
+  ["bearcrawl",   ["bear crawl"]],
+  ["boxjump",     ["box jump"]],
+  ["hacksquat",   ["hack squat"]],
+  ["zercher",     ["zercher"]],
+  ["pausesquat",  ["paused squat","pause squat"]],
+  ["sumodl",      ["sumo deadlift","sumo"]],
+  ["rackpull",    ["rack pull"]],
+  ["deficitdl",   ["deficit deadlift"]],
+  ["glutehamraise",["glute ham raise","glute-ham raise","ghr"]],
+  ["floorpress",  ["floor press"]],
+  ["zpress",      ["z press"]],
+  ["arnold",      ["arnold press","arnold"]],
+  ["pushjerk",    ["push jerk","jerk"]],
+  ["tbarrow",     ["t-bar row","t bar row","tbar row"]],
+  ["meadowsrow",  ["meadows row"]],
+  ["preachercurl",["preacher curl","preacher"]],
+  ["ski_int",     ["ski erg","skierg"]],
   ["frontsquat",  ["front squat"]],
   ["bulgarian",   ["bulgarian","split squat"]],
   ["backsquat",   ["back squat","squat","squats","squatting"]],
@@ -7507,6 +8230,242 @@ $("#brand").insertAdjacentHTML("afterbegin",
     if(e.key === "Enter" && !e.shiftKey){ e.preventDefault(); fire(box); }
   });
 
+  /* ------------------------------------------------------------ upload media
+     A reel is a request too. What leaves the phone is never the original file:
+     a photo goes through one downscale, a clip gets sampled at a handful of
+     points across its length, and either way the reader sees a few small JPEGs.
+     What comes back is a list of catalogue ids, which then walks exactly the
+     road a typed ask walks — same reset, same equipment filter, same forge. */
+  const UP = {
+    fn:      SUPA.url + "/functions/v1/analyze-media",
+    frames:  6,     /* sampled across a clip; a photo is just the one */
+    edge:    768,   /* longest side the reader ever sees */
+    quality: .72,
+    maxMB:   200
+  };
+  let upFile = null, upBusy = false;
+  const upSec = $("#uploadSec"), upDrop = $("#upDrop"), upIn = $("#upInput");
+
+  function upSay(msg, tone){
+    const n = $("#upNote");
+    n.textContent = msg || "";
+    n.classList.toggle("on", tone === "ok");
+    n.classList.toggle("bad", tone === "bad");
+  }
+  function upProg(p){
+    const b = upSec.querySelector(".up-bar");
+    if(b) b.style.setProperty("--up-p", Math.round(p*100) + "%");
+  }
+  function upBytes(n){
+    return n >= 1048576 ? (n/1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n/1024)) + " KB";
+  }
+  function upIsVid(f){ return /^video\//.test(f.type) || /\.(mp4|mov|m4v|webm)$/i.test(f.name || ""); }
+
+  /* Canvas is the only way back out of a <video>, and it doubles as the resize. */
+  function upGrab(src, w, h){
+    if(!w || !h) return null;
+    const s = Math.min(1, UP.edge / Math.max(w, h));
+    const c = document.createElement("canvas");
+    c.width = Math.round(w*s); c.height = Math.round(h*s);
+    c.getContext("2d").drawImage(src, 0, 0, c.width, c.height);
+    const d = c.toDataURL("image/jpeg", UP.quality);
+    const i = d.indexOf(",");
+    return i > 0 ? d.slice(i+1) : null;
+  }
+  function upOpenVideo(file){
+    return new Promise((res, rej) => {
+      const v = document.createElement("video");
+      /* muted + playsinline or iOS refuses to decode one off-screen */
+      v.muted = true; v.defaultMuted = true; v.playsInline = true;
+      v.setAttribute("muted",""); v.setAttribute("playsinline","");
+      v.preload = "auto"; v.src = URL.createObjectURL(file);
+      const bail = setTimeout(() => { off(); rej(new Error("That clip took too long to open.")); }, 20000);
+      function off(){ clearTimeout(bail); v.removeEventListener("loadeddata", ok); v.removeEventListener("error", no); }
+      function ok(){ off(); res(v); }
+      function no(){ off(); URL.revokeObjectURL(v.src); rej(new Error("iOS could not read that clip.")); }
+      v.addEventListener("loadeddata", ok); v.addEventListener("error", no);
+    });
+  }
+  /* A seek onto a time the decoder is already parked on never fires `seeked`,
+     so the timer is the floor, not a fallback for something going wrong. */
+  function upSeek(v, t){
+    return new Promise(res => {
+      let done = false;
+      const fin = () => { if(done) return; done = true; v.removeEventListener("seeked", on); res(); };
+      const on = () => setTimeout(fin, 70);
+      v.addEventListener("seeked", on);
+      try{ v.currentTime = t; }catch(e){ fin(); return; }
+      setTimeout(fin, 1800);
+    });
+  }
+  async function upPoster(file){
+    const v = await upOpenVideo(file);
+    try{
+      await upSeek(v, Math.min(.6, (v.duration || 2) * .1));
+      const b = upGrab(v, v.videoWidth, v.videoHeight);
+      return b ? "data:image/jpeg;base64," + b : "";
+    } finally { URL.revokeObjectURL(v.src); v.removeAttribute("src"); v.load(); }
+  }
+  async function upFrames(file){
+    if(!upIsVid(file)){
+      const url = URL.createObjectURL(file);
+      try{
+        const img = await new Promise((res, rej) => {
+          const i = new Image();
+          i.onload = () => res(i);
+          i.onerror = () => rej(new Error("That image would not open."));
+          i.src = url;
+        });
+        const b = upGrab(img, img.naturalWidth, img.naturalHeight);
+        return b ? [b] : [];
+      } finally { URL.revokeObjectURL(url); }
+    }
+    const v = await upOpenVideo(file);
+    try{
+      const dur = isFinite(v.duration) && v.duration > 0 ? v.duration : 0;
+      /* spread across the middle of each slice, so an intro card or an end
+         card never eats one of the six looks we get */
+      const times = dur
+        ? Array.from({length: UP.frames}, (_, i) => dur * (i + .5) / UP.frames)
+        : [0];
+      const out = [];
+      for(let i=0;i<times.length;i++){
+        await upSeek(v, Math.min(times[i], Math.max(0, dur - .06)));
+        const b = upGrab(v, v.videoWidth, v.videoHeight);
+        if(b) out.push(b);
+        upProg(.12 + .5 * ((i+1)/times.length));
+      }
+      return out;
+    } finally { URL.revokeObjectURL(v.src); v.removeAttribute("src"); v.load(); }
+  }
+
+  /* The thumbnail doubles as proof we can decode what was handed over: if it
+     draws, the frames will too, and the failure lands before the network. */
+  async function upShow(file){
+    upFile = file;
+    const vid = upIsVid(file);
+    let thumb = "";
+    try{ thumb = vid ? await upPoster(file) : URL.createObjectURL(file); }catch(e){ thumb = ""; }
+    upDrop.classList.add("has");
+    upDrop.innerHTML =
+      '<div class="up-shot">' +
+        (thumb ? '<img class="up-thumb" src="' + thumb + '" alt="">'
+               : '<span class="up-thumb"></span>') +
+        '<div class="up-facts">' +
+          '<p class="up-name">' + esc(file.name || (vid ? "Clip" : "Photo")) + '</p>' +
+          '<p class="up-size">' + (vid ? "Video" : "Photo") + ' · ' + upBytes(file.size) + '</p>' +
+          '<button class="up-swap" type="button" id="upSwap">Choose another</button>' +
+        '</div>' +
+      '</div>';
+    $("#upSwap").addEventListener("click", e => { e.stopPropagation(); upIn.click(); });
+    upSay("Ready — press the mark to read it.");
+  }
+
+  /* Everything that comes back is a suggestion, not an instruction: ids the
+     catalogue does not know are dropped, and whatever your kit cannot do is
+     filtered out by the same rule a typed ask goes through. */
+  function upApply(d){
+    const seen = (Array.isArray(d.exercises) ? d.exercises : [])
+      .map(s => String(s || "").trim()).filter(id => XMAP[id]);
+    if(!seen.length){
+      upSay("Couldn't pin down any lifts in that one — try a clearer shot, or one with the names on screen.", "bad");
+      return;
+    }
+    const c = state.cfg;
+    /* an upload is the whole request, not an edit of the last one */
+    c.focus = DEFAULT_CFG.focus.slice(); c.count = DEFAULT_CFG.count;
+    c.effort = DEFAULT_CFG.effort; c.compounds = [];
+    c.cardioOn = DEFAULT_CFG.cardioOn; c.cstyle = DEFAULT_CFG.cstyle;
+    c.failureOn = false; c.preset = null;
+
+    if(d.loc === "home" || d.loc === "public" || d.loc === "body") c.loc = d.loc;
+    const avail = availFor(c.loc);
+    const usable = seen.filter(id => XMAP[id].eq.every(q => avail.indexOf(q) >= 0));
+    if(!usable.length){
+      upSay("Read " + seen.length + " lift" + (seen.length === 1 ? "" : "s") +
+            " in there, but none of them work with your " +
+            (c.loc === "public" ? "gym" : c.loc === "body" ? "bodyweight setup" : "home kit") + ".", "bad");
+      return;
+    }
+    const foc = (Array.isArray(d.focus) ? d.focus : []).filter(k => FOCUS[k]);
+    if(foc.length) c.focus = foc.slice(0, 2);
+    c.compounds = usable.slice(0, 4);
+    const n = Number(d.count);
+    c.count = Number.isFinite(n) && n > 0 ? Math.round(n) : Math.max(usable.length, DEFAULT_CFG.count);
+    const ef = Number(d.effort);
+    if(ef >= 1 && ef <= 4) c.effort = Math.round(ef);
+    if(d.cardio === true) c.cardioOn = true;
+    if(d.cstyle && CSTYLE[d.cstyle]) c.cstyle = d.cstyle;
+
+    /* the same three lines that close askApply */
+    c.compounds = c.compounds.filter(id => XMAP[id].eq.every(q => avail.indexOf(q) >= 0));
+    c.count = Math.min(Math.max(c.count, c.compounds.length), limitsOf().moves);
+    if(c.failureOn && !limitsOf().failure) c.failureOn = false;
+
+    syncControls(); save();
+    const lost = seen.length - usable.length;
+    upSay("Loaded · " + askSummary(c) + (lost ? " · " + lost + " needed kit you haven't got" : ""), "ok");
+    doForge();
+  }
+
+  async function upRun(){
+    if(upBusy) return;
+    if(!upFile){ upIn.click(); return; }
+    upBusy = true; upSec.classList.add("busy"); upProg(.08);
+    try{
+      upSay(upIsVid(upFile) ? "Pulling frames out of the clip…" : "Reading the photo…");
+      const frames = await upFrames(upFile);
+      if(!frames.length) throw new Error("Nothing readable came out of that file.");
+
+      upProg(.7); upSay("Working out what's in it…");
+      const headers = {"Content-Type":"application/json", "apikey": SUPA.key};
+      const a = auth();
+      if(a && a.token) headers["Authorization"] = "Bearer " + a.token;
+      const res = await fetch(UP.fn, {
+        method:"POST", headers,
+        body: JSON.stringify({frames, loc: state.cfg.loc, catalog: X.map(x => ({id:x.id, n:x.n}))})
+      });
+      const txt = await res.text();
+      let data = null;
+      try{ data = txt ? JSON.parse(txt) : null; }catch(e){}
+      if(!res.ok) throw new Error((data && data.error) || ("The reader isn't answering (HTTP " + res.status + ")."));
+      upProg(1);
+      upApply(data || {});
+    }catch(e){
+      upSay(e && e.message ? e.message : "That didn't work.", "bad");
+    }finally{
+      upBusy = false; upSec.classList.remove("busy"); upProg(.08);
+    }
+  }
+
+  upDrop.addEventListener("click", () => { if(!upBusy && !upDrop.classList.contains("has")) upIn.click(); });
+  upDrop.addEventListener("keydown", e => {
+    if((e.key === "Enter" || e.key === " ") && !upDrop.classList.contains("has")){ e.preventDefault(); upIn.click(); }
+  });
+  ["dragenter","dragover"].forEach(k => upDrop.addEventListener(k, e => {
+    e.preventDefault(); upDrop.classList.add("over");
+  }));
+  ["dragleave","drop"].forEach(k => upDrop.addEventListener(k, e => {
+    e.preventDefault(); upDrop.classList.remove("over");
+  }));
+  upDrop.addEventListener("drop", e => {
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if(f) upTake(f);
+  });
+  upIn.addEventListener("change", () => {
+    const f = upIn.files && upIn.files[0];
+    upIn.value = "";              /* so picking the same file twice still fires */
+    if(f) upTake(f);
+  });
+  function upTake(f){
+    if(f.size > UP.maxMB * 1048576){
+      upSay("That one is " + upBytes(f.size) + " — trim it under " + UP.maxMB + " MB first.", "bad");
+      return;
+    }
+    upSay("");
+    upShow(f).catch(() => upSay("iOS could not open that one.", "bad"));
+  }
+  $("#upGo").addEventListener("click", upRun);
 
   /* The floating forge button is gone. It existed to keep a mark reachable
      while scrolling, and the tab bar now carries one permanently in its centre
