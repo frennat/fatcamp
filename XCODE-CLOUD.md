@@ -64,8 +64,11 @@ group → Automatically distribute builds.** The same thing can be set as the
 workflow's TestFlight post-action, but the group setting applies however the
 build arrives.
 
-Only after that is worth suspecting processing time, which runs 5–15 minutes
-past the archive going green.
+The other cause of the same symptom is a duplicate build number, which is
+handled automatically now — see **Version numbers** below.
+
+Only after both of those is it worth suspecting processing time, which runs
+5–15 minutes past the archive going green.
 
 ---
 
@@ -121,13 +124,33 @@ have. Write the plugin in the app target and register it on the bridge in
 
 ## Version numbers
 
-`MARKETING_VERSION` is what TestFlight shows as the version (currently `1.1`).
-Bump it when a batch of changes is worth naming.
+`MARKETING_VERSION` is what TestFlight shows as the version (currently `1.3`).
+Bump it when a batch of changes is worth naming. It is the only one of the two
+you ever edit by hand.
 
-`CURRENT_PROJECT_VERSION` is the build number, **pinned at 1**. If an upload is
-ever rejected for a duplicate build number, that is why, and the fix is a small
-`ci_pre_xcodebuild.sh` in `ios/App/ci_scripts/` setting it from
-`$CI_BUILD_NUMBER`.
+`CURRENT_PROJECT_VERSION` is the build number, and **it takes care of itself
+now** — `ios/App/ci_scripts/ci_pre_xcodebuild.sh` rewrites it during every
+cloud archive. Leave it alone; whatever it happens to say in the project is
+just the last value the script wrote.
+
+It used to be pinned at `1`, which meant every upload after the very first
+arrived as a duplicate build number and App Store Connect refused it. That
+failure is silent in a genuinely nasty way: the archive goes green, Xcode Cloud
+reports success, and the phone simply never offers an update — the same
+symptom as the tester-group problem above, from a completely different cause.
+
+The script takes the number from `$CI_BUILD_NUMBER`, but **only ever moves
+upward**. If Xcode Cloud's counter is behind what the project already carries —
+a new app record, a deleted product, a reset workflow — it uses `project + 1`
+instead, because using the counter verbatim would upload a duplicate and land
+right back in the silent failure. Locally `CI_BUILD_NUMBER` is unset and the
+script exits without touching anything, so ordinary builds on your Mac are
+unaffected.
+
+If you ever edit that script, keep it defensive: no `set -e`, no `set -u`, every
+path ending in `exit 0`. An earlier `ci_script` broke four archives in a row by
+exiting non-zero on an unset variable, and a non-zero exit there fails the whole
+build.
 
 ---
 
