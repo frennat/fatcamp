@@ -1037,6 +1037,44 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 .dlg-hd h3{font-size:24px;text-transform:uppercase;letter-spacing:-.028em}
 .dlg-bd{padding:16px 18px;max-height:62vh;overflow:auto}
 .dlg-ft{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
+
+/* ---------- what's in the media ----------
+   The read is a suggestion, so it is shown as ticked rows you can untick
+   rather than applied silently. Everything the kit supports is listed below
+   the search, which is what stops a failed read being a dead end. */
+.mv-read{margin:0 0 12px;font-size:13px;color:var(--ink-2);line-height:1.5}
+.mv-search{
+  width:100%;border:1px solid var(--line-hard);border-radius:var(--r-pill);background:transparent;
+  color:var(--ink);font:inherit;font-size:15px;padding:10px 14px;margin-bottom:12px;outline:none;
+}
+.mv-search:focus{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+.mv-list{display:grid;gap:2px;max-height:none}
+.mv-row{
+  display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:12px;cursor:pointer;
+  border:1px solid transparent;transition:background .12s,border-color .12s;
+}
+.mv-row:hover{background:color-mix(in srgb,var(--ink) 5%,transparent)}
+.mv-row.on{
+  background:color-mix(in srgb,var(--accent) 10%,transparent);
+  border-color:color-mix(in srgb,var(--accent) 34%,transparent);
+}
+.mv-tick{
+  flex:none;width:19px;height:19px;border-radius:6px;display:grid;place-items:center;
+  border:1.5px solid color-mix(in srgb,var(--ink) 26%,transparent);color:transparent;
+}
+.mv-row.on .mv-tick{background:var(--accent);border-color:var(--accent);color:#fff}
+.mv-tick svg{width:12px;height:12px;display:block}
+.mv-name{flex:1;min-width:0;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mv-kit{
+  font-family:var(--f-mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);white-space:nowrap;
+}
+.mv-none{font-size:13px;color:var(--ink-3);padding:14px 4px;margin:0}
+.mv-grp{
+  font-family:var(--f-mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);margin:14px 0 5px;
+}
+.mv-grp:first-child{margin-top:0}
 .eqsec{margin-bottom:22px}
 .eqsec:last-child{margin-bottom:4px}
 .eqsec > .eyebrow{margin-bottom:6px}
@@ -1422,8 +1460,8 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
     <div class="up-in">
       <p class="eyebrow">Seen a session worth stealing</p>
       <h2>Upload Media</h2>
-      <p class="up-sub">A screenshot or a reel from Instagram, YouTube or Snapchat. Fatcamp reads the
-        movements out of it and forges the session around them.</p>
+      <p class="up-sub">A screenshot of a workout, or a reel with the movements named on screen.
+        Fatcamp reads the names off it on your device and forges the session around them.</p>
 
       <div class="glass">
         <input type="file" id="upInput" accept="image/*,video/*" hidden>
@@ -1438,7 +1476,8 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
             </svg>
           </span>
           <p class="up-cta">Choose photo or video</p>
-          <p class="up-hint">Works best when the lifts are clearly in frame, or the names are on screen.</p>
+          <p class="up-hint">It reads writing, not bodies — the movement names have to be visible.
+            Whatever it misses, you pick by hand.</p>
         </div>
         <div class="up-bar" aria-hidden="true"><i></i></div>
         <div class="glass-ft">
@@ -1643,6 +1682,27 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
     <div class="dlg-ft">
       <span class="dlg-note">Changes save as you make them</span>
       <button class="btn primary" value="done" type="submit">Done</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="moveDlg">
+  <form method="dialog">
+    <div class="dlg-hd">
+      <h3>What's in it</h3>
+      <button class="iconbtn" value="cancel" style="margin-left:auto" aria-label="Close">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
+    </div>
+    <div class="dlg-bd">
+      <p class="mv-read" id="mvRead"></p>
+      <input class="mv-search" id="mvSearch" type="search" autocomplete="off"
+             placeholder="Search 200+ movements…" aria-label="Search movements">
+      <div class="mv-list" id="mvList"></div>
+    </div>
+    <div class="dlg-ft">
+      <span class="dlg-note" id="mvNote"></span>
+      <button class="btn primary" value="done" type="submit" id="mvGo">Forge it</button>
     </div>
   </form>
 </dialog>
@@ -8231,16 +8291,20 @@ $("#brand").insertAdjacentHTML("afterbegin",
   });
 
   /* ------------------------------------------------------------ upload media
-     A reel is a request too. What leaves the phone is never the original file:
-     a photo goes through one downscale, a clip gets sampled at a handful of
-     points across its length, and either way the reader sees a few small JPEGs.
-     What comes back is a list of catalogue ids, which then walks exactly the
+     A reel is a request too. Nothing leaves the phone at all: a photo goes
+     through one downscale, a clip gets sampled at a handful of points across
+     its length, and Vision reads the words off those frames on the device.
+     What comes out is a list of catalogue ids, which then walks exactly the
      road a typed ask walks — same reset, same equipment filter, same forge. */
   const UP = {
-    fn:      SUPA.url + "/functions/v1/analyze-media",
     frames:  6,     /* sampled across a clip; a photo is just the one */
-    edge:    768,   /* longest side the reader ever sees */
-    quality: .72,
+    /* Longest side handed to Vision. This was 768 when the frames were being
+       posted to a model and every pixel cost bandwidth; nothing is uploaded
+       now, so the only thing resolution trades against is a little memory —
+       and OCR accuracy falls off a cliff once caption text drops under about
+       fifteen pixels tall. Bigger is simply better here. */
+    edge:    1600,
+    quality: .82,
     maxMB:   200
   };
   let upFile = null, upBusy = false;
@@ -8267,7 +8331,14 @@ $("#brand").insertAdjacentHTML("afterbegin",
     const s = Math.min(1, UP.edge / Math.max(w, h));
     const c = document.createElement("canvas");
     c.width = Math.round(w*s); c.height = Math.round(h*s);
-    c.getContext("2d").drawImage(src, 0, 0, c.width, c.height);
+    const g = c.getContext("2d");
+    /* JPEG carries no alpha, and an untouched canvas exports its transparent
+       pixels as black — so a screenshot saved with a transparent background
+       turns into dark text on a black field, which reads as nothing at all.
+       Paint the sheet white before drawing onto it. */
+    g.fillStyle = "#ffffff";
+    g.fillRect(0, 0, c.width, c.height);
+    g.drawImage(src, 0, 0, c.width, c.height);
     const d = c.toDataURL("image/jpeg", UP.quality);
     const i = d.indexOf(",");
     return i > 0 ? d.slice(i+1) : null;
@@ -8361,41 +8432,179 @@ $("#brand").insertAdjacentHTML("afterbegin",
     upSay("Ready — press the mark to read it.");
   }
 
-  /* Everything that comes back is a suggestion, not an instruction: ids the
-     catalogue does not know are dropped, and whatever your kit cannot do is
-     filtered out by the same rule a typed ask goes through. */
-  function upApply(d){
-    const seen = (Array.isArray(d.exercises) ? d.exercises : [])
-      .map(s => String(s || "").trim()).filter(id => XMAP[id]);
-    if(!seen.length){
-      upSay("Couldn't pin down any lifts in that one — try a clearer shot, or one with the names on screen.", "bad");
-      return;
+  /* ---- reading the words off the media ----
+     Vision does the recognition on the phone: no network call, no key, no
+     per-use cost, and nothing about somebody's training leaves the device.
+     On the web build the plugin is absent and this returns nothing, which is
+     a normal outcome rather than an error — the picker covers it. */
+  let _scanProxy = null;
+  function textScanPlugin(){
+    const C = window.Capacitor;
+    if(!(C && C.isNativePlatform && C.isNativePlatform() && C.registerPlugin)) return null;
+    if(!_scanProxy) _scanProxy = C.registerPlugin("TextScan");
+    return _scanProxy;
+  }
+  /* A reader that fell over and a photo with no writing on it are different
+     problems, and telling somebody "no words came off that one" when the
+     recogniser actually threw sends them off cropping a screenshot that was
+     fine. Keep the reason and show it. */
+  let upScanErr = "";
+  async function upScan(frames){
+    upScanErr = "";
+    const P = textScanPlugin();
+    if(!P) return "";
+    try{
+      const r = await P.read({frames});
+      return (r && r.text) || "";
+    }catch(e){
+      upScanErr = (e && (e.message || e.errorMessage)) || String(e);
+      return "";
     }
+  }
+
+  /* Shorthand a screen uses that the catalogue never spells out, expanded
+     before matching so "3x10 DB RDL" and "Romanian Deadlift" land together. */
+  const OCR_SHORT = [
+    [/\bdb\b/g,"dumbbell"], [/\bbb\b/g,"barbell"], [/\bkb\b/g,"kettlebell"],
+    [/\bohp\b/g,"overhead press"], [/\brdls?\b/g,"romanian deadlift"],
+    [/\bsldl\b/g,"romanian deadlift"], [/\bghr\b/g,"glute ham raise"],
+    [/\bbss\b/g,"bulgarian split squat"], [/\bbw\b/g,"bodyweight"],
+    [/\bsingle arm\b/g,"one arm"], [/\bpull ?ups?\b/g,"pull up"],
+    [/\bchin ?ups?\b/g,"chin up"], [/\bpush ?ups?\b/g,"push up"],
+    [/\bsit ?ups?\b/g,"sit up"], [/\bt bar\b/g,"tbar"]
+  ];
+
+  /* A workout screenshot is mostly numbers — 4x10, 3 sets, 60s, 225 lb. They
+     are stripped first so they cannot split a movement name in half. */
+  function ocrNorm(s){
+    let t = String(s || "").toLowerCase()
+      .replace(/[‘’']/g, "")
+      .replace(/[^a-z0-9]+/g, " ")
+      .replace(/\b\d+\s*x\s*\d+\b/g, " ")
+      .replace(/\b\d+\s*(reps?|sets?|secs?|seconds?|mins?|minutes?|lbs?|kgs?|rounds?)\b/g, " ")
+      .replace(/\b\d+\b/g, " ")
+      .replace(/\s+/g, " ").trim();
+    for(const [re, to] of OCR_SHORT) t = t.replace(re, to);
+    return " " + t.replace(/\s+/g, " ").trim() + " ";
+  }
+
+  /* Every catalogue name plus the ask-box synonyms, longest phrase first so
+     "incline bench press" claims its words before "bench press" sees them. */
+  const OCR_INDEX = (() => {
+    const rows = [], seen = new Set();
+    const add = (id, phrase) => {
+      const p = ocrNorm(phrase).trim();
+      if(p.length < 4) return;
+      const k = id + "|" + p;
+      if(!seen.has(k)){ seen.add(k); rows.push([id, p]); }
+    };
+    X.forEach(x => add(x.id, x.n));
+    ASK_LIFTS.forEach(([id, words]) => words.forEach(w => add(id, w)));
+    rows.sort((a, b) => b[1].length - a[1].length);
+    return rows;
+  })();
+
+  function upMatch(text){
+    let hay = ocrNorm(text);
+    const hits = [], got = new Set();
+    for(const [id, phrase] of OCR_INDEX){
+      if(got.has(id)) continue;
+      const at = hay.indexOf(" " + phrase + " ");
+      if(at < 0) continue;
+      got.add(id); hits.push({id, at});
+      /* blank the span so a shorter name cannot re-claim the same words */
+      hay = hay.slice(0, at + 1) + " ".repeat(phrase.length) + hay.slice(at + 1 + phrase.length);
+    }
+    hits.sort((a, b) => a.at - b.at);      /* reading order, not name length */
+    return hits.map(h => h.id);
+  }
+
+  /* ---- the picker ----
+     What was read is offered as ticked rows rather than applied silently, with
+     everything the kit supports underneath. That is what turns a failed read
+     into a search box instead of a dead end. */
+  let mvPicked = new Set();
+
+  function mvRender(filter){
+    const list = $("#mvList"), q = ocrNorm(filter || "").trim();
+    const avail = availFor(state.cfg.loc);
+    const kit = X.filter(x => x.cls !== "cardio" && x.eq.every(e => avail.indexOf(e) >= 0));
+    const hit = q ? kit.filter(x => ocrNorm(x.n).indexOf(q) >= 0) : kit;
+    const chosen = hit.filter(x => mvPicked.has(x.id));
+    const rest   = hit.filter(x => !mvPicked.has(x.id));
+    const tick = '<span class="mv-tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+      'stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l6 6L20 6"/></svg></span>';
+    const row = x => '<div class="mv-row' + (mvPicked.has(x.id) ? " on" : "") + '" data-id="' + x.id + '">' +
+      tick + '<span class="mv-name">' + esc(x.n) + '</span>' +
+      '<span class="mv-kit">' + esc(x.eq.map(e => EQUIP[e].n).join(" · ")) + '</span></div>';
+
+    let html = "";
+    if(chosen.length) html += '<p class="mv-grp">In the session</p>' + chosen.map(row).join("");
+    if(rest.length)   html += '<p class="mv-grp">' + (chosen.length ? "Everything else" : "Movements") +
+                              '</p>' + rest.map(row).join("");
+    if(!hit.length)   html = '<p class="mv-none">Nothing matches that. Your kit decides what shows here — ' +
+                             'add gear under Workload if something is missing.</p>';
+    list.innerHTML = html;
+    $("#mvNote").textContent = mvPicked.size ? mvPicked.size + " picked" : "Pick at least one";
+    $("#mvGo").disabled = mvPicked.size === 0;
+  }
+
+  function mvOpen(ids, sawText){
+    const avail = availFor(state.cfg.loc);
+    const usable = ids.filter(id => XMAP[id] && XMAP[id].eq.every(e => avail.indexOf(e) >= 0));
+    const lost = ids.length - usable.length;
+    mvPicked = new Set(usable);
+
+    const read = $("#mvRead");
+    if(!textScanPlugin()){
+      read.textContent = "Reading the screen only works in the iOS app. Pick the movements below.";
+    }else if(upScanErr){
+      read.textContent = "The reader failed on that one (" + upScanErr + "). Pick the movements below.";
+    }else if(!sawText){
+      read.textContent = "No words came off that one. Reading works when the movements are named on " +
+                         "screen — pick them below instead.";
+    }else if(!usable.length){
+      read.textContent = lost
+        ? "Read " + lost + " movement" + (lost === 1 ? "" : "s") + " your kit can't do. Pick something else below."
+        : "Read the text but recognised no movement names in it. Pick them below.";
+    }else{
+      read.textContent = "Read " + usable.length + " movement" + (usable.length === 1 ? "" : "s") +
+        " off the screen" + (lost ? ", and " + lost + " your kit can't do" : "") +
+        ". Untick anything wrong, or add what it missed.";
+    }
+    $("#mvSearch").value = "";
+    mvRender("");
+    $("#moveDlg").showModal();
+  }
+
+  /* The focus the picked movements imply, so the generator fills the rest of
+     the sheet around them instead of wandering off to another body part. */
+  function upFocusFor(ids){
+    const tally = {};
+    ids.forEach(id => (XMAP[id].pri || []).forEach(m => tally[m] = (tally[m] || 0) + 1));
+    let best = null, score = 0;
+    for(const k in FOCUS){
+      if(k === "full") continue;
+      const s = FOCUS[k].m.reduce((a, m) => a + (tally[m] || 0), 0) / FOCUS[k].m.length;
+      if(s > score){ score = s; best = k; }
+    }
+    return best ? [best] : DEFAULT_CFG.focus.slice();
+  }
+
+  function upApplyIds(ids){
+    const avail = availFor(state.cfg.loc);
+    const usable = ids.filter(id => XMAP[id] && XMAP[id].eq.every(q => avail.indexOf(q) >= 0));
+    if(!usable.length){ upSay("Nothing picked.", "bad"); return; }
+
     const c = state.cfg;
     /* an upload is the whole request, not an edit of the last one */
-    c.focus = DEFAULT_CFG.focus.slice(); c.count = DEFAULT_CFG.count;
+    c.focus = upFocusFor(usable); c.count = DEFAULT_CFG.count;
     c.effort = DEFAULT_CFG.effort; c.compounds = [];
     c.cardioOn = DEFAULT_CFG.cardioOn; c.cstyle = DEFAULT_CFG.cstyle;
     c.failureOn = false; c.preset = null;
 
-    if(d.loc === "home" || d.loc === "public" || d.loc === "body") c.loc = d.loc;
-    const avail = availFor(c.loc);
-    const usable = seen.filter(id => XMAP[id].eq.every(q => avail.indexOf(q) >= 0));
-    if(!usable.length){
-      upSay("Read " + seen.length + " lift" + (seen.length === 1 ? "" : "s") +
-            " in there, but none of them work with your " +
-            (c.loc === "public" ? "gym" : c.loc === "body" ? "bodyweight setup" : "home kit") + ".", "bad");
-      return;
-    }
-    const foc = (Array.isArray(d.focus) ? d.focus : []).filter(k => FOCUS[k]);
-    if(foc.length) c.focus = foc.slice(0, 2);
     c.compounds = usable.slice(0, 4);
-    const n = Number(d.count);
-    c.count = Number.isFinite(n) && n > 0 ? Math.round(n) : Math.max(usable.length, DEFAULT_CFG.count);
-    const ef = Number(d.effort);
-    if(ef >= 1 && ef <= 4) c.effort = Math.round(ef);
-    if(d.cardio === true) c.cardioOn = true;
-    if(d.cstyle && CSTYLE[d.cstyle]) c.cstyle = d.cstyle;
+    c.count = Math.max(usable.length, DEFAULT_CFG.count);
 
     /* the same three lines that close askApply */
     c.compounds = c.compounds.filter(id => XMAP[id].eq.every(q => avail.indexOf(q) >= 0));
@@ -8403,10 +8612,20 @@ $("#brand").insertAdjacentHTML("afterbegin",
     if(c.failureOn && !limitsOf().failure) c.failureOn = false;
 
     syncControls(); save();
-    const lost = seen.length - usable.length;
-    upSay("Loaded · " + askSummary(c) + (lost ? " · " + lost + " needed kit you haven't got" : ""), "ok");
+    upSay("Loaded · " + askSummary(c), "ok");
     doForge();
   }
+
+  $("#mvList").addEventListener("click", e => {
+    const r = e.target.closest(".mv-row"); if(!r) return;
+    const id = r.dataset.id;
+    if(mvPicked.has(id)) mvPicked.delete(id); else mvPicked.add(id);
+    mvRender($("#mvSearch").value);
+  });
+  $("#mvSearch").addEventListener("input", () => mvRender($("#mvSearch").value));
+  $("#moveDlg").addEventListener("close", () => {
+    if($("#moveDlg").returnValue === "done") upApplyIds([...mvPicked]);
+  });
 
   async function upRun(){
     if(upBusy) return;
@@ -8417,20 +8636,10 @@ $("#brand").insertAdjacentHTML("afterbegin",
       const frames = await upFrames(upFile);
       if(!frames.length) throw new Error("Nothing readable came out of that file.");
 
-      upProg(.7); upSay("Working out what's in it…");
-      const headers = {"Content-Type":"application/json", "apikey": SUPA.key};
-      const a = auth();
-      if(a && a.token) headers["Authorization"] = "Bearer " + a.token;
-      const res = await fetch(UP.fn, {
-        method:"POST", headers,
-        body: JSON.stringify({frames, loc: state.cfg.loc, catalog: X.map(x => ({id:x.id, n:x.n}))})
-      });
-      const txt = await res.text();
-      let data = null;
-      try{ data = txt ? JSON.parse(txt) : null; }catch(e){}
-      if(!res.ok) throw new Error((data && data.error) || ("The reader isn't answering (HTTP " + res.status + ")."));
-      upProg(1);
-      upApply(data || {});
+      upProg(.7); upSay("Reading the words on screen…");
+      const text = await upScan(frames);
+      upProg(1); upSay("");
+      mvOpen(upMatch(text), !!text.trim());
     }catch(e){
       upSay(e && e.message ? e.message : "That didn't work.", "bad");
     }finally{

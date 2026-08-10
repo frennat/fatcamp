@@ -21,6 +21,7 @@
 		A1F0C0DE0000000000000007 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A1F0C0DE0000000000000006 /* PrivacyInfo.xcprivacy */; };
 		A1F0C0DE0000000000000009 /* NotifyPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0C0DE0000000000000008 /* NotifyPlugin.swift */; };
 		A1F0C0DE0000000000000011 /* StorePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0C0DE0000000000000010 /* StorePlugin.swift */; };
+		A1F0C0DE0000000000000013 /* TextScanPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0C0DE0000000000000012 /* TextScanPlugin.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +42,7 @@
 		A1F0C0DE0000000000000006 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A1F0C0DE0000000000000008 /* NotifyPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotifyPlugin.swift; sourceTree = "<group>"; };
 		A1F0C0DE0000000000000010 /* StorePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorePlugin.swift; sourceTree = "<group>"; };
+		A1F0C0DE0000000000000012 /* TextScanPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextScanPlugin.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,6 +83,7 @@
 				A1F0C0DE0000000000000001 /* HealthPlugin.swift */,
 				A1F0C0DE0000000000000008 /* NotifyPlugin.swift */,
 				A1F0C0DE0000000000000010 /* StorePlugin.swift */,
+				A1F0C0DE0000000000000012 /* TextScanPlugin.swift */,
 				A1F0C0DE0000000000000004 /* MainViewController.swift */,
 				A1F0C0DE0000000000000003 /* App.entitlements */,
 				A1F0C0DE0000000000000006 /* PrivacyInfo.xcprivacy */,
@@ -180,6 +183,7 @@
 				A1F0C0DE0000000000000002 /* HealthPlugin.swift in Sources */,
 				A1F0C0DE0000000000000009 /* NotifyPlugin.swift in Sources */,
 				A1F0C0DE0000000000000011 /* StorePlugin.swift in Sources */,
+				A1F0C0DE0000000000000013 /* TextScanPlugin.swift in Sources */,
 				A1F0C0DE0000000000000005 /* MainViewController.swift in Sources */,
 				9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */,
 			);
