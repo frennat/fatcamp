@@ -12,6 +12,7 @@ class MainViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(HealthPlugin())
         bridge?.registerPluginInstance(NotifyPlugin())
         bridge?.registerPluginInstance(TextScanPlugin())
+        bridge?.registerPluginInstance(HapticsPlugin())
         if #available(iOS 15.0, *) { bridge?.registerPluginInstance(StorePlugin()) }
     }
 }

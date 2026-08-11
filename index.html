@@ -1130,6 +1130,41 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 .toast .tx{font-family:var(--f-mono);font-size:17px;font-weight:600;color:var(--accent);margin-left:auto}
 .toast small{display:block;font-size:11.5px;opacity:.7;font-family:var(--f-body)}
 
+/* ---------- bank celebration
+   The mark leaves the Create slot, takes the middle of the screen, and the
+   room goes dark around it. Bolts and the bar flicker over everything —
+   deliberately theme-blind: the blackout and forge colours are the moment. */
+.bankfx{position:fixed;inset:0;z-index:85;background:rgba(14,11,9,.94);opacity:0;transition:opacity .32s ease;touch-action:none;overflow:hidden;cursor:pointer}
+.bankfx.on{opacity:1}
+.bfx-mark{position:absolute;left:50%;top:50%;will-change:transform;filter:drop-shadow(0 6px 26px rgba(232,80,31,.35))}
+.bfx-mark svg{display:block;width:100%;height:100%}
+.bfx-mark.fly{transition:transform .7s cubic-bezier(.18,.75,.28,1.16)}
+.bankfx.boom .bfx-mark{animation:bfxpulse 1.6s ease-in-out .1s infinite}
+@keyframes bfxpulse{0%,100%{filter:drop-shadow(0 0 18px rgba(232,80,31,.4))}50%{filter:drop-shadow(0 0 48px rgba(248,103,47,.85))}}
+.bankfx.boom .bfx-mark svg > g:last-of-type{animation:bfxbolt 1.7s linear infinite}
+@keyframes bfxbolt{0%,17%,23%,54%,62%,100%{opacity:1}19%,21%{opacity:.25}57%,60%{opacity:.35}}
+.bfx-ring{position:absolute;left:50%;top:50%;width:200px;height:200px;margin:-100px 0 0 -100px;border-radius:50%;border:2px solid var(--p25,#E8501F);opacity:0;pointer-events:none}
+.bankfx.boom .bfx-ring{animation:bfxring 1.5s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes bfxring{0%{transform:scale(.5);opacity:.9}100%{transform:scale(4.4);opacity:0}}
+.bfx-bolt{position:absolute;opacity:0;pointer-events:none;will-change:opacity}
+.bfx-bolt svg{display:block;width:100%;height:auto}
+.bankfx.boom .bfx-bolt{animation:bfxflash 2.6s linear infinite}
+@keyframes bfxflash{0%,7.5%{opacity:0}1.5%,4%{opacity:.95}9%,100%{opacity:0}}
+.bfx-dbwrap{position:absolute;pointer-events:none}
+.bfx-dbwrap svg{display:block;width:100%;height:auto}
+.bfx-db{opacity:0;transition:opacity .7s ease .4s}
+.bankfx.boom .bfx-db{opacity:.15;animation:bfxdrift 4.5s ease-in-out .4s infinite alternate}
+@keyframes bfxdrift{from{transform:rotate(-45deg) translateY(0)}to{transform:rotate(-39deg) translateY(-16px)}}
+.bfx-spark{position:absolute;left:50%;top:50%;width:5px;height:5px;border-radius:2px;background:#F8672F;opacity:0;pointer-events:none}
+.bankfx.boom .bfx-spark{animation:bfxspark 1.15s cubic-bezier(.15,.75,.3,1) forwards}
+@keyframes bfxspark{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.3);opacity:0}}
+.bfx-line{position:absolute;left:0;right:0;text-align:center;opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .55s cubic-bezier(.2,.8,.2,1);padding:0 26px;pointer-events:none}
+.bfx-line.top{bottom:calc(50% + 128px);font-family:var(--f-display);font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:#F6F1E5;font-size:clamp(26px,8vw,40px);line-height:1.04;text-wrap:balance;transform:translateY(-14px)}
+.bfx-line.bot{top:calc(50% + 128px);font-family:var(--f-body);font-weight:500;font-size:16.5px;line-height:1.45;color:rgba(246,241,229,.82);transition-delay:.2s}
+.bankfx.boom .bfx-line{opacity:1;transform:none}
+.bfx-skip{position:absolute;bottom:calc(22px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(246,241,229,.42);opacity:0;transition:opacity .6s ease 2.4s;pointer-events:none}
+.bankfx.boom .bfx-skip{opacity:1}
+
 .finishbar{
   position:sticky;bottom:calc(74px + env(safe-area-inset-bottom, 0px));z-index:30;
   margin:16px calc(var(--pad) * -1) 0;padding:12px var(--pad);
@@ -5850,6 +5885,108 @@ function toast(title, body, xp){
   clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 4200);
 }
 
+/* -------------------------------------------------------- native haptics
+   One tap on the phone's engine at the three moments that matter. The web
+   build has no Capacitor, so this is a silent no-op there. */
+function buzz(kind){
+  try{
+    const H = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Haptics;
+    if(!H) return;
+    if(kind === "bank") H.notify({type:"success"});
+    else H.impact({style: kind === "forge" ? "medium" : "light"});
+  }catch(e){}
+}
+
+/* ---------------------------------------------------- bank celebration
+   Fires when a session is banked. The lines rotate so no two consecutive
+   workouts end on the same words. */
+const BANK_TOP = ["Banked.", "Paid in iron", "Another one down", "The bar yielded",
+                  "Work got done", "Forged & finished", "That's the standard",
+                  "Heavy. Honest. Done.", "Session sealed", "Receipts printed"];
+const BANK_BOT = ["Nobody lifted that for you.",
+                  "The couch never stood a chance today.",
+                  "Strength is rent, and you just paid it.",
+                  "Every set in that vault is yours to keep.",
+                  "Show up again and the streak keeps its teeth.",
+                  "Gravity fought fair. You didn't need it to.",
+                  "That's one more day the quit didn't win.",
+                  "The plates go home. The work stays with you.",
+                  "Soreness tomorrow, capital today.",
+                  "You against yesterday — and yesterday lost."];
+function bankLines(){
+  let ti = (Math.random()*BANK_TOP.length)|0, bi = (Math.random()*BANK_BOT.length)|0;
+  try{
+    const last = JSON.parse(localStorage.getItem("fc-fxline") || "[-1,-1]");
+    if(ti === last[0]) ti = (ti+1) % BANK_TOP.length;
+    if(bi === last[1]) bi = (bi+1) % BANK_BOT.length;
+    localStorage.setItem("fc-fxline", JSON.stringify([ti, bi]));
+  }catch(e){}
+  return [BANK_TOP[ti], BANK_BOT[bi]];
+}
+function bankFx(done){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches){ done(); return; }
+  const [top, bot] = bankLines();
+  const BOLT = "M56,20L43.5,52H50.5L45,80L57,48H49.5Z";
+  const boltSvg = c => '<svg viewBox="40 16 20 68" xmlns="http://www.w3.org/2000/svg">' +
+    '<path d="' + BOLT + '" fill="' + c + '" stroke="' + c + '" stroke-width="3" stroke-linejoin="round"/></svg>';
+  const dbSvg = '<svg viewBox="0 0 100 30" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#F6F1E5" stroke-width="3" stroke-linejoin="round">' +
+    '<rect x="24" y="12.5" width="52" height="5" rx="2"/><rect x="10" y="2" width="10" height="26" rx="3"/>' +
+    '<rect x="80" y="2" width="10" height="26" rx="3"/><rect x="19" y="6" width="6" height="18" rx="2"/>' +
+    '<rect x="75" y="6" width="6" height="18" rx="2"/></svg>';
+  const ov = document.createElement("div");
+  ov.className = "bankfx";
+  let inner = "";
+  for(let i=0;i<3;i++) inner += '<div class="bfx-ring" style="animation-delay:' + (i*.16) + 's"></div>';
+  for(let i=0;i<7;i++){
+    const x = 4 + Math.random()*84, y = 4 + Math.random()*78, sc = .5 + Math.random()*1.15,
+          rot = -24 + Math.random()*48, dur = 2 + Math.random()*1.7, del = Math.random()*1.4,
+          col = Math.random() < .45 ? "#F6F1E5" : "#F8672F";
+    inner += '<div class="bfx-bolt" style="left:' + x + 'vw;top:' + y + 'vh;width:' + Math.round(34*sc) +
+             'px;transform:rotate(' + Math.round(rot) + 'deg);animation-duration:' + dur.toFixed(2) +
+             's;animation-delay:' + del.toFixed(2) + 's">' + boltSvg(col) + '</div>';
+  }
+  inner += '<div class="bfx-dbwrap" style="left:-6vw;top:9vh;width:52vw"><div class="bfx-db">' + dbSvg + '</div></div>';
+  inner += '<div class="bfx-dbwrap" style="right:-8vw;bottom:11vh;width:58vw"><div class="bfx-db" style="transition-delay:.7s">' + dbSvg + '</div></div>';
+  for(let i=0;i<22;i++){
+    const a = Math.random()*Math.PI*2, d = 70 + Math.random()*160;
+    inner += '<div class="bfx-spark" style="--dx:' + Math.round(Math.cos(a)*d) + 'px;--dy:' +
+             Math.round(Math.sin(a)*d) + 'px;animation-delay:' + (Math.random()*.25).toFixed(2) + 's' +
+             (Math.random() < .4 ? ';background:#F6F1E5' : '') + '"></div>';
+  }
+  inner += '<div class="bfx-line top">' + esc(top) + '</div>';
+  inner += '<div class="bfx-mark">' + forgeMarkSVG() + '</div>';
+  inner += '<div class="bfx-line bot">' + esc(bot) + '</div>';
+  inner += '<div class="bfx-skip">tap to carry on</div>';
+  ov.innerHTML = inner;
+  document.body.appendChild(ov);
+
+  /* FLIP: the mark starts where the Create button sits and flies to centre */
+  const mark = ov.querySelector(".bfx-mark");
+  const D = Math.min(innerWidth*.5, 200);
+  mark.style.width = mark.style.height = D + "px";
+  mark.style.margin = (-D/2) + "px 0 0 " + (-D/2) + "px";
+  const src = $("#tabForgeMark"), r = src && src.getBoundingClientRect();
+  const sx = r ? r.left + r.width/2 : innerWidth/2,
+        sy = r ? r.top + r.height/2 : innerHeight - 40;
+  mark.style.transform = "translate(" + (sx - innerWidth/2) + "px," + (sy - innerHeight/2) +
+                         "px) scale(" + ((r ? r.width : 54)/D).toFixed(3) + ")";
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    ov.classList.add("on");
+    mark.classList.add("fly");
+    mark.style.transform = "translate(0,0) scale(1)";
+  }));
+  setTimeout(() => ov.classList.add("boom"), 720);
+
+  let fin = false;
+  const finish = () => {
+    if(fin) return; fin = true;
+    ov.classList.remove("on");
+    setTimeout(() => { ov.remove(); done(); }, 340);
+  };
+  ov.addEventListener("pointerdown", finish);
+  setTimeout(finish, 4800);
+}
+
 /* ------------------------------------------------------------------ the mark
    Hammer and dumbbell crossed on a hot disc. It is the whole button — there is
    no chrome around it anywhere it appears. The hammer carries a stroke in the
@@ -6615,6 +6752,7 @@ function doForge(){
   const cfg = JSON.parse(JSON.stringify(state.cfg));
   cfg.seed = (Math.random()*1e9)|0;
   state.session = generate(cfg);
+  buzz("forge");
   save(); renderSession(true);
   showTab("paneWorkload");                 /* the session lives here */
   requestAnimationFrame(() => $("#sessionPanel").scrollIntoView({behavior:"smooth", block:"start"}));
@@ -6967,6 +7105,7 @@ function buildDrawer(row, m){
   d.querySelectorAll(".setbtn").forEach(b => b.addEventListener("click", () => {
     const i = +b.dataset.set;
     m.doneSets[i] = !m.doneSets[i];
+    if(m.doneSets[i]) buzz("set");
     b.setAttribute("aria-pressed", String(!!m.doneSets[i]));
     const done = m.doneSets.filter(Boolean).length;
     row.classList.toggle("done", done === m.sets);
@@ -7236,9 +7375,12 @@ function finishSession(){
           : st.reset   ? "Streak restarted at 1. Train again within two days to build it."
                        : "Streak now "+state.streak+" · ×"+sc.mult+" multiplier applied";
   if(newBadges.length) msg += " · Unlocked "+newBadges.map(b => b.n).join(", ");
-  toast("Banked", msg, "+"+earned + (already ? " (+"+already+" claimed)" : ""));
+  buzz("bank");
+  bankFx(() => {
+    toast("Banked", msg, "+"+earned + (already ? " (+"+already+" claimed)" : ""));
+    $("#logPanel").scrollIntoView({behavior:"smooth", block:"start"});
+  });
   if(signedIn()) syncNow(true);
-  $("#logPanel").scrollIntoView({behavior:"smooth", block:"start"});
 }
 
 /* -------------------------------------------------------------------- log */
