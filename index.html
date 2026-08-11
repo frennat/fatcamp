@@ -2212,9 +2212,19 @@ function pose3(sol, view){
   const q = sol.q, L2 = sol.L2, A2 = sol.A2;
   const P = i => [q[i*2], q[i*2+1]];
   const hd=P(0), nk=P(1), sh=P(2), el=P(3), wr=P(4), pv=P(5), hp=P(6), kn=P(7), an=P(8), to=P(9);
+  /* Lumbar and thoracic hinges. A pose that says nothing about its spine gets
+     them straight off the pelvis-to-neck line, which is exactly where the old
+     single tube put that geometry — so every archetype authored before this
+     renders unchanged and none of the 64 needed editing. An archetype that
+     does care supplies sol.SP and bends. */
+  const SP = sol.SP;
+  const spn = (u, i) => SP ? [SP[i], SP[i+1]]
+                           : [pv[0] + (nk[0]-pv[0])*u, pv[1] + (nk[1]-pv[1])*u];
+  const lu = spn(0.34, 0), ch = spn(0.68, 2);
   if(view === "front"){
     const M = x => 200 - x;                     /* frontal plane: no extrusion */
     return {head:[hd[0],hd[1],0], neck:[nk[0],nk[1],0], pelvis:[pv[0],pv[1],0],
+      lum:[lu[0],lu[1],0], chs:[ch[0],ch[1],0],
       shR:[sh[0],sh[1],0], elR:[el[0],el[1],0], wrR:[wr[0],wr[1],0],
       shL:[M(sh[0]),sh[1],0], elL:[M(el[0]),el[1],0], wrL:[M(wr[0]),wr[1],0],
       hipR:[hp[0],hp[1],0], knR:[kn[0],kn[1],0], anR:[an[0],an[1],0], toR:[to[0],to[1],0],
@@ -2223,6 +2233,7 @@ function pose3(sol, view){
   const lk = L2 ? [L2[0],L2[1]] : kn, la = L2 ? [L2[2],L2[3]] : an, lt = L2 ? [L2[4],L2[5]] : to;
   const ae = A2 ? [A2[0],A2[1]] : el, aw = A2 ? [A2[2],A2[3]] : wr;
   return {head:[hd[0],hd[1],0], neck:[nk[0],nk[1],0], pelvis:[pv[0],pv[1],0],
+    lum:[lu[0],lu[1],0], chs:[ch[0],ch[1],0],
     shR:[sh[0],sh[1],SH_W],  elR:[el[0],el[1],SH_W],  wrR:[wr[0],wr[1],SH_W],
     shL:[sh[0],sh[1],-SH_W], elL:[ae[0],ae[1],-SH_W], wrL:[aw[0],aw[1],-SH_W],
     hipR:[hp[0],hp[1],HIP_W],  knR:[kn[0],kn[1],HIP_W+SPLAY],  anR:[an[0],an[1],HIP_W],  toR:[to[0],to[1],HIP_W],
@@ -2291,6 +2302,11 @@ const MUSCLE_AT = {
 };
 
 /* limb specs: bone endpoints come from the pose, the profile gives it flesh */
+/* Hoisted out of the limb table because the three trunk segments all read from
+   it — the silhouette stays authored in one place across a continuous 0..1. */
+const TORSO_R = prof([[0,11.4],[.10,11.0],[.20,10.4],[.32,10.9],[.46,12.6],
+                      [.60,14.6],[.74,16.2],[.86,16.0],[.94,14.6],[1,12.8]]);
+
 const LIMBS = [
   /* Anatomy, not tubes. Every profile is a real silhouette read off a body:
      the torso flares at the lats and narrows at the waist, the upper arm
@@ -2300,9 +2316,18 @@ const LIMBS = [
 
      `flat` squashes front-to-back. Limbs are not round: a thigh is deeper
      than it is wide, a torso is far wider than it is deep. */
-  {k:"torso", a:"pelvis", b:"neck", rings:14, seg:20, flat:0.62,
-   r:prof([[0,11.4],[.10,11.0],[.20,10.4],[.32,10.9],[.46,12.6],
-           [.60,14.6],[.74,16.2],[.86,16.0],[.94,14.6],[1,12.8]])},
+  /* The trunk is three segments, not one.
+     A single lofted tube from pelvis to neck is rigid by construction: it can
+     only translate and rotate, so a deadlift, a good morning and a row all
+     read as the same straight plank tipping over, and the one cue that
+     matters most in a hinge — whether the back is flat or rounded — cannot be
+     drawn at all.
+     The three share one profile and one muscle map through t0/t1, so with the
+     spine straight this is vertex-for-vertex what the single tube produced.
+     Ring counts sum to the original 14. */
+  {k:"torso", a:"pelvis", b:"lum",  t0:0,    t1:0.34, rings:5, seg:20, flat:0.62, r:TORSO_R},
+  {k:"torso", a:"lum",    b:"chs",  t0:0.34, t1:0.68, rings:4, seg:20, flat:0.62, r:TORSO_R},
+  {k:"torso", a:"chs",    b:"neck", t0:0.68, t1:1,    rings:5, seg:20, flat:0.62, r:TORSO_R},
   {k:"neck",  a:"neck", b:"headBase", rings:3, seg:10, flat:0.92,
    r:prof([[0,6.2],[.5,5.4],[1,5.0]])},
 
@@ -2423,8 +2448,15 @@ function buildMesh(){
   const V = [], F = [];
   LIMBS.forEach((L, li) => {
     const base = V.length, flat = L.flat || 1;
+    /* A limb may cover only a slice of a larger shape. The torso is three
+       segments so the spine can bend, but its silhouette and its muscle map
+       are still authored once across a continuous 0..1 — gt maps a segment's
+       local position back onto that. Without it, splitting a limb would give
+       each piece the full profile and stack three sets of abs up the trunk. */
+    const g0 = L.t0 || 0, g1 = (L.t1 === undefined ? 1 : L.t1);
+    const gt = u => g0 + (g1 - g0) * u;
     for(let ri=0; ri<=L.rings; ri++){
-      const t = ri/L.rings, r = L.r(t);
+      const t = ri/L.rings, r = L.r(gt(t));
       for(let i=0;i<L.seg;i++){
         const ang = (i/L.seg)*Math.PI*2 - Math.PI;
         V.push({li, t, ox:Math.cos(ang)*r*flat, oy:Math.sin(ang)*r});
@@ -2437,7 +2469,7 @@ function buildMesh(){
         const ang = ((i+0.5)/L.seg)*Math.PI*2 - Math.PI;
         F.push({a:base+ri*L.seg+i, b:base+ri*L.seg+j,
                 c:base+(ri+1)*L.seg+j, d:base+(ri+1)*L.seg+i,
-                m:at((ri+0.5)/L.rings, ang, L.side || 1)});
+                m:at(gt((ri+0.5)/L.rings), ang, L.side || 1)});
       }
     }
   });
