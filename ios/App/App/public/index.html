@@ -2588,6 +2588,98 @@ function shadeLUT(tissue, hot){
   return t;
 }
 
+/* ------------------------------------------------- activation through a rep
+   Muscles do not work evenly from one end of a rep to the other. A squat is
+   quads and adductors out of the hole and comparatively idle at the top; a
+   deadlift is hamstrings off the floor and glutes at lockout; a bench press
+   is chest at the bottom and triceps at the lockout. Until now the heat map
+   read one fixed number per muscle for the whole movement, so all of that was
+   invisible.
+
+   Written against the two authored poses rather than labelled eccentric and
+   concentric, because which end of the rep is the hard end depends on the
+   movement: a squat's `b` is the bottom, a bench press's `a` is the chest.
+   Phase labels would invert on half the library; pose labels cannot.
+
+   Multipliers scale whatever the exercise already trains. A muscle absent from
+   its pri/sec lists is ignored, so bias can shift emphasis but never invent
+   work the movement does not do. */
+const PHASE_BIAS = {
+  /* ---- knee dominant: loaded at the bottom ---- */
+  squat:      {a:{quads:.70, glutes:.62, adductors:.70}, b:{quads:1.32, glutes:1.20, adductors:1.20, abs:1.12}},
+  frontsquat: {a:{quads:.72, abs:.85},                   b:{quads:1.34, abs:1.28, upperback:1.20}},
+  lunge:      {a:{quads:.70, glutes:.65},                b:{quads:1.28, glutes:1.26, adductors:1.15}},
+  stepup:     {a:{quads:.75, glutes:.70},                b:{quads:1.25, glutes:1.28}},
+  pistol:     {a:{quads:.72, glutes:.68},                b:{quads:1.34, glutes:1.24, abs:1.18}},
+  legext:     {a:{quads:.62},                            b:{quads:1.38}},
+
+  /* ---- hip dominant: stretched at the floor, squeezed at lockout ---- */
+  hinge:      {a:{glutes:1.24, traps:1.20, forearms:1.15}, b:{hams:1.32, lowerback:1.26, glutes:.85}},
+  rdl:        {a:{glutes:1.22, traps:1.12},                b:{hams:1.38, lowerback:1.20, glutes:.88}},
+  swing:      {a:{hams:1.25, lowerback:1.15},              b:{glutes:1.35, abs:1.15}},
+  hipthrust:  {a:{hams:1.10, glutes:.70},                  b:{glutes:1.40, hams:.90}},
+  hyperext:   {a:{hams:1.20, lowerback:1.15},              b:{glutes:1.30, lowerback:1.10}},
+  ghdraise:   {a:{hams:1.22, lowerback:1.18},              b:{glutes:1.32, hams:1.05}},
+  legcurl:    {a:{hams:.65},                               b:{hams:1.40, calves:1.15}},
+  sbcurl:     {a:{hams:.68, glutes:.90},                   b:{hams:1.38, glutes:1.12}},
+
+  /* ---- horizontal press: chest at the bottom, triceps at the lockout ---- */
+  bench:        {a:{chest:1.28, delt_f:1.18, triceps:.78}, b:{triceps:1.34, chest:.90}},
+  inclinebench: {a:{chest_up:1.30, delt_f:1.20, triceps:.80}, b:{triceps:1.30, chest_up:.92}},
+  fly:          {a:{chest:1.34, delt_f:1.10},              b:{chest:1.05}},
+  pushup:       {a:{chest:1.24, delt_f:1.12, triceps:.82}, b:{triceps:1.28, chest:.92, serratus:1.20}},
+  trxpush:      {a:{chest:1.22, abs:1.15},                 b:{triceps:1.26, chest:.94, abs:1.25}},
+  dip:          {a:{triceps:1.30, chest:.90},              b:{chest:1.30, delt_f:1.22, triceps:.84}},
+
+  /* ---- vertical press ---- */
+  ohp:        {a:{delt_f:1.26, triceps:.80},               b:{triceps:1.32, traps:1.24, delt_f:.95}},
+  pushpress:  {a:{quads:1.28, delt_f:1.05},                b:{delt_f:1.20, triceps:1.30, traps:1.20}},
+  landminepress:{a:{delt_f:1.24, triceps:.82},             b:{triceps:1.28, serratus:1.22}},
+
+  /* ---- pulls: stretched at the far end, squeezed at the body ---- */
+  pullup:     {a:{lats:1.32, forearms:1.15, biceps:.82},   b:{biceps:1.26, upperback:1.30, lats:1.05}},
+  pulldown:   {a:{lats:1.30, forearms:1.10},               b:{upperback:1.26, biceps:1.20, lats:1.08}},
+  row:        {a:{lats:1.26, forearms:1.12},               b:{upperback:1.32, delt_r:1.24, biceps:1.18}},
+  dbrow:      {a:{lats:1.28, forearms:1.12},               b:{upperback:1.30, delt_r:1.20, biceps:1.16}},
+  trxrow:     {a:{lats:1.24, abs:1.18},                    b:{upperback:1.30, biceps:1.20, delt_r:1.18}},
+  ringrow:    {a:{lats:1.24, abs:1.20},                    b:{upperback:1.30, biceps:1.22, forearms:1.18}},
+  facepull:   {a:{delt_r:.85, traps:.90},                  b:{delt_r:1.34, traps:1.20, upperback:1.18}},
+  rearfly:    {a:{delt_r:.80},                             b:{delt_r:1.36, upperback:1.15}},
+
+  /* ---- arms and delts: peak at the contracted end ---- */
+  curl:       {a:{biceps:.72, forearms:1.15},              b:{biceps:1.36, forearms:1.05}},
+  pushdown:   {a:{triceps:.74},                            b:{triceps:1.36}},
+  lyingext:   {a:{triceps:.78},                            b:{triceps:1.34}},
+  ohext:      {a:{triceps:1.26},                           b:{triceps:1.28}},
+  lateral:    {a:{delt_s:.66},                             b:{delt_s:1.38, traps:1.14}},
+  frontraise: {a:{delt_f:.68},                             b:{delt_f:1.34, chest_up:1.10}},
+  shrug:      {a:{traps:.70},                              b:{traps:1.40}},
+  calf:       {a:{calves:.66},                             b:{calves:1.40}},
+
+  /* ---- braced holds: tension is highest where the lever is longest ---- */
+  plank:      {a:{abs:1.20},                               b:{abs:1.30, obliques:1.15}},
+  abwheel:    {a:{abs:.90},                                b:{abs:1.40, lats:1.20, lowerback:1.10}},
+  legraise:   {a:{hipflex:.85, abs:.90},                   b:{abs:1.34, hipflex:1.26}},
+  hanglegraise:{a:{forearms:1.20, abs:.90},                b:{abs:1.36, hipflex:1.24}},
+  crunch:     {a:{abs:.80},                                b:{abs:1.38}},
+  lsit:       {a:{abs:1.25, hipflex:1.20},                 b:{abs:1.32, hipflex:1.26, triceps:1.15}}
+};
+
+/* Rebuilt in place, never reallocated: this runs once per frame at 60fps and
+   the face loop it feeds is deliberately allocation-free. */
+function actAt(x, archKey, t, out){
+  for(const m of x.pri) out[m] = 1;
+  for(const m of x.sec) out[m] = 0.55;
+  const bias = PHASE_BIAS[archKey];
+  if(!bias) return out;
+  for(const m in out){
+    const wa = (bias.a && bias.a[m] != null) ? bias.a[m] : 1;
+    const wb = (bias.b && bias.b[m] != null) ? bias.b[m] : 1;
+    out[m] = Math.min(1.4, out[m] * (wa + (wb - wa) * t));
+  }
+  return out;
+}
+
 function makeRig(host, archKey, opts){
   opts = opts || {};
   const arch = ARCH[archKey] || ARCH.stretch;
@@ -2637,7 +2729,14 @@ function makeRig(host, archKey, opts){
 
   let curT = 0;
   const fx = {failure:false, pulse:0};
-  function set(t){ curT = t; draw(); }
+  /* The heat map is re-read inside draw(), so shifting activation here is all
+     it takes for the muscles to move with the rep. Guarded on opts.x: the
+     standing anatomy figure is handed a fixed act map and must keep it. */
+  function set(t){
+    curT = t;
+    if(opts.x && opts.act) actAt(opts.x, archKey, t, opts.act);
+    draw();
+  }
 
   function poseAt(t){
     const sol = solve(lerpArr(arch.a.j, arch.b.j, t), arch.root || "ankle",
