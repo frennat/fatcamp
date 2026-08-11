@@ -1,0 +1,68 @@
+{
+  "identifier" : "B7E2A614-3F5D-4C89-9A21-58D3F0C7E4A9",
+  "nonRenewingSubscriptions" : [ ],
+  "products" : [ ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [ ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "FC21500000",
+      "localizations" : [ ],
+      "name" : "Fatcamp",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [ ],
+          "codeOffers" : [ ],
+          "displayPrice" : "9.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "FC00000001",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "10 movements, 4 training days a week",
+              "displayName" : "Pro",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.frennat.fatcamp.pro.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Pro Monthly",
+          "subscriptionGroupID" : "FC21500000",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [ ]
+        },
+        {
+          "adHocOffers" : [ ],
+          "codeOffers" : [ ],
+          "displayPrice" : "14.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "FC00000002",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "20 movements, all 7 days, every feature",
+              "displayName" : "Max",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.frennat.fatcamp.max.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Max Monthly",
+          "subscriptionGroupID" : "FC21500000",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [ ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

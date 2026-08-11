@@ -943,6 +943,23 @@ input[type=range]::-moz-range-thumb{
 .plan .btn{align-self:flex-start}
 .plannote{margin:14px 0 0;font-size:12.5px;color:var(--ink-3);max-width:72ch;line-height:1.55}
 
+/* The plan, condensed. Same words, half the height: the card chrome tightens
+   and each tier's feature list folds behind a summary, open only on the tier
+   you are actually on. */
+.plan{padding:14px 16px 16px}
+.plan b{font-size:18px}
+.plan .price{font-size:22px}
+.plan .each{font-size:12px;margin:4px 0 8px}
+.plan ul{margin:0 0 10px;padding-left:18px;font-size:12.5px;line-height:1.55}
+.plan li{margin:2px 0}
+.plan details.feat{margin:0 0 10px}
+.plan details.feat summary{
+  cursor:pointer;font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-3);
+}
+.plan details.feat[open] summary{margin-bottom:5px}
+.plannote{font-size:12px}
+
 /* ---------- history / badges ---------- */
 .hist{display:grid;gap:8px}
 .histrow{
@@ -952,15 +969,22 @@ input[type=range]::-moz-range-thumb{
 .histrow .hd{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);width:64px;flex:none}
 .histrow .hn{flex:1;font-family:var(--f-display);font-size:17px;text-transform:uppercase}
 .histrow .hx{font-family:var(--f-mono);font-size:14px;font-weight:600;color:var(--accent)}
-.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
-.bdg{
-  border:1px solid var(--line);border-radius:var(--r-sm);padding:13px 10px;background:var(--surface);
-  text-align:center;opacity:.4;filter:saturate(.2);transition:all .3s;
+.bdgl{display:grid;gap:5px}
+.bdgr{
+  display:flex;align-items:center;gap:10px;padding:7px 12px;border:1px solid var(--line);
+  border-radius:var(--r-sm);background:var(--surface);opacity:.55;filter:saturate(.25);
 }
-.bdg.on{opacity:1;filter:none;border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent-wash)}
-.bdg .bi{font-size:20px;line-height:1}
-.bdg b{display:block;font-family:var(--f-display);font-size:13px;text-transform:uppercase;margin-top:5px;line-height:1.1}
-.bdg small{font-family:var(--f-mono);font-size:8.5px;letter-spacing:.1em;color:var(--ink-3);text-transform:uppercase}
+.bdgr.on{opacity:1;filter:none;border-color:var(--accent)}
+.bdgr .bi{width:20px;text-align:center;font-size:14px;flex:none}
+.bdgr b{font-family:var(--f-display);font-size:13.5px;text-transform:uppercase;flex:none;white-space:nowrap}
+.bdgr small{
+  font-family:var(--f-mono);font-size:9px;letter-spacing:.08em;color:var(--ink-3);text-transform:uppercase;
+  flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.bdgr .pct{font-family:var(--f-mono);font-size:10.5px;color:var(--ink-2);flex:none;display:flex;align-items:center;gap:7px}
+.bdgr .pct.done{color:var(--p10);font-size:12px}
+.bdgr .pct i{width:44px;height:3px;border-radius:2px;background:var(--bg-sunk);overflow:hidden;display:block}
+.bdgr .pct u{display:block;height:100%;background:var(--accent);text-decoration:none}
 
 /* ---------- equipment dialog ---------- */
 dialog{
@@ -1433,6 +1457,12 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
         <div class="locrow">
           <label class="switch"><input type="checkbox" id="cardioOn"><i></i><span>Add a cardio block</span></label>
           <div class="chips" id="cardioChips" style="margin-left:auto"></div>
+          <div class="stepper" id="tmRow" hidden style="margin-top:8px">
+            <button type="button" id="tmDown" aria-label="Fewer minutes">–</button>
+            <output id="tmMins" class="num">20</output>
+            <button type="button" id="tmUp" aria-label="More minutes">+</button>
+            <span class="slot">minutes on the belt</span>
+          </div>
         </div>
       </div>
       </details>
@@ -1458,6 +1488,14 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
     <div class="panel-head">
       <h2>Build the week</h2>
       <div class="hint">A whole split at once. Open the app, see the day, start lifting.</div>
+    </div>
+    <div class="field" style="margin-bottom:14px">
+      <p class="eyebrow">Off-days</p>
+      <div class="locrow">
+        <div class="chips" id="offChips"></div>
+        <div class="locnote">Days you don't train. No reminder and no streak nudge fires on one —
+          the day simply isn't part of your week.</div>
+      </div>
     </div>
     <div id="weekBody"></div>
   </section>
@@ -4042,9 +4080,23 @@ const CORE_SEC = [null,{s:2,r:"30 sec"},{s:3,r:"40 sec"},{s:3,r:"50 sec"},{s:4,r
 const CSTYLE = {
   intervals:{n:"Intervals", d:"Repeats near your limit with real recovery between."},
   steady:   {n:"Steady state", d:"One sustained conversational effort."},
-  finisher: {n:"Finisher",  d:"Short, brutal, and over before you can negotiate."}
+  finisher: {n:"Finisher",  d:"Short, brutal, and over before you can negotiate."},
+  treadmill:{n:"Treadmill", d:"Belt on, minutes chosen by you, head down."}
 };
-function buildCardio(avail, style, effort, seed){
+function buildCardio(avail, style, effort, seed, tmins){
+  /* Treadmill is its own contract: the person picked the machine and the
+     minutes, so nothing here second-guesses either. It also skips the kit
+     filter on purpose — choosing the treadmill IS declaring access to one,
+     the same way picking Public Gym declares the gym. */
+  if(style === "treadmill"){
+    const m = Math.max(5, Math.min(120, tmins || 20));
+    return {x: XMAP.run_steady, style, styleName: CSTYLE.treadmill.n, styleDesc: CSTYLE.treadmill.d,
+      segs: [
+        {k:"Warm-up",   v:"3 min walk, building to an easy jog"},
+        {k:"Main",      v:m + " min at the pace you came for — hold it honest"},
+        {k:"Cool-down", v:"2 min walk before you step off"}],
+      mins: m + 5};
+  }
   const opts = X.filter(x=>x.cls==="cardio" && x.eq.every(t=>avail.includes(t)));
   if(!opts.length) return null;
   const prefer = {intervals:["row_int","bike_int","run_int","kbcondition","rope","burpee","shadowrun"],
@@ -4271,7 +4323,7 @@ function generate(cfg){
     };
   });
 
-  const cardio = cfg.cardioOn ? buildCardio(avail, cfg.cstyle, cfg.effort, rnd) : null;
+  const cardio = cfg.cardioOn ? buildCardio(avail, cfg.cstyle, cfg.effort, rnd, cfg.tmins) : null;
   const all = cardio ? moves.concat([{x:cardio.x}]) : moves;
   const actMap = activationOf(all);
   const cov = coverageOf(actMap, wholeBody ? null : targets);
@@ -4427,7 +4479,7 @@ const LEGACY_KEY = "liftedai.v2", LEGACY_OLD_KEY = "liftedai.v1";
 const PROFILE_FIELDS = ["name","color","equip","customEquip","gymPhoto","xp","streak",
                         "freezes","lastDay","history","badges","limits","cfg","session",
                         "rewards","redeemed","calView","prs","prPick","unit","lastWeight","load","body",
-                        "week","savedSplits","boardScope"];
+                        "week","savedSplits","boardScope","offDays"];
 const PROFILE_COLORS = ["var(--p25)","var(--p20)","var(--p15)","var(--p10)"];
 /* Movement limitations. Each one names the muscles and patterns to keep out of
    a session, so ticking a box changes what gets generated rather than just
@@ -4462,6 +4514,7 @@ function blankProfile(name, color){
           xp:0, streak:0, freezes:0, lastDay:null, history:[], badges:[], limits:[],
           rewards:[], redeemed:[], calView:"month",
           prs:[], prPick:null, unit:"lb", lastWeight:{}, load:{}, body:{}, week:null, savedSplits:[], boardScope:"global",
+          offDays:[],
           cfg:Object.assign({}, DEFAULT_CFG), session:null};
 }
 let vault = {v:2, active:"p1", theme:null, plan:null, firstUse:null, auth:null, cloud:null, profiles:{}};
@@ -4535,6 +4588,7 @@ function migrateProfile(p){
   if(!Array.isArray(out.equip) || !out.equip.length) out.equip = HOME_DEFAULT.slice();
   if(!Array.isArray(out.history)) out.history = [];
   if(!Array.isArray(out.badges)) out.badges = [];
+  if(!Array.isArray(out.offDays)) out.offDays = [];
   if(!Array.isArray(out.rewards)) out.rewards = [];
   if(!Array.isArray(out.redeemed)) out.redeemed = [];
   if(!out.calView) out.calView = "month";
@@ -5438,6 +5492,18 @@ function renderCardioChips(){
   $$("#cardioChips .chip").forEach(b => b.addEventListener("click", () => {
     state.cfg.cstyle = b.dataset.cs; state.cfg.cardioOn = true; state.cfg.preset = null; syncControls(); save();
   }));
+  const dn = $("#tmDown"), up = $("#tmUp");
+  if(dn && !dn._wired){
+    dn._wired = true;
+    dn.addEventListener("click", () => {
+      state.cfg.tmins = Math.max(5, (state.cfg.tmins || 20) - 5);
+      state.cfg.preset = null; syncControls(); save();
+    });
+    up.addEventListener("click", () => {
+      state.cfg.tmins = Math.min(120, (state.cfg.tmins || 20) + 5);
+      state.cfg.preset = null; syncControls(); save();
+    });
+  }
 }
 /* A fold that hides its own state is worse than no fold, so each closed group
    reports what is set inside it. */
@@ -5466,6 +5532,11 @@ function syncControls(){
   $$("#focusChips .chip").forEach(b => b.setAttribute("aria-pressed", String(c.focus.includes(b.dataset.focus))));
   $$("#compoundChips .chip").forEach(b => b.setAttribute("aria-pressed", String(c.compounds.includes(b.dataset.comp))));
   $$("#cardioChips .chip").forEach(b => b.setAttribute("aria-pressed", String(c.cstyle === b.dataset.cs)));
+  const tmRow = $("#tmRow");
+  if(tmRow){
+    tmRow.hidden = !(c.cardioOn && c.cstyle === "treadmill");
+    const o = $("#tmMins"); if(o) o.textContent = c.tmins || 20;
+  }
   $("#mCount").textContent = c.count;
   $("#effort").value = c.effort;
   $("#effortLabel").textContent = EFFORT_N[c.effort];
@@ -7246,6 +7317,21 @@ async function remindConnect(){
 
 /* Rebuild the whole schedule from scratch. Idempotent on purpose — every
    caller can just say "sync" without tracking what is already pending. */
+const DAY_ABBR = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+function renderOffChips(){
+  const host = $("#offChips"); if(!host) return;
+  const off = state.offDays || [];
+  host.innerHTML = [1,2,3,4,5,6,0].map(d =>
+    `<button class="chip sm" type="button" data-d="${d}" aria-pressed="${off.includes(d)}">${DAY_ABBR[d]}</button>`).join("");
+  $$("#offChips .chip").forEach(b => b.addEventListener("click", () => {
+    const d = +b.dataset.d;
+    if(!Array.isArray(state.offDays)) state.offDays = [];
+    if(state.offDays.includes(d)) state.offDays = state.offDays.filter(x => x !== d);
+    else state.offDays.push(d);
+    save(); renderOffChips(); remindSync();
+  }));
+}
+
 async function remindSync(){
   const N = notifPlugin();
   if(!N) return;
@@ -7257,7 +7343,10 @@ async function remindSync(){
 
   if(!remindOn()) return;
   const r = remindCfg();
-  const days = (r.days && r.days.length) ? r.days : [0,1,2,3,4,5,6];
+  /* Off-days win over everything else here: a day someone has told the app
+     they don't train on gets no reminder and no nudge, full stop. */
+  const offd = state.offDays || [];
+  const days = ((r.days && r.days.length) ? r.days : [0,1,2,3,4,5,6]).filter(d => !offd.includes(d));
   const list = [];
 
   /* the standing reminder — weekday is 1=Sunday in both iOS and Capacitor */
@@ -7273,7 +7362,7 @@ async function remindSync(){
     const trained = allTrainedKeys(), now = new Date();
     for(let k = 0; k < 14; k++){
       const at = new Date(now.getFullYear(), now.getMonth(), now.getDate() + k, 20, 30, 0);
-      if(at <= now || trained[dayKey(at)]) continue;
+      if(at <= now || trained[dayKey(at)] || offd.includes(at.getDay())) continue;
       list.push({
         id: 200 + k,
         title: k === 0 ? "Streak closes at midnight" : "Nothing logged today",
@@ -7477,9 +7566,14 @@ function renderLog(){
       </div>
     </div>
 
-    <div class="badges">${BADGES.map(b => {
+    <div class="bdgl">${BADGES.map(b => {
       const on = state.badges.includes(b.id);
-      return `<div class="bdg ${on ? "on" : ""}"><div class="bi">${b.i}</div><b>${b.n}</b><small>${b.s}</small></div>`;
+      /* Each unearned streak reports how far the current streak has carried
+         toward it — hit Iron Man at 365 and Two Years already reads 50%. */
+      const pct = Math.min(99, Math.round((state.streak || 0) / b.d * 100));
+      return `<div class="bdgr ${on ? "on" : ""}"><span class="bi">${b.i}</span><b>${b.n}</b><small>${b.s}</small>${
+        on ? `<span class="pct done">✓</span>`
+           : `<span class="pct">${pct}%<i><u style="width:${pct}%"></u></i></span>`}</div>`;
     }).join("")}</div>
 
     <div class="hist">${
@@ -8158,6 +8252,7 @@ function renderPlans(){
         <b>Pro</b>
         <div class="price">${planPrice("pro")}<span class="per"> / month</span></div>
         <p class="each">4 training days a week is <b>${pro.each}</b> a session — ${pro.n} a month.</p>
+        <details class="feat" ${cur("pro") ? "open" : ""}><summary>What's in it</summary>
         <ul>
           <li>Unlimited sessions &amp; re-rolls</li>
           <li>Up to 10 movements a session</li>
@@ -8165,7 +8260,7 @@ function renderPlans(){
           <li>One saved split</li>
           <li>3D rig, heat map, PRs, streaks</li>
           <li>One profile</li>
-        </ul>
+        </ul></details>
         <button class="btn ${cur("pro") ? "" : "primary"}" type="button" data-plan="pro"
           ${cur("pro") ? "disabled" : ""}>${cur("pro") ? "Current plan" : "Choose Pro"}</button>
       </div>
@@ -8174,6 +8269,7 @@ function renderPlans(){
         <b>Max</b>
         <div class="price">${planPrice("max")}<span class="per"> / month</span></div>
         <p class="each">All 7 days is <b>${max.each}</b> a session — ${max.n} a month.</p>
+        <details class="feat" ${cur("max") ? "open" : ""}><summary>What's in it</summary>
         <ul>
           <li>Everything in Pro</li>
           <li>Up to 20 movements a session</li>
@@ -8182,15 +8278,15 @@ function renderPlans(){
           <li>Failure mode &amp; Surprise Me</li>
           <li>Adaptive catch-up targeting</li>
           <li>Unlimited profiles on this device</li>
-        </ul>
+        </ul></details>
         <button class="btn ${cur("max") ? "" : "primary"}" type="button" data-plan="max"
           ${cur("max") ? "disabled" : ""}>${cur("max") ? "Current plan" : "Choose Max"}</button>
       </div>
     </div>
     <p class="plannote">Every one of these is under a dollar a session, against $40-plus a month for
       a gym you still have to think inside of — and Max is the cheapest per session of the three,
-      because it buys nearly twice the training days. Billing is not wired up yet: this build is the
-      founder period, so picking a plan applies its limits to feel each tier out and nothing is charged.</p>`;
+      because it buys nearly twice the training days. The first month is yours either way; after it,
+      forging a new session needs a plan. Subscriptions bill through the App Store on your Apple ID.</p>`;
   $$("#planBody [data-plan]").forEach(b => b.addEventListener("click", async () => {
     const key = b.dataset.plan || null;
 
@@ -8260,7 +8356,7 @@ function showTab(id){
   $$("#tabbar button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === id)));
   state.tab = id;
   if(id === "paneProfile") renderProfileDlg();
-  if(id === "paneSplit" && typeof renderWeek === "function") renderWeek();
+  if(id === "paneSplit"){ if(typeof renderWeek === "function") renderWeek(); if(typeof renderOffChips === "function") renderOffChips(); }
   window.scrollTo({top:0, behavior:"instant"});
   if(syncChrome) syncChrome();
 }
@@ -8270,7 +8366,7 @@ $$("#tabbar button").forEach(b => b.addEventListener("click", () => showTab(b.da
 load();
 applyTheme();
 renderPresets(); renderFocus(); renderCardioChips(); syncControls();
-renderHUD(); renderLog(); renderSession(false); renderProfileBtn(); renderPlans(); renderWeek();
+renderHUD(); renderLog(); renderSession(false); renderProfileBtn(); renderPlans(); renderWeek(); renderOffChips();
 /* The badge is artwork now rather than a generated mark, so the header and the
    favicon both point at the same file the home screen uses. logoMark() stays
    defined — it redraws itself per theme and is worth keeping if a flat
