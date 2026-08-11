@@ -8552,9 +8552,9 @@ $("#brand").insertAdjacentHTML("afterbegin",
   function upIsVid(f){ return /^video\//.test(f.type) || /\.(mp4|mov|m4v|webm)$/i.test(f.name || ""); }
 
   /* Canvas is the only way back out of a <video>, and it doubles as the resize. */
-  function upGrab(src, w, h){
+  function upGrab(src, w, h, edge){
     if(!w || !h) return null;
-    const s = Math.min(1, UP.edge / Math.max(w, h));
+    const s = Math.min(1, (edge || UP.edge) / Math.max(w, h));
     const c = document.createElement("canvas");
     c.width = Math.round(w*s); c.height = Math.round(h*s);
     const g = c.getContext("2d");
@@ -8565,9 +8565,42 @@ $("#brand").insertAdjacentHTML("afterbegin",
     g.fillStyle = "#ffffff";
     g.fillRect(0, 0, c.width, c.height);
     g.drawImage(src, 0, 0, c.width, c.height);
+    /* An 8x8 resample is enough to tell "the decoder handed us nothing" from
+       a real picture — even a moody gym shot has more spread than a stuck
+       frame's flat field. Callers use it to wait and regrab. */
+    const t8 = document.createElement("canvas"); t8.width = 8; t8.height = 8;
+    const g8 = t8.getContext("2d");
+    g8.drawImage(c, 0, 0, 8, 8);
+    const px = g8.getImageData(0, 0, 8, 8).data;
+    let mn = 255, mx = 0;
+    for(let i2 = 0; i2 < px.length; i2 += 4){
+      const lm = (px[i2] + px[i2+1] + px[i2+2]) / 3;
+      if(lm < mn) mn = lm; if(lm > mx) mx = lm;
+    }
     const d = c.toDataURL("image/jpeg", UP.quality);
     const i = d.indexOf(",");
-    return i > 0 ? d.slice(i+1) : null;
+    return i > 0 ? {b64: d.slice(i+1), flat: mx - mn < 6} : null;
+  }
+  /* seeked firing does not mean the frame is drawable: WebKit often presents
+     it a beat later, and painting before that copies the previous frame — or
+     nothing, which is exactly how a clip full of on-screen text read as
+     blank. requestVideoFrameCallback is the browser saying "this frame is
+     composited now"; the timeout covers decoders that stall. */
+  function upFrameReady(v){
+    return new Promise(res => {
+      let done = false;
+      const fin = () => { if(!done){ done = true; res(); } };
+      if(typeof v.requestVideoFrameCallback === "function"){
+        v.requestVideoFrameCallback(() => fin());
+        setTimeout(fin, 900);
+      }else setTimeout(fin, 240);
+    });
+  }
+  /* One muted play/pause tick forces the decode pipeline to actually start —
+     an iOS video that has only ever been seeked can keep handing back its
+     poster frame forever. */
+  async function upWarm(v){
+    try{ await v.play(); v.pause(); }catch(e){}
   }
   function upOpenVideo(file){
     return new Promise((res, rej) => {
@@ -8577,10 +8610,23 @@ $("#brand").insertAdjacentHTML("afterbegin",
       v.setAttribute("muted",""); v.setAttribute("playsinline","");
       v.preload = "auto"; v.src = URL.createObjectURL(file);
       const bail = setTimeout(() => { off(); rej(new Error("That clip took too long to open.")); }, 20000);
-      function off(){ clearTimeout(bail); v.removeEventListener("loadeddata", ok); v.removeEventListener("error", no); }
-      function ok(){ off(); res(v); }
-      function no(){ off(); URL.revokeObjectURL(v.src); rej(new Error("iOS could not read that clip.")); }
-      v.addEventListener("loadeddata", ok); v.addEventListener("error", no);
+      let settled = false;
+      function off(){ clearTimeout(bail);
+        for(const e of ["loadeddata","loadedmetadata","canplay"]) v.removeEventListener(e, ok);
+        v.removeEventListener("error", no); }
+      function ok(){ if(settled) return; settled = true; off(); res(v); }
+      function no(){ if(settled) return; settled = true; off(); URL.revokeObjectURL(v.src); rej(new Error("iOS could not read that clip.")); }
+      /* WKWebView can sit at readyState 0 on a photo-picker blob for the full
+         bail — loadeddata simply never fires until something forces the
+         pipeline awake. Metadata is enough for the callers (they wait on
+         frames explicitly now), an explicit load() starts the fetch, and a
+         muted play() is the kick that makes iOS actually decode. This is the
+         difference between the chosen file appearing in a beat and the sheet
+         sitting there so long it read as a failed upload. */
+      for(const e of ["loadeddata","loadedmetadata","canplay"]) v.addEventListener(e, ok);
+      v.addEventListener("error", no);
+      v.load();
+      try{ v.play().catch(() => {}); }catch(e){}
     });
   }
   /* A seek onto a time the decoder is already parked on never fires `seeked`,
@@ -8598,9 +8644,15 @@ $("#brand").insertAdjacentHTML("afterbegin",
   async function upPoster(file){
     const v = await upOpenVideo(file);
     try{
+      await upWarm(v);
       await upSeek(v, Math.min(.6, (v.duration || 2) * .1));
-      const b = upGrab(v, v.videoWidth, v.videoHeight);
-      return b ? "data:image/jpeg;base64," + b : "";
+      await upFrameReady(v);
+      /* 200px: this only ever fills a 74px thumbnail. Grabbing it at full
+         reader resolution decoded a huge frame at pick time for nothing —
+         on a big screen recording that spike could take the webview down
+         before the file even showed as chosen. */
+      const r = upGrab(v, v.videoWidth, v.videoHeight, 200);
+      return r ? "data:image/jpeg;base64," + r.b64 : "";
     } finally { URL.revokeObjectURL(v.src); v.removeAttribute("src"); v.load(); }
   }
   async function upFrames(file){
@@ -8613,12 +8665,13 @@ $("#brand").insertAdjacentHTML("afterbegin",
           i.onerror = () => rej(new Error("That image would not open."));
           i.src = url;
         });
-        const b = upGrab(img, img.naturalWidth, img.naturalHeight);
-        return b ? [b] : [];
+        const r = upGrab(img, img.naturalWidth, img.naturalHeight);
+        return r ? [r.b64] : [];
       } finally { URL.revokeObjectURL(url); }
     }
     const v = await upOpenVideo(file);
     try{
+      await upWarm(v);
       const dur = isFinite(v.duration) && v.duration > 0 ? v.duration : 0;
       /* spread across the middle of each slice, so an intro card or an end
          card never eats one of the six looks we get */
@@ -8628,8 +8681,18 @@ $("#brand").insertAdjacentHTML("afterbegin",
       const out = [];
       for(let i=0;i<times.length;i++){
         await upSeek(v, Math.min(times[i], Math.max(0, dur - .06)));
-        const b = upGrab(v, v.videoWidth, v.videoHeight);
-        if(b) out.push(b);
+        await upFrameReady(v);
+        let r = upGrab(v, v.videoWidth, v.videoHeight);
+        /* A flat grab means the frame wasn't presented yet — wait for the
+           next composite and take one more look before accepting it. This is
+           the difference between reading a clip's captions and reading six
+           blank frames. */
+        if(r && r.flat){
+          await upFrameReady(v);
+          const r2 = upGrab(v, v.videoWidth, v.videoHeight);
+          if(r2 && !r2.flat) r = r2;
+        }
+        if(r) out.push(r.b64);
         upProg(.12 + .5 * ((i+1)/times.length));
       }
       return out;
