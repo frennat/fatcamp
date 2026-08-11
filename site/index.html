@@ -107,6 +107,58 @@ h1,h2,h3{font-family:var(--f-display);font-weight:800;letter-spacing:-.03em;marg
 
 /* ---------- sections ---------- */
 section{padding:60px 0}
+
+/* ---------- the numbers ----------
+   Four figures do more work than a paragraph of adjectives, so they get their
+   own band directly under the hero rather than being buried in prose. */
+.stats{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);
+  border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:8px;
+}
+@media(min-width:720px){.stats{grid-template-columns:repeat(4,1fr)}}
+.stat{background:var(--surface);padding:22px 18px;text-align:center}
+.stat b{
+  display:block;font-family:var(--f-display);font-weight:800;font-size:clamp(30px,5vw,44px);
+  letter-spacing:-.035em;line-height:1;color:var(--accent);
+}
+.stat span{
+  display:block;margin-top:7px;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-3);
+}
+
+/* ---------- who it's for ---------- */
+.who{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:760px){.who{grid-template-columns:repeat(3,1fr)}}
+.who .card{display:flex;flex-direction:column;gap:6px}
+.who .card .lede2{color:var(--ink);font-weight:600;font-size:15px;margin:0}
+.notfor{
+  margin-top:18px;padding:16px 18px;border:1px dashed var(--line-hard);border-radius:var(--r);
+  color:var(--ink-2);font-size:14.5px;line-height:1.6;background:var(--bg-sunk);
+}
+.notfor b{color:var(--ink)}
+
+/* ---------- waitlist ---------- */
+.wait{
+  border:1px solid var(--line-hard);border-radius:var(--r);background:var(--surface);
+  padding:clamp(20px,4vw,32px);box-shadow:var(--sh-2);
+}
+.wait h2{font-size:clamp(24px,4vw,34px);text-transform:uppercase;margin-bottom:8px}
+.wait p{color:var(--ink-2);margin:0 0 16px;font-size:15px;line-height:1.6}
+.waitrow{display:flex;gap:10px;flex-wrap:wrap}
+.waitrow input{
+  flex:1;min-width:220px;border:1px solid var(--line-hard);border-radius:var(--r-pill);
+  background:var(--bg);color:var(--ink);font:inherit;font-size:15px;padding:13px 20px;outline:none;
+}
+.waitrow input:focus{border-color:var(--accent)}
+.waitrow button{border:0;cursor:pointer;font-family:var(--f-body)}
+.waitnote{margin:12px 0 0;font-size:13px;color:var(--ink-3);min-height:1.3em}
+.waitnote.ok{color:var(--p10)}
+.waitnote.bad{color:var(--accent)}
+.badge{
+  display:inline-flex;align-items:center;gap:9px;padding:11px 20px;border-radius:var(--r-pill);
+  border:1px solid var(--line-hard);background:var(--bg-sunk);color:var(--ink-3);
+  font-size:13px;font-weight:600;
+}
 @media(min-width:760px){section{padding:86px 0}}
 .shead{max-width:60ch;margin-bottom:30px}
 .shead h2{font-size:clamp(28px,5vw,46px);line-height:.98;text-transform:uppercase}
@@ -231,6 +283,70 @@ footer{border-top:1px solid var(--line);padding:34px 0 46px;display:flex;gap:16p
     </div>
   </section>
 
+  <section style="padding-top:12px">
+    <div class="stats">
+      <div class="stat"><b>225</b><span>Movements</span></div>
+      <div class="stat"><b>34</b><span>Kinds of kit</span></div>
+      <div class="stat"><b>64</b><span>3D rigs</span></div>
+      <div class="stat"><b>0</b><span>Accounts needed</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead">
+      <p class="eyebrow">New</p>
+      <h2>Steal any workout you scroll past.</h2>
+      <p>Screenshot a session — a coach's plan, a notes-app list, a reel with the movements named
+        on screen — and Fatcamp reads the names straight off the picture and builds the session
+        around them. It happens on your phone. Nothing is uploaded, no account, no waiting.</p>
+    </div>
+    <div class="grid three">
+      <div class="card"><span class="k">Screenshots</span><h3>The best case</h3>
+        <p>A written list is the easiest thing to read: crisp text, nothing moving. Sets and
+          reps, loads, and gym shorthand like <em>DB</em>, <em>RDL</em> or <em>4×10</em> all get
+          understood and stripped back to the movement.</p></div>
+      <div class="card"><span class="k">Reels</span><h3>When they're captioned</h3>
+        <p>Clips work when the movements are named on screen. Frames get sampled across the
+          whole video, so a name that only flashes up for a second still counts.</p></div>
+      <div class="card"><span class="k">Never a dead end</span><h3>You always get a session</h3>
+        <p>Whatever it reads comes back ticked and editable, with all 225 movements searchable
+          underneath — filtered to the kit you actually own. Untick what's wrong, add what it
+          missed, forge.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead">
+      <p class="eyebrow">Who it's for</p>
+      <h2>People who train, not people who admin.</h2>
+      <p>Fatcamp decides what to do and shows you how to do it. If the part you hate is standing
+        in the gym at 6am deciding what today is, this was built for you.</p>
+    </div>
+    <div class="who">
+      <div class="card">
+        <span class="k">Home gym</span><h3>Whatever you own</h3>
+        <p class="lede2">A rack and some plates in a garage.</p>
+        <p>Tell it what kit you have — including a TRX, battle ropes, rings, a sandbag, a swiss
+          ball — and it will never prescribe a movement you can't load. Nothing you own goes
+          unused, nothing you don't own gets suggested.</p>
+      </div>
+      <div class="card">
+        <span class="k">Commercial gym</span><h3>Every machine unlocked</h3>
+        <p class="lede2">You pay for the whole gym. Use it.</p>
+        <p>Cables, hack squat, GHD, ski erg, pec deck. The generator reaches for the things you
+          walk past because you never learned what they were for.</p>
+      </div>
+      <div class="card">
+        <span class="k">Travelling</span><h3>A hotel room and a floor</h3>
+        <p class="lede2">No kit is a setting, not a failure.</p>
+        <p>Switch to bodyweight and it rebuilds the whole session around what a floor and a
+          doorway can do. It works with the plane in flight mode.</p>
+      </div>
+    </div>
+    <p class="notfor"><b>Who it isn't for:</b> anyone who already writes their own programme and
+      enjoys it. Fatcamp makes the decisions. If that's the part you like, you'll find it bossy.</p>
+  </section>
+
   <section>
     <div class="shead">
       <p class="eyebrow">What it does</p>
@@ -330,6 +446,23 @@ footer{border-top:1px solid var(--line);padding:34px 0 46px;display:flex;gap:16p
       is in its founder period.</p>
   </section>
 
+  <section id="app">
+    <div class="wait">
+      <p class="eyebrow">Coming to iOS</p>
+      <h2>Be there on day one.</h2>
+      <p>Fatcamp is in TestFlight now and heading for the App Store. Leave an address and you
+        get one email the day it lands — nothing else, ever. Or skip the wait and open the web
+        version above; it is the same app.</p>
+      <form class="waitrow" id="waitForm" novalidate>
+        <input id="waitEmail" type="email" inputmode="email" autocomplete="email"
+               placeholder="you@example.com" aria-label="Email address" required>
+        <button class="btn primary" type="submit" id="waitGo">Notify me</button>
+      </form>
+      <p class="waitnote" id="waitNote" role="status" aria-live="polite"></p>
+      <p style="margin:16px 0 0"><span class="badge">Download on the App Store — coming soon</span></p>
+    </div>
+  </section>
+
   <section id="install">
     <div class="shead">
       <p class="eyebrow">On your phone</p>
@@ -398,6 +531,56 @@ document.getElementById("cbolt").innerHTML = BOLT;
 document.getElementById("sbolt").innerHTML =
   '<span style="display:grid;place-items:center;width:44px;height:44px;border-radius:50%;' +
   'background:var(--accent);color:#FFF1DC;flex:none">' + BOLT + '</span>';
+
+/* ------------------------------------------------------------ waitlist
+   Straight into Supabase over plain fetch, the same way the app talks to it —
+   no form service, no third party holding the list. The table takes inserts
+   and refuses selects, so this key being visible in a public page lets people
+   join the list but never read it back. */
+(function(){
+  const URL = "https://chghvwnytjlakuvkkluv.supabase.co";
+  const KEY = "sb_publishable_H69bdgZ5FdZIojX5LHK3aQ_2Vz2CZif";
+  const form = document.getElementById("waitForm");
+  const input = document.getElementById("waitEmail");
+  const note = document.getElementById("waitNote");
+  const go = document.getElementById("waitGo");
+  if(!form) return;
+
+  const say = (msg, tone) => {
+    note.textContent = msg;
+    note.className = "waitnote" + (tone ? " " + tone : "");
+  };
+
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const email = (input.value || "").trim().toLowerCase();
+    if(email.indexOf("@") < 1 || email.length < 6){
+      say("That address doesn't look right.", "bad"); input.focus(); return;
+    }
+    const was = go.textContent;
+    go.disabled = true; go.textContent = "Adding…"; say("");
+    try{
+      const res = await fetch(URL + "/rest/v1/waitlist", {
+        method: "POST",
+        headers: {"Content-Type":"application/json", "apikey":KEY,
+                  "Authorization":"Bearer " + KEY, "Prefer":"return=minimal"},
+        body: JSON.stringify({email: email, source: "site"})
+      });
+      /* 409 is the unique index doing its job — already on the list is a
+         success from where the reader is standing, not an error. */
+      if(res.ok || res.status === 409){
+        form.style.display = "none";
+        say(res.status === 409 ? "You're already on the list. One email at launch."
+                               : "Done. One email the day it lands.", "ok");
+        return;
+      }
+      say("That didn't save (HTTP " + res.status + "). Try again in a moment.", "bad");
+    }catch(err){
+      say("No connection. Try again in a moment.", "bad");
+    }
+    go.disabled = false; go.textContent = was;
+  });
+})();
 </script>
 </body>
 </html>

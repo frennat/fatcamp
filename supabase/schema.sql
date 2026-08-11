@@ -169,3 +169,26 @@ grant select, insert, update on public.lifters  to authenticated;
 grant select, insert, delete on public.sessions to authenticated;
 grant select on public.standings to authenticated;
 grant execute on function public.my_rank(text) to authenticated;
+
+-- ------------------------------------------------------------------ waitlist
+-- Launch signups from the marketing site.
+--
+-- Insert-only on purpose. The publishable key sits in a public HTML page, so
+-- anything that key can read, anyone can read. There is no select policy and
+-- no select grant, which means an address can be added but the list can never
+-- be pulled back out with it — read it from the dashboard or a service key.
+create table if not exists public.waitlist (
+  id         uuid primary key default gen_random_uuid(),
+  email      text not null unique
+             check (position('@' in email) > 1 and length(email) between 6 and 160),
+  source     text check (source is null or length(source) <= 40),
+  created_at timestamptz not null default now()
+);
+
+alter table public.waitlist enable row level security;
+
+drop policy if exists waitlist_insert on public.waitlist;
+create policy waitlist_insert on public.waitlist
+  for insert to anon, authenticated with check (true);
+
+grant insert on public.waitlist to anon, authenticated;
