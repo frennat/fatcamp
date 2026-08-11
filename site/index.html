@@ -498,30 +498,17 @@ footer{border-top:1px solid var(--line);padding:34px 0 46px;display:flex;gap:16p
 </div>
 
 <script>
-/* the same mark the app uses, so the two do not drift apart */
-function armPath(){
-  return "M58 46 C58 32 70 24 81 24 C93 24 104 32 104 46 " +
-         "L104 62 C104 70 99 75 93 77 " +
-         "C90 88 88 96 86 104 " +
-         "C92 110 96 112 102 113 " +
-         "C110 96 124 82 140 88 C155 94 162 112 162 132 " +
-         "L162 144 C162 150 158 154 152 154 " +
-         "L70 154 C61 154 54 148 54 139 " +
-         "L54 74 C54 62 55 52 58 46 Z";
-}
+/* The app's actual icon, not a redrawing of it.
+   This was a hand-coded SVG of a flexed arm, under a comment claiming it was
+   "the same mark the app uses, so the two do not drift apart". It drifted
+   anyway — the app ships the hammer-and-dumbbell mark and has for a while.
+   A second hand-maintained copy of a logo always goes stale, so this points at
+   the same PNG the app ships. site/icon-192.png is already byte-identical to
+   icons/icon-192.png, so there is nothing new to keep in step. */
 function logoMark(size){
-  const simple = size < 40, id = "lgm" + Math.random().toString(36).slice(2,7);
-  const accent = "var(--accent)", accent2 = "var(--accent-2)", ink = "var(--ink)";
-  return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 200 200" fill="none" '+
-    'xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Fatcamp">'+
-    '<defs><linearGradient id="'+id+'" x1="55" y1="26" x2="160" y2="160" gradientUnits="userSpaceOnUse">'+
-    '<stop offset="0" stop-color="'+accent2+'"/><stop offset="1" stop-color="'+accent+'"/></linearGradient></defs>'+
-    '<path d="M100 8 L179.7 54 L179.7 146 L100 192 L20.3 146 L20.3 54 Z" stroke="'+accent+'" stroke-width="4" stroke-linejoin="round"/>'+
-    (simple ? "" :
-      '<path d="M100 22 L167.6 61 L167.6 139 L100 178 L32.4 139 L32.4 61 Z" stroke="'+accent+'" stroke-width="1.4" opacity=".28"/>') +
-    '<path d="'+armPath()+'" fill="url(#'+id+')" stroke="'+ink+'" stroke-width="'+(simple?7:5.5)+'" stroke-linejoin="round"/>'+
-    '<path d="M100 138 L114 118 L126 131 L145 108" stroke="'+ink+'" stroke-width="'+(simple?7:5.5)+
-    '" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  return '<img src="icon-192.png" width="' + size + '" height="' + size + '" ' +
+         'alt="Fatcamp" decoding="async" ' +
+         'style="display:block;border-radius:' + Math.round(size * 0.24) + 'px">';
 }
 const BOLT = '<svg class="bolt" viewBox="41 17 18 66" fill="currentColor" aria-hidden="true">' +
   '<path d="M56,20L43.5,52H50.5L45,80L57,48H49.5Z"/></svg>';
