@@ -1896,7 +1896,14 @@ function paintAnatomy(root, act){
    l2 = far leg [knee,ankle,toe]   a2 = far arm [elbow,wrist]
    ------------------------------------------------------------------------ */
 const J = (...n) => n;
-const POSE = (j,l2,a2) => ({j,l2:l2||null,a2:a2||null});
+/* sp: optional spine bend, [lumDX,lumDY,chsDX,chsDY] — offsets pushed onto
+   the straight pelvis->neck line at its lumbar and thoracic points, in the
+   pose's own 2D space. Offsets, not positions, on purpose: solve() re-lengths
+   the trunk to SEG.torso after the raw pose, so absolute points can never be
+   authored against coordinates you can see, and (0,0,0,0) being "straight"
+   makes the neutral case cost nothing to write. Omitted entirely, the spine
+   interpolates straight — the old behaviour, not a degraded one. */
+const POSE = (j,l2,a2,sp) => ({j,l2:l2||null,a2:a2||null,sp:sp||null});
 
 const ARCH = {
   squat:{v:"side",pr:["bb_back"],
@@ -2020,9 +2027,15 @@ const ARCH = {
   plank:{v:"side",root:"wrist",pr:[],
     a:POSE(J(58,150, 74,155, 82,158, 84,184, 62,206, 128,172, 132,174, 158,190, 182,206, 194,210)),
     b:POSE(J(58,146, 74,151, 82,154, 84,182, 62,206, 128,166, 132,168, 158,186, 182,206, 194,210))},
+  /* First archetype to author its own spine. A crunch is not a hip hinge and
+     it is not a straight trunk rotating: the lumbar stays pinned to the mat
+     and the thoracic curls off it. With one rigid segment those were the same
+     picture, which is why this movement never read correctly. */
   crunch:{v:"side",root:"pelvis",pr:[],
-    a:POSE(J(62,188, 78,190, 88,191, 80,176, 68,182, 126,190, 130,192, 158,166, 178,196, 192,200)),
-    b:POSE(J(94,158, 102,170, 108,176, 100,160, 90,166, 126,190, 130,192, 158,166, 178,196, 192,200))},
+    a:POSE(J(62,188, 78,190, 88,191, 80,176, 68,182, 126,190, 130,192, 158,166, 178,196, 192,200),
+           null, null, J(0,0, 0,0)),
+    b:POSE(J(94,158, 102,170, 108,176, 100,160, 90,166, 126,190, 130,192, 158,166, 178,196, 192,200),
+           null, null, J(0,9, 0,7))},
   legraise:{v:"side",root:"pelvis",pr:[],
     a:POSE(J(58,192, 76,194, 86,196, 106,211, 132,213, 126,196, 130,196, 160,196, 188,196, 196,186)),
     b:POSE(J(58,192, 76,194, 86,196, 106,211, 132,213, 126,196, 130,196, 146,156, 144,118, 156,112))},
@@ -2148,7 +2161,7 @@ const CHAIN = {
   wrist:  [[4,3,"farm"],[3,2,"uarm"],[2,1,"neck2sh"],[1,0,"head"],[1,5,"torso"],
            [5,6,"pel2hip"],[6,7,"thigh"],[7,8,"shin"],[8,9,"foot"]]
 };
-function solve(j, root, l2, a2){
+function solve(j, root, l2, a2, sp){
   const q = j.slice();
   const put = (ai,bi,len) => {
     const ax=q[ai*2], ay=q[ai*2+1], dx=q[bi*2]-ax, dy=q[bi*2+1]-ay;
@@ -2171,7 +2184,10 @@ function solve(j, root, l2, a2){
     const w2 = ext(e2[0],e2[1], a2[2],a2[3], SEG.farm);
     A2 = [e2[0],e2[1],w2[0],w2[1]];
   }
-  return {q, L2, A2};
+  /* Spine points ride through as authored. Unlike the far limbs they are not
+     length-clamped: they sit between two joints the chain has already
+     settled, so a bad value bulges the trunk rather than detaching it. */
+  return {q, L2, A2, SP: sp || null};
 }
 
 /* ====================================================================== 3D
@@ -2218,8 +2234,10 @@ function pose3(sol, view){
      renders unchanged and none of the 64 needed editing. An archetype that
      does care supplies sol.SP and bends. */
   const SP = sol.SP;
-  const spn = (u, i) => SP ? [SP[i], SP[i+1]]
-                           : [pv[0] + (nk[0]-pv[0])*u, pv[1] + (nk[1]-pv[1])*u];
+  const spn = (u, i) => {
+    const x = pv[0] + (nk[0]-pv[0])*u, y = pv[1] + (nk[1]-pv[1])*u;
+    return SP ? [x + SP[i], y + SP[i+1]] : [x, y];
+  };
   const lu = spn(0.34, 0), ch = spn(0.68, 2);
   if(view === "front"){
     const M = x => 200 - x;                     /* frontal plane: no extrusion */
@@ -2583,7 +2601,8 @@ function boundsFor(arch){
     const t = i/6;
     const sol = solve(lerpArr(arch.a.j, arch.b.j, t), arch.root || "ankle",
       (arch.a.l2&&arch.b.l2) ? lerpArr(arch.a.l2, arch.b.l2, t) : null,
-      (arch.a.a2&&arch.b.a2) ? lerpArr(arch.a.a2, arch.b.a2, t) : null);
+      (arch.a.a2&&arch.b.a2) ? lerpArr(arch.a.a2, arch.b.a2, t) : null,
+      (arch.a.sp&&arch.b.sp) ? lerpArr(arch.a.sp, arch.b.sp, t) : null);
     const J3 = pose3(sol, arch.v);
     for(const k in J3){
       const p = J3[k];
@@ -2773,7 +2792,8 @@ function makeRig(host, archKey, opts){
   function poseAt(t){
     const sol = solve(lerpArr(arch.a.j, arch.b.j, t), arch.root || "ankle",
       (arch.a.l2&&arch.b.l2) ? lerpArr(arch.a.l2, arch.b.l2, t) : null,
-      (arch.a.a2&&arch.b.a2) ? lerpArr(arch.a.a2, arch.b.a2, t) : null);
+      (arch.a.a2&&arch.b.a2) ? lerpArr(arch.a.a2, arch.b.a2, t) : null,
+      (arch.a.sp&&arch.b.sp) ? lerpArr(arch.a.sp, arch.b.sp, t) : null);
     const J3 = pose3(sol, arch.v);
     const S = {};
     for(const k in J3) S[k] = project(J3[k], cam, fit);
