@@ -1997,9 +1997,16 @@ const ARCH = {
   legcurl:{v:"side",root:"pelvis",pr:["bench_low","machine_pad2"],
     a:POSE(J(46,182, 62,184, 70,186, 74,204, 66,214, 110,190, 114,192, 152,192, 186,192, 196,184)),
     b:POSE(J(46,182, 62,184, 70,186, 74,204, 66,214, 110,190, 114,192, 152,192, 154,146, 166,140))},
+  /* Spine: this movement IS segmental extension, so the bottom finally shows
+     it — the trunk drapes over the pad edge, leaving the pelvis near
+     horizontal and rounding down to the hanging head (offsets up-left of the
+     chord, along its normal (-0.71,-0.71)). The top is dead straight: "stop
+     level" is the cue, and hyperextending buys nothing. */
   hyperext:{v:"side",root:"pelvis",pr:["bench_incl"],
-    a:POSE(J(76,168, 88,158, 94,153, 94,138, 92,124, 122,124, 126,122, 152,150, 148,196, 162,202)),
-    b:POSE(J(58,126, 76,124, 84,124, 88,110, 88,96,  122,124, 126,122, 152,150, 148,196, 162,202))},
+    a:POSE(J(76,168, 88,158, 94,153, 94,138, 92,124, 122,124, 126,122, 152,150, 148,196, 162,202),
+           null, null, J(-3,-3, -2.5,-2.5)),
+    b:POSE(J(58,126, 76,124, 84,124, 88,110, 88,96,  122,124, 126,122, 152,150, 148,196, 162,202),
+           null, null, J(0,0, 0,0))},
   curl:{v:"side",pr:["db_hands"],
     a:POSE(J(100,30, 100,50, 100,58, 100,88, 103,116, 100,110, 100,115, 100,166, 98,212, 112,218)),
     b:POSE(J(100,30, 100,50, 100,58, 101,88, 90,64,  100,110, 100,115, 100,166, 98,212, 112,218))},
@@ -2134,9 +2141,14 @@ const ARCH = {
   skierg:{v:"side",pr:["skierg_frame"],
     a:POSE(J(100,44, 100,62, 100,70, 104,44,  108,22,  100,120, 100,125, 100,170, 98,212, 112,218)),
     b:POSE(J(106,74, 104,90, 103,97, 108,124, 112,150, 94,140, 94,145, 98,180, 96,212, 110,218))},
+  /* Spine: same drape as hyperext — the exercise cue is "round up one
+     vertebra at a time and stop level", which is a literal description of
+     what these offsets now draw. */
   ghdraise:{v:"side",root:"pelvis",pr:["ghd_pad"],
-    a:POSE(J(76,168, 88,158, 94,153, 94,138, 92,124, 122,124, 126,122, 152,150, 148,196, 162,202)),
-    b:POSE(J(58,126, 76,124, 84,124, 88,110, 88,96,  122,124, 126,122, 152,150, 148,196, 162,202))},
+    a:POSE(J(76,168, 88,158, 94,153, 94,138, 92,124, 122,124, 126,122, 152,150, 148,196, 162,202),
+           null, null, J(-3,-3, -2.5,-2.5)),
+    b:POSE(J(58,126, 76,124, 84,124, 88,110, 88,96,  122,124, 126,122, 152,150, 148,196, 162,202),
+           null, null, J(0,0, 0,0))},
   sbcurl:{v:"side",root:"pelvis",pr:["swiss_ball"],
     a:POSE(J(46,196, 62,194, 70,193, 80,206, 90,214, 110,182, 114,182, 152,182, 186,184, 196,178)),
     b:POSE(J(46,196, 62,194, 70,193, 80,206, 90,214, 110,176, 114,176, 146,158, 152,196, 160,202))},
