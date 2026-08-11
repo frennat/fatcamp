@@ -612,6 +612,11 @@ input[type=range]::-moz-range-thumb{
 .rigctl .sp{font-family:var(--f-mono);font-size:9.5px;color:var(--ink-3);letter-spacing:.1em}
 .anatomybox{border:1px solid var(--line);border-radius:var(--r-card);background:var(--bg-sunk);padding:12px;box-shadow:var(--sh-1)}
 .mapbox{position:relative;border-radius:var(--r-sm);overflow:hidden;background:var(--bg-sunk)}
+.mappick{
+  width:100%;font:inherit;font-size:13px;padding:8px 12px;border-radius:var(--r-sm);
+  border:1px solid var(--line-hard);background:var(--surface-2);color:var(--ink);outline:none;
+}
+.mappick:focus{border-color:var(--accent)}
 .mapviews{margin-top:8px;width:100%}
 .mapviews button{flex:1}
 .cuebox{margin-top:12px;border-left:2px solid var(--accent);padding:2px 0 2px 12px}
@@ -6675,7 +6680,11 @@ function renderSession(animate){
           </div>
         </div>
         <div class="covermap">
-          <p class="eyebrow">Heat map</p>
+          <p class="eyebrow">Working muscles</p>
+          <select class="mappick" id="mapPick" aria-label="Show working muscles for">
+            <option value="">Whole session</option>
+            ${s.moves.map((mv, i) => `<option value="${i}">${i+1} · ${esc(mv.x.n)}</option>`).join("")}
+          </select>
           <div class="mapbox"><div id="sessMap3d"></div>
             <span class="drag-hint">Drag to rotate</span></div>
           <span class="viewbtns mapviews" role="group" aria-label="Body angle">
@@ -6703,7 +6712,23 @@ function renderSession(animate){
       <button class="btn primary" id="finishBtn" type="button">Finish &amp; bank it</button>
     </div>`;
 
-  const sessRig = mountAnatomy($("#sessMap3d"), s.act, {h:270, yaw:0});
+  /* One figure, swappable heat. draw() reads its act object live, so picking
+     a movement just rewrites the same object's keys and redraws — no second
+     mount, no leak, and whatever view or spin you chose stays put. */
+  const sessActView = Object.assign({}, s.act);
+  const sessRig = mountAnatomy($("#sessMap3d"), sessActView, {h:270, yaw:0});
+  const mapPick = $("#mapPick");
+  if(mapPick) mapPick.addEventListener("change", () => {
+    for(const k in sessActView) delete sessActView[k];
+    if(mapPick.value === ""){
+      Object.assign(sessActView, s.act);
+    }else{
+      const x2 = s.moves[+mapPick.value].x;
+      for(const k of x2.pri) sessActView[k] = 1;
+      for(const k of x2.sec) sessActView[k] = 0.55;
+    }
+    sessRig.rig.draw();
+  });
   $$("#sessionPanel [data-map]").forEach(b2 => b2.addEventListener("click", () => {
     $$("#sessionPanel [data-map]").forEach(o => o.setAttribute("aria-pressed", String(o === b2)));
     const v = b2.dataset.map;
@@ -6822,9 +6847,6 @@ function toggleDrawer(row){
 function buildDrawer(row, m){
   const x = m.x;
   const d = row.querySelector(".drawer");
-  const act = {}; MUSCLE_IDS.forEach(k => act[k] = 0);
-  for(const k of x.pri) act[k] = 1;
-  for(const k of x.sec) act[k] = .5;
 
   d.innerHTML = `
     <div class="dgrid">
@@ -6854,8 +6876,6 @@ function buildDrawer(row, m){
       </div>
       <div>
         <div class="anatomybox">
-          <p class="eyebrow" style="margin-bottom:6px">Working muscles</p>
-          <div class="mapbox sm"><div class="movemap"></div></div>
           <div class="legendrow">
             ${x.pri.map(k => `<span class="mus-pill hit">${M[k].n}</span>`).join("")}
             ${x.sec.map(k => `<span class="mus-pill sec">${M[k].n}</span>`).join("")}
@@ -6914,7 +6934,6 @@ function buildDrawer(row, m){
   }});
   row._rig = inst;
   if(inst.rig.fx) inst.rig.fx.failure = !!m.failure;
-  mountAnatomy(d.querySelector(".movemap"), act, {h:210, yaw:Math.PI/2 - 0.45});
 
   d.querySelector("[data-play]").addEventListener("click", ev => {
     inst.playing = !inst.playing;
