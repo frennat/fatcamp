@@ -1915,16 +1915,27 @@ const ARCH = {
   frontsquat:{v:"side",pr:["bb_front"],
     a:POSE(J(100,32, 101,52, 99,59, 108,80, 110,58, 100,110, 100,115, 101,166, 99,212, 113,218)),
     b:POSE(J(90,97, 88,116, 90,124, 104,144, 98,122, 77,175, 78,180, 126,176, 98,212, 112,218))},
+  /* Spine: dead straight at lockout; at the floor the thoracic rounds a
+     touch (2.5u on a 60u trunk) while the lumbar stays near neutral — what a
+     braced heavy pull actually looks like, kept far from "rounded". Offsets
+     lie along the bent pose's back normal (-0.57,-0.82). */
   hinge:{v:"side",pr:["bb_hands"],
-    a:POSE(J(100,32, 101,52, 99,59, 98,88, 97,116, 100,110, 100,115, 100,166, 98,212, 112,218)),
-    b:POSE(J(132,102, 118,117, 116,124, 114,152, 112,180, 69,151, 69,156, 118,172, 96,212, 110,218))},
+    a:POSE(J(100,32, 101,52, 99,59, 98,88, 97,116, 100,110, 100,115, 100,166, 98,212, 112,218),
+           null, null, J(0,0, 0,0)),
+    b:POSE(J(132,102, 118,117, 116,124, 114,152, 112,180, 69,151, 69,156, 118,172, 96,212, 110,218),
+           null, null, J(-0.5,-1, -1.5,-2.5))},
+  /* Spine: the opposite cue to the deadlift — chest proud, slight arch, so
+     the line bows toward the belly normal (0.27,0.96) at the bottom. This is
+     the first time an RDL and a deadlift read differently through the trunk. */
   rdl:{v:"side",pr:["bb_hands"],
-    a:POSE(J(100,32, 101,52, 99,59, 98,88, 97,116, 100,110, 100,115, 100,166, 98,212, 112,218)),
+    a:POSE(J(100,32, 101,52, 99,59, 98,88, 97,116, 100,110, 100,115, 100,166, 98,212, 112,218),
+           null, null, J(0,0, 0,0)),
     /* Bar tracks the thigh. It used to drift 38 forward of where it starts,
        finishing 45 in front of the shin — a bar path nobody should copy.
        Hips go back rather than down: 30 of travel, 4 of drop, shins near
        vertical. Hips dropping is what made this read as a squat. */
-    b:POSE(J(136,92, 123,100, 120,107, 115,134, 111,162, 70,114, 70,119, 92,168, 96,212, 110,218))},
+    b:POSE(J(136,92, 123,100, 120,107, 115,134, 111,162, 70,114, 70,119, 92,168, 96,212, 110,218),
+           null, null, J(0.5,1.5, 0.5,2.5))},
   swing:{v:"side",pr:["kb_hands"],
     a:POSE(J(118,62, 111,73, 109,79, 107,108, 103,136, 87,118, 87,123, 96,167, 96,212, 110,218)),
     b:POSE(J(100,30, 100,50, 100,58, 112,72, 132,62, 100,110, 100,115, 100,166, 98,212, 112,218))},
@@ -2546,7 +2557,9 @@ function skinMesh(J3){
 }
 
 const BONES = [
-  ["neck","pelvis",27],["head","neck",13],["shL","shR",14],["hipL","hipR",16],
+  /* the trunk trail follows the articulated spine — one straight bone here
+     would cut the corner the flesh now takes */
+  ["neck","chs",27],["chs","lum",27],["lum","pelvis",27],["head","neck",13],["shL","shR",14],["hipL","hipR",16],
   ["shR","elR",10.5],["elR","wrR",8.5],["shL","elL",10.5],["elL","wrL",8.5],
   ["hipR","knR",15],["knR","anR",12.5],["anR","toR",7],
   ["hipL","knL",15],["knL","anL",12.5],["anL","toL",7]
