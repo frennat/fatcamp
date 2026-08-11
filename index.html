@@ -1118,7 +1118,9 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 
 /* ---------- toast / xp burst ---------- */
 .toast{
-  position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(140%);
+  /* drops in from the top like a system notification — bottom placement sat on the tab bar */
+  position:fixed;left:50%;top:calc(env(safe-area-inset-top, 0px) + 12px);
+  transform:translateX(-50%) translateY(calc(-100% - 90px));
   background:var(--ink);color:var(--bg);border-radius:var(--r-pill);padding:13px 22px;z-index:90;
   display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);max-width:min(420px,92vw);
   transition:transform .45s cubic-bezier(.2,.9,.2,1);
@@ -4410,7 +4412,8 @@ function movePoints(m, effort){
   return Math.round(m.sets * perClass(m.x) * (m.each ? 1.15 : 1) * (m.failure ? 1.25 : 1) * em);
 }
 function claimedTotal(s){
-  return s.moves.reduce((a,m) => a + (m.claimed ? movePoints(m, s.cfg.effort) : 0), 0);
+  /* claimedPts is what actually landed — partial claims bank less than movePoints */
+  return s.moves.reduce((a,m) => a + (m.claimed ? (m.claimedPts != null ? m.claimedPts : movePoints(m, s.cfg.effort)) : 0), 0);
 }
 function scoreSession(s, streak){
   const em = [0,.85,1,1.15,1.35][s.cfg.effort];
@@ -6965,9 +6968,12 @@ function buildDrawer(row, m){
     const i = +b.dataset.set;
     m.doneSets[i] = !m.doneSets[i];
     b.setAttribute("aria-pressed", String(!!m.doneSets[i]));
-    row.classList.toggle("done", m.doneSets.filter(Boolean).length === m.sets);
+    const done = m.doneSets.filter(Boolean).length;
+    row.classList.toggle("done", done === m.sets);
     if(row._paintClaim) row._paintClaim();
     updateProgress(); save();
+    /* last set down — the points are earned, no second tap to bank them */
+    if(done === m.sets && !m.claimed && row._autoClaim) row._autoClaim();
   }));
   d.querySelector("[data-swap]").addEventListener("click", () => swapMove(m));
   d.querySelector("[data-surprise]").addEventListener("click", () => surpriseMove(m));
@@ -7045,32 +7051,43 @@ function buildDrawer(row, m){
   });
 
   const claimBtn = d.querySelector("[data-claim]"), claimNote = d.querySelector("[data-claimnote]");
+  function claimWorth(){
+    const done = m.doneSets.filter(Boolean).length;
+    return Math.round(movePoints(m, state.session.cfg.effort) * done / m.sets);
+  }
   function paintClaim(){
     const done = m.doneSets.filter(Boolean).length, all = m.sets;
     if(m.claimed){
       claimBtn.disabled = true;
       claimBtn.textContent = "Claimed";
       claimBtn.classList.add("claimed");
-      claimNote.textContent = "+" + movePoints(m, state.session.cfg.effort) + " already in the bank";
-    }else if(done < all){
+      claimNote.textContent = "+" + (m.claimedPts != null ? m.claimedPts : movePoints(m, state.session.cfg.effort)) + " already in the bank";
+    }else if(done === 0){
       claimBtn.disabled = true;
-      claimNote.textContent = (all - done) + " set" + (all-done===1?"":"s") + " to go";
+      claimBtn.textContent = "Claim " + movePoints(m, state.session.cfg.effort) + " pts";
+      claimNote.textContent = "Log a set to claim";
     }else{
       claimBtn.disabled = false;
-      claimNote.textContent = "Ready";
+      claimBtn.textContent = "Claim " + claimWorth() + " pts";
+      claimNote.textContent = done < all ? done + "/" + all + " sets · partial" : "Ready";
     }
   }
-  claimBtn.addEventListener("click", () => {
-    if(m.claimed || m.doneSets.filter(Boolean).length < m.sets) return;
-    const pts = movePoints(m, state.session.cfg.effort);
+  function doClaim(){
+    const done = m.doneSets.filter(Boolean).length;
+    if(m.claimed || done === 0) return;
+    const pts = claimWorth();
     m.claimed = true;
+    m.claimedPts = pts;
     state.xp += pts;
     save(); renderHUD(); paintClaim(); updateProgress();
     row.classList.add("claimed");
-    toast(m.x.n + " banked", "Point balance is now " + state.xp.toLocaleString() + ".", "+" + pts);
-  });
+    toast(m.x.n + " banked", (done < m.sets ? done + " of " + m.sets + " sets · " : "") +
+          "Point balance is now " + state.xp.toLocaleString() + ".", "+" + pts);
+  }
+  claimBtn.addEventListener("click", doClaim);
   paintClaim();
   row._paintClaim = paintClaim;
+  row._autoClaim = doClaim;
 }
 function phaseWord(x, i){
   const p = {squat:["Descend","Drive"],hinge:["Set & pull","Lock out"],rdl:["Lower","Stand"],
