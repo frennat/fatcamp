@@ -919,6 +919,16 @@ input[type=range]::-moz-range-thumb{
 .rew p{margin:0;font-size:12.5px;color:var(--ink-3);line-height:1.5;flex:1}
 .rewtag{font-family:var(--f-mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
 .rew.ok .rewtag{color:var(--accent)}
+/* Max's badge — lit from within, breathing */
+.bestval{
+  font-family:var(--f-mono);font-size:10px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:#FF8A5C;margin-left:9px;vertical-align:3px;
+  animation:bestval 2.2s ease-in-out infinite;
+}
+@keyframes bestval{
+  0%,100%{text-shadow:0 0 6px rgba(248,103,47,.7),0 0 14px rgba(232,80,31,.4);opacity:.85}
+  50%{text-shadow:0 0 10px rgba(248,103,47,1),0 0 26px rgba(232,80,31,.8);opacity:1}
+}
 .rewfoot{display:flex;align-items:center;gap:10px;margin-top:4px}
 .rewcost{font-size:13px;font-weight:600;color:var(--ink-2)}
 .rewfoot .btn{margin-left:auto;font-size:12px;padding:5px 5px 5px 14px}
@@ -8472,7 +8482,7 @@ function renderPlans(){
       </div>
       <div class="plan ${cur("max") ? "current" : ""}">
         <span class="rewtag">${cur("max") ? "Current" : "Most complete"}</span>
-        <b>Max</b>
+        <b>Max<span class="bestval">Best Value</span></b>
         <div class="price">${planPrice("max")}<span class="per"> / month</span></div>
         <p class="each">All 7 days is <b>${max.each}</b> a session — ${max.n} a month.</p>
         <details class="feat" ${cur("max") ? "open" : ""}><summary>What's in it</summary>
