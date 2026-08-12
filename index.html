@@ -6823,8 +6823,7 @@ function renderSession(animate){
         <div class="covermap">
           <p class="eyebrow">Working muscles</p>
           <select class="mappick" id="mapPick" aria-label="Show working muscles for">
-            <option value="">Whole session</option>
-            ${s.moves.map((mv, i) => `<option value="${i}">${i+1} · ${esc(mv.x.n)}</option>`).join("")}
+            ${s.moves.map((mv, i) => `<option value="${i}"${i === 0 ? " selected" : ""}>${i+1} · ${esc(mv.x.n)}</option>`).join("")}
           </select>
           <div class="mapbox"><div id="sessMap3d"></div>
             <span class="drag-hint">Drag to rotate</span></div>
@@ -6853,21 +6852,22 @@ function renderSession(animate){
       <button class="btn primary" id="finishBtn" type="button">Finish &amp; bank it</button>
     </div>`;
 
-  /* One figure, swappable heat. draw() reads its act object live, so picking
-     a movement just rewrites the same object's keys and redraws — no second
-     mount, no leak, and whatever view or spin you chose stays put. */
-  const sessActView = Object.assign({}, s.act);
+  /* One figure, one movement at a time — the dropdown is the only way in, and
+     its options are exactly the generated movements. draw() reads the act
+     object live, so switching movements rewrites the same object's keys and
+     redraws — no second mount, no leak, and the camera you chose stays put. */
+  const sessActView = {};
+  const heatFor = i => {
+    const x2 = s.moves[i].x;
+    for(const k in sessActView) delete sessActView[k];
+    for(const k of x2.pri) sessActView[k] = 1;
+    for(const k of x2.sec) sessActView[k] = 0.55;
+  };
+  heatFor(0);
   const sessRig = mountAnatomy($("#sessMap3d"), sessActView, {h:270, yaw:0});
   const mapPick = $("#mapPick");
   if(mapPick) mapPick.addEventListener("change", () => {
-    for(const k in sessActView) delete sessActView[k];
-    if(mapPick.value === ""){
-      Object.assign(sessActView, s.act);
-    }else{
-      const x2 = s.moves[+mapPick.value].x;
-      for(const k of x2.pri) sessActView[k] = 1;
-      for(const k of x2.sec) sessActView[k] = 0.55;
-    }
+    heatFor(+mapPick.value);
     sessRig.rig.draw();
   });
   $$("#sessionPanel [data-map]").forEach(b2 => b2.addEventListener("click", () => {
