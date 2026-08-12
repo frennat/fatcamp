@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#17161A">
 <meta name="description" content="Fatcamp — an agent that builds your session from what you've got and what you want to hit.">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -122,7 +122,7 @@
 }
 
 *{box-sizing:border-box}
-html,body{margin:0;padding:0}
+html,body{margin:0;padding:0;touch-action:manipulation}   /* no double-tap zoom — nothing here to zoom into */
 body{
   background:var(--bg);
   color:var(--ink);
@@ -1166,16 +1166,38 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
    deliberately theme-blind: the blackout and forge colours are the moment. */
 .bankfx{position:fixed;inset:0;z-index:85;background:rgba(14,11,9,.94);opacity:0;transition:opacity .32s ease;touch-action:none;overflow:hidden;cursor:pointer}
 .bankfx.on{opacity:1}
-.bfx-mark{position:absolute;left:50%;top:50%;will-change:transform;filter:drop-shadow(0 6px 26px rgba(232,80,31,.35))}
+/* The mark rises quiet and dim from the Create slot; the electricity builds
+   on the way up and the strikes only land once it takes the middle. */
+.bfx-mark{position:absolute;left:50%;top:50%;will-change:transform;opacity:.72;
+  filter:drop-shadow(0 6px 22px rgba(0,0,0,.5))}
+.bankfx.rise .bfx-mark{opacity:1;transition:opacity 1s ease}
 .bfx-mark img{display:block;width:100%;height:100%;border-radius:50%}
-.bfx-mark.fly{transition:transform .7s cubic-bezier(.18,.75,.28,1.16)}
+.bfx-mark.fly{transition:transform 1.05s cubic-bezier(.2,.72,.24,1.02)}
+/* blue charge building behind the disc */
+.bfx-mark::before{content:"";position:absolute;inset:-32%;border-radius:50%;z-index:-1;
+  background:radial-gradient(circle, rgba(79,217,255,.5) 0%, rgba(79,217,255,.14) 42%, rgba(79,217,255,0) 68%);
+  opacity:0;transition:opacity 1s ease .25s}
+.bankfx.rise .bfx-mark::before{opacity:.55}
+.bankfx.boom .bfx-mark::before{opacity:1;animation:bfxglow 1.5s ease-in-out infinite}
+@keyframes bfxglow{0%,100%{transform:scale(1)}50%{transform:scale(1.16)}}
 .bankfx.boom .bfx-mark{animation:bfxpulse 1.6s ease-in-out .1s infinite}
-@keyframes bfxpulse{0%,100%{filter:drop-shadow(0 0 18px rgba(232,80,31,.4))}50%{filter:drop-shadow(0 0 48px rgba(248,103,47,.85))}}
+@keyframes bfxpulse{
+  0%,100%{filter:drop-shadow(0 0 16px rgba(248,103,47,.45))}
+  50%{filter:drop-shadow(0 0 34px rgba(79,217,255,.9)) drop-shadow(0 0 60px rgba(79,217,255,.4))}
+}
 .bankfx.boom .bfx-mark img{animation:bfximg 1.7s linear infinite}
-@keyframes bfximg{0%,17%,23%,54%,62%,100%{filter:brightness(1)}19%,21%{filter:brightness(1.6) saturate(1.35)}57%,60%{filter:brightness(1.35)}}
-/* Reduce Motion still gets the moment — just held still instead of strobing */
+@keyframes bfximg{0%,17%,23%,54%,62%,100%{filter:brightness(1) saturate(1)}19%,21%{filter:brightness(1.7) saturate(1.5)}57%,60%{filter:brightness(1.4) saturate(1.3)}}
+/* electric arcs crackling off the disc — sparse on the way up, alive on arrival */
+.bfx-arc{position:absolute;left:50%;top:50%;height:22px;margin-top:-11px;transform-origin:0 50%;opacity:0;pointer-events:none}
+.bfx-arc path{fill:none;stroke:#9FEDFF;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;
+  filter:drop-shadow(0 0 3px #4FD9FF) drop-shadow(0 0 8px rgba(79,217,255,.85))}
+.bankfx.rise .bfx-arc.a{animation:bfxarc 1.25s linear infinite}
+.bankfx.boom .bfx-arc{animation:bfxarc .85s linear infinite}
+@keyframes bfxarc{0%,14%,100%{opacity:0}2%,7%{opacity:1}10%{opacity:.35}}
+/* Reduce Motion still gets the moment — the room-wide strikes stay out, the
+   mark keeps its charge */
 .bankfx.calm .bfx-bolt,.bankfx.calm .bfx-spark{display:none}
-.bankfx.calm .bfx-mark,.bankfx.calm .bfx-mark img,.bankfx.calm .bfx-db,.bankfx.calm .bfx-ring{animation:none}
+.bankfx.calm .bfx-db,.bankfx.calm .bfx-ring{animation:none}
 .bankfx.calm.boom .bfx-db{opacity:.15}
 .bfx-ring{position:absolute;left:50%;top:50%;width:200px;height:200px;margin:-100px 0 0 -100px;border-radius:50%;border:2px solid var(--p25,#E8501F);opacity:0;pointer-events:none}
 .bankfx.boom .bfx-ring{animation:bfxring 1.5s cubic-bezier(.2,.7,.2,1) forwards}
@@ -5970,6 +5992,21 @@ function bankFx(done){
   const ov = document.createElement("div");
   ov.className = "bankfx" + (calm ? " calm" : "");
   const BOLT_COLS = ["#4FD9FF", "#F8672F", "#4FD9FF", "#F6F1E5"];   /* the logo's bolt is blue — lead with it */
+  const D = Math.min(innerWidth*.5, 200);
+
+  /* jagged arcs crackling off the disc edge, riding the mark as it climbs */
+  let arcs = "";
+  for(let i=0;i<8;i++){
+    const ang = (i*45 + Math.random()*30).toFixed(0), len = D*(0.22 + Math.random()*0.16),
+          amp = 7 + Math.random()*6, segs = 4 + (Math.random()*3|0);
+    let d2 = "M0,0";
+    for(let s2=1;s2<=segs;s2++)
+      d2 += " L" + ((len/segs)*s2).toFixed(1) + "," + ((Math.random()-.5)*amp).toFixed(1);
+    arcs += '<svg class="bfx-arc' + (i < 3 ? " a" : "") + '" style="width:' + Math.ceil(len+4) +
+      'px;transform:rotate(' + ang + 'deg) translateX(' + (D*0.44).toFixed(0) +
+      'px);animation-delay:' + (Math.random()*1.1).toFixed(2) + 's" viewBox="-2 -12 ' +
+      Math.ceil(len+4) + ' 24" xmlns="http://www.w3.org/2000/svg"><path d="' + d2 + '"/></svg>';
+  }
   let inner = "";
   for(let i=0;i<3;i++) inner += '<div class="bfx-ring" style="animation-delay:' + (i*.16) + 's"></div>';
   for(let i=0;i<7;i++){
@@ -5989,15 +6026,15 @@ function bankFx(done){
              (Math.random() < .4 ? ';background:#F6F1E5' : '') + '"></div>';
   }
   inner += '<div class="bfx-line top">' + esc(top) + '</div>';
-  inner += '<div class="bfx-mark"><img src="icons/icon-512.png" alt="" decoding="async"></div>';
+  inner += '<div class="bfx-mark"><img src="icons/icon-512.png" alt="" decoding="async">' + arcs + '</div>';
   inner += '<div class="bfx-line bot">' + esc(bot) + '</div>';
   inner += '<div class="bfx-skip">tap to carry on</div>';
   ov.innerHTML = inner;
   document.body.appendChild(ov);
 
-  /* FLIP: the mark starts where the Create button sits and flies to centre */
+  /* FLIP: the mark starts at the Create button — same spot, same size — and
+     climbs to centre while the charge builds around it */
   const mark = ov.querySelector(".bfx-mark");
-  const D = Math.min(innerWidth*.5, 200);
   mark.style.width = mark.style.height = D + "px";
   mark.style.margin = (-D/2) + "px 0 0 " + (-D/2) + "px";
   const src = $("#tabForgeMark"), r = src && src.getBoundingClientRect();
@@ -6007,10 +6044,11 @@ function bankFx(done){
                          "px) scale(" + ((r ? r.width : 54)/D).toFixed(3) + ")";
   requestAnimationFrame(() => requestAnimationFrame(() => {
     ov.classList.add("on");
+    ov.classList.add("rise");
     mark.classList.add("fly");
     mark.style.transform = "translate(0,0) scale(1)";
   }));
-  setTimeout(() => ov.classList.add("boom"), 720);
+  setTimeout(() => ov.classList.add("boom"), 1050);
 
   let fin = false;
   const finish = () => {
@@ -6019,7 +6057,7 @@ function bankFx(done){
     setTimeout(() => { ov.remove(); done(); }, 340);
   };
   ov.addEventListener("pointerdown", finish);
-  setTimeout(finish, 4800);
+  setTimeout(finish, 5200);
 }
 
 /* ------------------------------------------------------------------ the mark
