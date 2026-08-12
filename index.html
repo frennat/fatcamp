@@ -519,6 +519,18 @@ input[type=range]::-moz-range-thumb{
 .btn.primary:hover::after{transform:translateX(3px)}
 .btn.ghost{background:transparent}
 
+/* The bank button trades the stock arrow disc for the mark itself, with a
+   red chevron breathing toward it. */
+.bankbtn::after{display:none}
+.bankbtn .bchev{width:17px;height:17px;flex:none;margin:0 -5px;stroke:var(--accent);
+  fill:none;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;
+  animation:bchev 1.5s ease-in-out infinite}
+@keyframes bchev{
+  0%,100%{opacity:.35;transform:translateX(-2px);filter:none}
+  50%{opacity:1;transform:translateX(2px);filter:drop-shadow(0 0 6px rgba(232,80,63,.9))}
+}
+.bankbtn .bmark{width:30px;height:30px;border-radius:50%;flex:none;display:block}
+
 .statrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));border-top:1px solid var(--line)}
 .stat{padding:12px var(--pad);border-right:1px solid var(--line)}
 .stat:last-child{border-right:0}
@@ -1116,19 +1128,27 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 .appsoon .as-t b{font-family:var(--f-body);font-size:21px;font-weight:500;letter-spacing:-.01em}
 @media(max-width:560px){.appsoon{padding:8px 14px 9px 12px}.appsoon .as-t b{font-size:19px}}
 
-/* ---------- toast / xp burst ---------- */
+/* ---------- toast / xp burst ----------
+   A banner, not a pill: long movement names wrap and a pill radius turns a
+   tall element into a blob. Fades in with a short drop from the top edge and
+   fades back out — percentage-free transforms because WebKit would not
+   animate the old calc() slide. */
 .toast{
-  /* drops in from the top like a system notification — bottom placement sat on the tab bar */
-  position:fixed;left:50%;top:calc(env(safe-area-inset-top, 0px) + 12px);
-  transform:translateX(-50%) translateY(calc(-100% - 90px));
-  background:var(--ink);color:var(--bg);border-radius:var(--r-pill);padding:13px 22px;z-index:90;
-  display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);max-width:min(420px,92vw);
-  transition:transform .45s cubic-bezier(.2,.9,.2,1);
+  position:fixed;left:50%;top:calc(env(safe-area-inset-top, 0px) + 10px);
+  transform:translate(-50%,-26px);opacity:0;visibility:hidden;
+  width:calc(100vw - 28px);max-width:520px;
+  background:var(--ink);color:var(--bg);border-radius:18px;padding:12px 16px;z-index:90;
+  display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);
+  transition:opacity .38s ease,transform .42s cubic-bezier(.2,.8,.2,1),visibility 0s linear .42s;
 }
-.toast.show{transform:translateX(-50%) translateY(0)}
-.toast b{font-family:var(--f-display);font-size:19px;text-transform:uppercase;line-height:1}
-.toast .tx{font-family:var(--f-mono);font-size:17px;font-weight:600;color:var(--accent);margin-left:auto}
-.toast small{display:block;font-size:11.5px;opacity:.7;font-family:var(--f-body)}
+.toast.show{
+  opacity:1;visibility:visible;transform:translate(-50%,0);
+  transition:opacity .38s ease,transform .42s cubic-bezier(.2,.8,.2,1);
+}
+.toast > div:first-child{flex:1;min-width:0}
+.toast b{font-family:var(--f-display);font-size:14.5px;text-transform:uppercase;line-height:1.25;letter-spacing:.01em;display:block}
+.toast .tx{font-family:var(--f-mono);font-size:16px;font-weight:600;color:var(--accent);margin-left:auto;flex:none}
+.toast small{display:block;font-size:12px;opacity:.72;font-family:var(--f-body);margin-top:2px}
 
 /* ---------- bank celebration
    The mark leaves the Create slot, takes the middle of the screen, and the
@@ -1137,12 +1157,16 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 .bankfx{position:fixed;inset:0;z-index:85;background:rgba(14,11,9,.94);opacity:0;transition:opacity .32s ease;touch-action:none;overflow:hidden;cursor:pointer}
 .bankfx.on{opacity:1}
 .bfx-mark{position:absolute;left:50%;top:50%;will-change:transform;filter:drop-shadow(0 6px 26px rgba(232,80,31,.35))}
-.bfx-mark svg{display:block;width:100%;height:100%}
+.bfx-mark img{display:block;width:100%;height:100%;border-radius:50%}
 .bfx-mark.fly{transition:transform .7s cubic-bezier(.18,.75,.28,1.16)}
 .bankfx.boom .bfx-mark{animation:bfxpulse 1.6s ease-in-out .1s infinite}
 @keyframes bfxpulse{0%,100%{filter:drop-shadow(0 0 18px rgba(232,80,31,.4))}50%{filter:drop-shadow(0 0 48px rgba(248,103,47,.85))}}
-.bankfx.boom .bfx-mark svg > g:last-of-type{animation:bfxbolt 1.7s linear infinite}
-@keyframes bfxbolt{0%,17%,23%,54%,62%,100%{opacity:1}19%,21%{opacity:.25}57%,60%{opacity:.35}}
+.bankfx.boom .bfx-mark img{animation:bfximg 1.7s linear infinite}
+@keyframes bfximg{0%,17%,23%,54%,62%,100%{filter:brightness(1)}19%,21%{filter:brightness(1.6) saturate(1.35)}57%,60%{filter:brightness(1.35)}}
+/* Reduce Motion still gets the moment — just held still instead of strobing */
+.bankfx.calm .bfx-bolt,.bankfx.calm .bfx-spark{display:none}
+.bankfx.calm .bfx-mark,.bankfx.calm .bfx-mark img,.bankfx.calm .bfx-db,.bankfx.calm .bfx-ring{animation:none}
+.bankfx.calm.boom .bfx-db{opacity:.15}
 .bfx-ring{position:absolute;left:50%;top:50%;width:200px;height:200px;margin:-100px 0 0 -100px;border-radius:50%;border:2px solid var(--p25,#E8501F);opacity:0;pointer-events:none}
 .bankfx.boom .bfx-ring{animation:bfxring 1.5s cubic-bezier(.2,.7,.2,1) forwards}
 @keyframes bfxring{0%{transform:scale(.5);opacity:.9}100%{transform:scale(4.4);opacity:0}}
@@ -5924,7 +5948,7 @@ function bankLines(){
   return [BANK_TOP[ti], BANK_BOT[bi]];
 }
 function bankFx(done){
-  if(matchMedia("(prefers-reduced-motion: reduce)").matches){ done(); return; }
+  const calm = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
   const [top, bot] = bankLines();
   const BOLT = "M56,20L43.5,52H50.5L45,80L57,48H49.5Z";
   const boltSvg = c => '<svg viewBox="40 16 20 68" xmlns="http://www.w3.org/2000/svg">' +
@@ -5934,13 +5958,14 @@ function bankFx(done){
     '<rect x="80" y="2" width="10" height="26" rx="3"/><rect x="19" y="6" width="6" height="18" rx="2"/>' +
     '<rect x="75" y="6" width="6" height="18" rx="2"/></svg>';
   const ov = document.createElement("div");
-  ov.className = "bankfx";
+  ov.className = "bankfx" + (calm ? " calm" : "");
+  const BOLT_COLS = ["#4FD9FF", "#F8672F", "#4FD9FF", "#F6F1E5"];   /* the logo's bolt is blue — lead with it */
   let inner = "";
   for(let i=0;i<3;i++) inner += '<div class="bfx-ring" style="animation-delay:' + (i*.16) + 's"></div>';
   for(let i=0;i<7;i++){
     const x = 4 + Math.random()*84, y = 4 + Math.random()*78, sc = .5 + Math.random()*1.15,
           rot = -24 + Math.random()*48, dur = 2 + Math.random()*1.7, del = Math.random()*1.4,
-          col = Math.random() < .45 ? "#F6F1E5" : "#F8672F";
+          col = BOLT_COLS[(Math.random()*BOLT_COLS.length)|0];
     inner += '<div class="bfx-bolt" style="left:' + x + 'vw;top:' + y + 'vh;width:' + Math.round(34*sc) +
              'px;transform:rotate(' + Math.round(rot) + 'deg);animation-duration:' + dur.toFixed(2) +
              's;animation-delay:' + del.toFixed(2) + 's">' + boltSvg(col) + '</div>';
@@ -5954,7 +5979,7 @@ function bankFx(done){
              (Math.random() < .4 ? ';background:#F6F1E5' : '') + '"></div>';
   }
   inner += '<div class="bfx-line top">' + esc(top) + '</div>';
-  inner += '<div class="bfx-mark">' + forgeMarkSVG() + '</div>';
+  inner += '<div class="bfx-mark"><img src="icons/icon-512.png" alt="" decoding="async"></div>';
   inner += '<div class="bfx-line bot">' + esc(bot) + '</div>';
   inner += '<div class="bfx-skip">tap to carry on</div>';
   ov.innerHTML = inner;
@@ -6849,7 +6874,10 @@ function renderSession(animate){
         <b><span id="doneCount">${doneSets}</span> / ${totalSets} sets logged</b>
         <div class="meter"><i id="progBar" style="width:${totalSets ? (100*doneSets/totalSets) : 0}%"></i></div>
       </div>
-      <button class="btn primary" id="finishBtn" type="button">Finish &amp; bank it</button>
+      <button class="btn primary bankbtn" id="finishBtn" type="button">Finish &amp; bank it
+        <svg class="bchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+        <img class="bmark" src="icons/icon-192.png" alt="" decoding="async">
+      </button>
     </div>`;
 
   /* One figure, one movement at a time — the dropdown is the only way in, and
