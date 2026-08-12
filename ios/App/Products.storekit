@@ -10,7 +10,7 @@
   },
   "subscriptionGroups" : [
     {
-      "id" : "FC21500000",
+      "id" : "21500000",
       "localizations" : [ ],
       "name" : "Fatcamp",
       "subscriptions" : [
@@ -20,7 +20,7 @@
           "displayPrice" : "9.99",
           "familyShareable" : false,
           "groupNumber" : 1,
-          "internalID" : "FC00000001",
+          "internalID" : "2150000001",
           "introductoryOffer" : null,
           "localizations" : [
             {
@@ -32,7 +32,7 @@
           "productID" : "com.frennat.fatcamp.pro.monthly",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Pro Monthly",
-          "subscriptionGroupID" : "FC21500000",
+          "subscriptionGroupID" : "21500000",
           "type" : "RecurringSubscription",
           "winbackOffers" : [ ]
         },
@@ -42,7 +42,7 @@
           "displayPrice" : "14.99",
           "familyShareable" : false,
           "groupNumber" : 2,
-          "internalID" : "FC00000002",
+          "internalID" : "2150000002",
           "introductoryOffer" : null,
           "localizations" : [
             {
@@ -54,7 +54,7 @@
           "productID" : "com.frennat.fatcamp.max.monthly",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Max Monthly",
-          "subscriptionGroupID" : "FC21500000",
+          "subscriptionGroupID" : "21500000",
           "type" : "RecurringSubscription",
           "winbackOffers" : [ ]
         }
