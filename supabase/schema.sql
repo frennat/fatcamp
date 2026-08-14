@@ -192,3 +192,39 @@ create policy waitlist_insert on public.waitlist
   for insert to anon, authenticated with check (true);
 
 grant insert on public.waitlist to anon, authenticated;
+
+-- ------------------------------------------------------------------ ai reads
+-- Metering for the Upload Media reader. Each Claude call costs real money, so
+-- the edge function counts reads per subscriber per month and globally per
+-- day, and the counter is the gate: the increment and the cap check are one
+-- statement, so two racing requests cannot both slip under the limit.
+--
+-- No client access at all. The edge function talks to this with the service
+-- key; the publishable key can neither read nor bump a counter.
+create table if not exists public.ai_reads (
+  k       text primary key,     -- 'sub:<originalTransactionId>:<YYYY-MM>' or 'all:<YYYY-MM-DD>'
+  n       integer not null default 0,
+  updated timestamptz not null default now()
+);
+
+alter table public.ai_reads enable row level security;   -- and no policies: service role only
+
+create or replace function public.ai_read_tick(p_key text, p_cap integer)
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare cur integer;
+begin
+  insert into public.ai_reads as r (k, n, updated) values (p_key, 1, now())
+  on conflict (k) do update set n = r.n + 1, updated = now()
+  where r.n < p_cap
+  returning n into cur;
+  if cur is null then
+    return -1;                  -- over the cap; nothing was incremented
+  end if;
+  return p_cap - cur;           -- reads left in this window
+end $$;
+
+revoke all on function public.ai_read_tick(text, integer) from public, anon, authenticated;

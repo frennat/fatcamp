@@ -255,7 +255,86 @@ h1,h2,h3,h4{font-family:var(--f-display);font-weight:800;margin:0;text-wrap:bala
   color:var(--ink-3);margin:2px 0 0;min-height:1.3em;max-width:64ch;line-height:1.5;
 }
 .ask-note.on{color:var(--accent)}
+.ask-note.bad{color:var(--p15)}
 @media(max-width:560px){.askchips{display:none}}
+
+/* ---------- or ----------
+   Two doors into the same forge. The rule stays hairline-thin on purpose: it
+   has to separate the two without becoming a third thing to look at. */
+.orsep{display:flex;align-items:center;gap:14px;width:min(720px,100%);margin:4px auto 0}
+.orsep::before,.orsep::after{
+  content:"";flex:1;height:1px;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--ink) 16%,transparent),transparent);
+}
+.orsep span{
+  font-family:var(--f-mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);
+}
+
+/* ---------- upload media ----------
+   Same slab as the ask box so the two read as one pair of options, but the
+   inside is a target rather than a field. Until a file is chosen the whole
+   dashed area is the button; after that it is a preview and gets out of the way. */
+.upload{position:relative;padding:20px 0 8px}
+.up-in{position:relative;z-index:1;display:grid;gap:12px;justify-items:center;text-align:center}
+.up-in h2{font-size:clamp(21px,4.2vw,32px);line-height:1;text-transform:uppercase;letter-spacing:-.028em;margin:0}
+.up-sub{color:var(--ink-2);font-size:14px;line-height:1.55;margin:0;max-width:46ch}
+
+.up-drop{
+  display:grid;place-items:center;gap:9px;margin:4px;padding:26px 18px;border-radius:22px;cursor:pointer;
+  border:1.5px dashed color-mix(in srgb,var(--ink) 20%,transparent);
+  transition:border-color .2s,background .2s;-webkit-tap-highlight-color:transparent;
+}
+.up-drop:hover,.up-drop.over{
+  border-color:color-mix(in srgb,var(--accent) 60%,transparent);
+  background:color-mix(in srgb,var(--accent) 7%,transparent);
+}
+.up-drop.has{border-style:solid;padding:10px;cursor:default;gap:12px}
+.up-drop.has:hover{background:transparent;border-color:color-mix(in srgb,var(--ink) 20%,transparent)}
+.up-cta{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);margin:0}
+.up-hint{font-size:12.5px;color:var(--ink-3);margin:0;max-width:40ch;line-height:1.5}
+.up-clip{
+  width:64px;height:64px;border-radius:16px;display:grid;place-items:center;
+  border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);color:var(--ink-3);
+}
+.up-clip svg{width:26px;height:26px;display:block}
+
+/* the chosen file, once there is one */
+.up-shot{display:flex;align-items:center;gap:12px;width:100%;text-align:left}
+.up-thumb{
+  flex:none;width:74px;height:74px;border-radius:14px;object-fit:cover;display:block;
+  background:color-mix(in srgb,var(--ink) 8%,transparent);
+  border:1px solid color-mix(in srgb,var(--ink) 12%,transparent);
+}
+.up-facts{min-width:0;display:grid;gap:3px}
+.up-name{font-size:14px;color:var(--ink);margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.up-size{font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin:0}
+.up-swap{
+  justify-self:start;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+  border:1px solid color-mix(in srgb,var(--ink) 17%,transparent);background:transparent;color:var(--ink-2);
+  padding:5px 10px;border-radius:var(--r-pill);cursor:pointer;transition:border-color .15s,color .15s;
+}
+.up-swap:hover{border-color:var(--accent);color:var(--accent)}
+
+/* a thin determinate bar while frames are pulled and sent */
+.up-bar{position:relative;height:2px;border-radius:2px;margin:0 10px 8px;overflow:hidden;background:color-mix(in srgb,var(--ink) 10%,transparent);display:none}
+.upload.busy .up-bar{display:block}
+.up-bar i{position:absolute;inset:0;width:var(--up-p,8%);background:var(--accent);border-radius:inherit;transition:width .3s ease}
+.upload.busy .up-drop{opacity:.6;pointer-events:none}
+.upload.busy .fmark{animation:none;opacity:.55;pointer-events:none}
+
+/* Max only. The section stays visible on every plan — a hidden feature sells
+   nothing — but below Max the drop target becomes the pitch, and the one
+   button in it walks you to the plans. */
+.upload.gated .up-drop{cursor:default}
+.upload.gated .up-drop:hover{border-color:color-mix(in srgb,var(--ink) 20%,transparent);background:transparent}
+.up-lock{display:grid;gap:9px;justify-items:center}
+.up-lock .bestval{position:static;display:inline-block;margin:0}
+.up-max{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  border:1px solid color-mix(in srgb,var(--accent) 55%,transparent);background:transparent;color:var(--accent);
+  padding:9px 16px;border-radius:var(--r-pill);cursor:pointer;transition:background .15s,color .15s;
+}
+.up-max:hover{background:var(--accent);color:#fff}
 
 /* ---------- the mark: hammer and dumbbell, and the only thing you press ---------- */
 .fmark{
@@ -1025,6 +1104,43 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 .dlg-bd{padding:16px 18px;max-height:62vh;overflow:auto}
 .dlg-ft{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
 
+/* ---------- what's in the media ----------
+   The read is a suggestion, so it is shown as ticked rows you can untick
+   rather than applied silently. Everything the kit supports is listed below
+   the search, which is what stops a failed read being a dead end. */
+.mv-read{margin:0 0 12px;font-size:13px;color:var(--ink-2);line-height:1.5}
+.mv-search{
+  width:100%;border:1px solid var(--line-hard);border-radius:var(--r-pill);background:transparent;
+  color:var(--ink);font:inherit;font-size:15px;padding:10px 14px;margin-bottom:12px;outline:none;
+}
+.mv-search:focus{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+.mv-list{display:grid;gap:2px;max-height:none}
+.mv-row{
+  display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:12px;cursor:pointer;
+  border:1px solid transparent;transition:background .12s,border-color .12s;
+}
+.mv-row:hover{background:color-mix(in srgb,var(--ink) 5%,transparent)}
+.mv-row.on{
+  background:color-mix(in srgb,var(--accent) 10%,transparent);
+  border-color:color-mix(in srgb,var(--accent) 34%,transparent);
+}
+.mv-tick{
+  flex:none;width:19px;height:19px;border-radius:6px;display:grid;place-items:center;
+  border:1.5px solid color-mix(in srgb,var(--ink) 26%,transparent);color:transparent;
+}
+.mv-row.on .mv-tick{background:var(--accent);border-color:var(--accent);color:#fff}
+.mv-tick svg{width:12px;height:12px;display:block}
+.mv-name{flex:1;min-width:0;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mv-kit{
+  font-family:var(--f-mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);white-space:nowrap;
+}
+.mv-none{font-size:13px;color:var(--ink-3);padding:14px 4px;margin:0}
+.mv-grp{
+  font-family:var(--f-mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);margin:14px 0 5px;
+}
+.mv-grp:first-child{margin-top:0}
 .eqsec{margin-bottom:22px}
 .eqsec:last-child{margin-bottom:4px}
 .eqsec > .eyebrow{margin-bottom:6px}
@@ -1475,6 +1591,40 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
     </div>
   </section>
 
+  <div class="orsep"><span>or</span></div>
+
+  <section class="upload" id="uploadSec">
+    <div class="up-in">
+      <p class="eyebrow">Seen a session worth stealing</p>
+      <h2>Upload Media</h2>
+      <p class="up-sub">A screenshot of a workout, or a reel of one. AI watches the frames,
+        works out what's being trained, and Fatcamp forges the session around it.</p>
+
+      <div class="glass">
+        <input type="file" id="upInput" accept="image/*,video/*" hidden>
+        <div class="up-drop" id="upDrop" role="button" tabindex="0"
+             aria-label="Choose a photo or video from your camera roll">
+          <span class="up-clip" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+              <circle cx="8.5" cy="8.5" r="1.6"></circle>
+              <path d="M21 15l-5-5L5 21"></path>
+            </svg>
+          </span>
+          <p class="up-cta">Choose photo or video</p>
+          <p class="up-hint">It reads names on screen and recognises movements being performed.
+            Whatever it misses, you pick by hand.</p>
+        </div>
+        <div class="up-bar" aria-hidden="true"><i></i></div>
+        <div class="glass-ft">
+          <button class="fmark lg live" id="upGo" type="button" aria-label="Read this and forge the session"></button>
+        </div>
+      </div>
+      <p class="ask-note" id="upNote" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+
   </div>
 
   <div class="tabpane" id="paneWorkload">
@@ -1683,6 +1833,27 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
     <div class="dlg-ft">
       <span class="dlg-note">Changes save as you make them</span>
       <button class="btn primary" value="done" type="submit">Done</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="moveDlg">
+  <form method="dialog">
+    <div class="dlg-hd">
+      <h3>What's in it</h3>
+      <button class="iconbtn" value="cancel" style="margin-left:auto" aria-label="Close">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
+    </div>
+    <div class="dlg-bd">
+      <p class="mv-read" id="mvRead"></p>
+      <input class="mv-search" id="mvSearch" type="search" autocomplete="off"
+             placeholder="Search 200+ movements…" aria-label="Search movements">
+      <div class="mv-list" id="mvList"></div>
+    </div>
+    <div class="dlg-ft">
+      <span class="dlg-note" id="mvNote"></span>
+      <button class="btn primary" value="done" type="submit" id="mvGo">Forge it</button>
     </div>
   </form>
 </dialog>
@@ -6597,6 +6768,7 @@ function applyPlanLimits(){
   save(); syncControls();
   if(typeof renderPlans === "function") renderPlans();
   if(typeof renderWeek === "function") renderWeek();
+  if(typeof upLockSync === "function") upLockSync();
 }
 
 /* -------------------------------------------------------------- the agent
@@ -8714,6 +8886,568 @@ $("#brand").insertAdjacentHTML("afterbegin",
   box.addEventListener("keydown", e => {
     if(e.key === "Enter" && !e.shiftKey){ e.preventDefault(); fire(box); }
   });
+
+  /* ------------------------------------------------------------ upload media
+     A reel is a request too. A photo goes through one downscale, a clip gets
+     sampled at a handful of points across its length, and the frames go to
+     Fatcamp's own endpoint, where Claude looks at them — names on screen and
+     movements being performed both — and answers with catalogue ids. Those ids
+     then walk exactly the road a typed ask walks: same reset, same equipment
+     filter, same forge. Max only; the endpoint proves the tier off the App
+     Store's signed transaction rather than taking the client's word for it,
+     and the free on-device reader stays as the fallback when the network or
+     the month's read allowance is gone. */
+  const UP = {
+    frames:  6,     /* sampled across a clip; a photo is just the one */
+    /* Longest side of a frame. The API resizes anything past 1568 anyway, and
+       OCR accuracy falls off a cliff once caption text drops under about
+       fifteen pixels tall — this keeps the text readable without paying to
+       ship pixels the model never sees. */
+    edge:    1568,
+    quality: .82,
+    maxMB:   200
+  };
+  let upFile = null, upBusy = false, upVia = "ai", upSawText = false;
+  const upSec = $("#uploadSec"), upDrop = $("#upDrop"), upIn = $("#upInput");
+  const UP_EMPTY = upDrop.innerHTML;   /* the untouched drop target, for unlocking */
+
+  function upSay(msg, tone){
+    const n = $("#upNote");
+    n.textContent = msg || "";
+    n.classList.toggle("on", tone === "ok");
+    n.classList.toggle("bad", tone === "bad");
+  }
+  function upProg(p){
+    const b = upSec.querySelector(".up-bar");
+    if(b) b.style.setProperty("--up-p", Math.round(p*100) + "%");
+  }
+  function upBytes(n){
+    return n >= 1048576 ? (n/1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n/1024)) + " KB";
+  }
+  function upIsVid(f){ return /^video\//.test(f.type) || /\.(mp4|mov|m4v|webm)$/i.test(f.name || ""); }
+
+  /* ---- Max only ----
+     The section stays on every plan — a hidden feature sells nothing — but
+     below Max the drop target becomes the pitch. tierOf is deliberately
+     strict here: the paid first month gets Max limits everywhere else, and
+     not this, because every read spends real money on the API. */
+  function upLocked(){ return tierOf() !== "max"; }
+  function upLockSync(){
+    const gated = upLocked();
+    upSec.classList.toggle("gated", gated);
+    if(gated){
+      upFile = null;
+      upDrop.classList.remove("has");
+      upDrop.innerHTML =
+        '<div class="up-lock">' +
+          '<span class="bestval">Max only</span>' +
+          '<p class="up-cta">AI reads workouts off your camera roll</p>' +
+          '<p class="up-hint">On Max, any reel or screenshot becomes a session — ' +
+            'AI picks the movements out and the forge does the rest.</p>' +
+          '<button class="up-max" type="button" id="upMaxGo">See the plans</button>' +
+        '</div>';
+      $("#upMaxGo").addEventListener("click", e => {
+        e.stopPropagation();
+        showTab("paneProfile");
+        const p = $("#planBody"); if(p) p.scrollIntoView({behavior:"smooth", block:"start"});
+      });
+      upSay("");
+    }else if(upDrop.querySelector(".up-lock")){
+      upDrop.classList.remove("has");
+      upDrop.innerHTML = UP_EMPTY;
+      upSay("");
+    }
+  }
+  upLockSync();
+
+  /* Canvas is the only way back out of a <video>, and it doubles as the resize. */
+  function upGrab(src, w, h, edge){
+    if(!w || !h) return null;
+    const s = Math.min(1, (edge || UP.edge) / Math.max(w, h));
+    const c = document.createElement("canvas");
+    c.width = Math.round(w*s); c.height = Math.round(h*s);
+    const g = c.getContext("2d");
+    /* JPEG carries no alpha, and an untouched canvas exports its transparent
+       pixels as black — so a screenshot saved with a transparent background
+       turns into dark text on a black field, which reads as nothing at all.
+       Paint the sheet white before drawing onto it. */
+    g.fillStyle = "#ffffff";
+    g.fillRect(0, 0, c.width, c.height);
+    g.drawImage(src, 0, 0, c.width, c.height);
+    /* An 8x8 resample is enough to tell "the decoder handed us nothing" from
+       a real picture — even a moody gym shot has more spread than a stuck
+       frame's flat field. Callers use it to wait and regrab. */
+    const t8 = document.createElement("canvas"); t8.width = 8; t8.height = 8;
+    const g8 = t8.getContext("2d");
+    g8.drawImage(c, 0, 0, 8, 8);
+    const px = g8.getImageData(0, 0, 8, 8).data;
+    let mn = 255, mx = 0;
+    for(let i2 = 0; i2 < px.length; i2 += 4){
+      const lm = (px[i2] + px[i2+1] + px[i2+2]) / 3;
+      if(lm < mn) mn = lm; if(lm > mx) mx = lm;
+    }
+    const d = c.toDataURL("image/jpeg", UP.quality);
+    const i = d.indexOf(",");
+    return i > 0 ? {b64: d.slice(i+1), flat: mx - mn < 6} : null;
+  }
+  /* seeked firing does not mean the frame is drawable: WebKit often presents
+     it a beat later, and painting before that copies the previous frame — or
+     nothing, which is exactly how a clip full of on-screen text read as
+     blank. requestVideoFrameCallback is the browser saying "this frame is
+     composited now"; the timeout covers decoders that stall. */
+  function upFrameReady(v){
+    return new Promise(res => {
+      let done = false;
+      const fin = () => { if(!done){ done = true; res(); } };
+      if(typeof v.requestVideoFrameCallback === "function"){
+        v.requestVideoFrameCallback(() => fin());
+        setTimeout(fin, 900);
+      }else setTimeout(fin, 240);
+    });
+  }
+  /* One muted play/pause tick forces the decode pipeline to actually start —
+     an iOS video that has only ever been seeked can keep handing back its
+     poster frame forever. */
+  async function upWarm(v){
+    try{ await v.play(); v.pause(); }catch(e){}
+  }
+  function upOpenVideo(file){
+    return new Promise((res, rej) => {
+      const v = document.createElement("video");
+      /* muted + playsinline or iOS refuses to decode one off-screen */
+      v.muted = true; v.defaultMuted = true; v.playsInline = true;
+      v.setAttribute("muted",""); v.setAttribute("playsinline","");
+      v.preload = "auto"; v.src = URL.createObjectURL(file);
+      const bail = setTimeout(() => { off(); rej(new Error("That clip took too long to open.")); }, 20000);
+      let settled = false;
+      function off(){ clearTimeout(bail);
+        for(const e of ["loadeddata","loadedmetadata","canplay"]) v.removeEventListener(e, ok);
+        v.removeEventListener("error", no); }
+      function ok(){ if(settled) return; settled = true; off(); res(v); }
+      function no(){ if(settled) return; settled = true; off(); URL.revokeObjectURL(v.src); rej(new Error("iOS could not read that clip.")); }
+      /* WKWebView can sit at readyState 0 on a photo-picker blob for the full
+         bail — loadeddata simply never fires until something forces the
+         pipeline awake. Metadata is enough for the callers (they wait on
+         frames explicitly now), an explicit load() starts the fetch, and a
+         muted play() is the kick that makes iOS actually decode. This is the
+         difference between the chosen file appearing in a beat and the sheet
+         sitting there so long it read as a failed upload. */
+      for(const e of ["loadeddata","loadedmetadata","canplay"]) v.addEventListener(e, ok);
+      v.addEventListener("error", no);
+      v.load();
+      try{ v.play().catch(() => {}); }catch(e){}
+    });
+  }
+  /* A seek onto a time the decoder is already parked on never fires `seeked`,
+     so the timer is the floor, not a fallback for something going wrong. */
+  function upSeek(v, t){
+    return new Promise(res => {
+      let done = false;
+      const fin = () => { if(done) return; done = true; v.removeEventListener("seeked", on); res(); };
+      const on = () => setTimeout(fin, 70);
+      v.addEventListener("seeked", on);
+      try{ v.currentTime = t; }catch(e){ fin(); return; }
+      setTimeout(fin, 1800);
+    });
+  }
+  async function upPoster(file){
+    const v = await upOpenVideo(file);
+    try{
+      await upWarm(v);
+      await upSeek(v, Math.min(.6, (v.duration || 2) * .1));
+      await upFrameReady(v);
+      /* 200px: this only ever fills a 74px thumbnail. Grabbing it at full
+         reader resolution decoded a huge frame at pick time for nothing —
+         on a big screen recording that spike could take the webview down
+         before the file even showed as chosen. */
+      const r = upGrab(v, v.videoWidth, v.videoHeight, 200);
+      return r ? "data:image/jpeg;base64," + r.b64 : "";
+    } finally { URL.revokeObjectURL(v.src); v.removeAttribute("src"); v.load(); }
+  }
+  async function upFrames(file){
+    if(!upIsVid(file)){
+      const url = URL.createObjectURL(file);
+      try{
+        const img = await new Promise((res, rej) => {
+          const i = new Image();
+          i.onload = () => res(i);
+          i.onerror = () => rej(new Error("That image would not open."));
+          i.src = url;
+        });
+        const r = upGrab(img, img.naturalWidth, img.naturalHeight);
+        return r ? [r.b64] : [];
+      } finally { URL.revokeObjectURL(url); }
+    }
+    const v = await upOpenVideo(file);
+    try{
+      await upWarm(v);
+      const dur = isFinite(v.duration) && v.duration > 0 ? v.duration : 0;
+      /* spread across the middle of each slice, so an intro card or an end
+         card never eats one of the six looks we get */
+      const times = dur
+        ? Array.from({length: UP.frames}, (_, i) => dur * (i + .5) / UP.frames)
+        : [0];
+      const out = [];
+      for(let i=0;i<times.length;i++){
+        await upSeek(v, Math.min(times[i], Math.max(0, dur - .06)));
+        await upFrameReady(v);
+        let r = upGrab(v, v.videoWidth, v.videoHeight);
+        /* A flat grab means the frame wasn't presented yet — wait for the
+           next composite and take one more look before accepting it. This is
+           the difference between reading a clip's captions and reading six
+           blank frames. */
+        if(r && r.flat){
+          await upFrameReady(v);
+          const r2 = upGrab(v, v.videoWidth, v.videoHeight);
+          if(r2 && !r2.flat) r = r2;
+        }
+        if(r) out.push(r.b64);
+        upProg(.1 + .45 * ((i+1)/times.length));
+      }
+      return out;
+    } finally { URL.revokeObjectURL(v.src); v.removeAttribute("src"); v.load(); }
+  }
+
+  /* The thumbnail doubles as proof we can decode what was handed over: if it
+     draws, the frames will too, and the failure lands before the network. */
+  async function upShow(file){
+    upFile = file;
+    const vid = upIsVid(file);
+    let thumb = "";
+    try{ thumb = vid ? await upPoster(file) : URL.createObjectURL(file); }catch(e){ thumb = ""; }
+    upDrop.classList.add("has");
+    upDrop.innerHTML =
+      '<div class="up-shot">' +
+        (thumb ? '<img class="up-thumb" src="' + thumb + '" alt="">'
+               : '<span class="up-thumb"></span>') +
+        '<div class="up-facts">' +
+          '<p class="up-name">' + esc(file.name || (vid ? "Clip" : "Photo")) + '</p>' +
+          '<p class="up-size">' + (vid ? "Video" : "Photo") + ' · ' + upBytes(file.size) + '</p>' +
+          '<button class="up-swap" type="button" id="upSwap">Choose another</button>' +
+        '</div>' +
+      '</div>';
+    $("#upSwap").addEventListener("click", e => { e.stopPropagation(); upIn.click(); });
+    upSay("Ready — press the mark to read it.");
+  }
+
+  /* ---- the AI read ----
+     The frames go to Fatcamp's own endpoint (a Supabase Edge Function), which
+     holds the Anthropic key, proves the Max subscription off the App Store's
+     signed transaction, meters the month, and asks Claude what is being
+     trained. The client never carries the key, and the endpoint never takes
+     the client's word for the tier. */
+  let upAiErr = "";
+  async function upEnt(){
+    const S = storePlugin();
+    if(!S) return null;
+    try{
+      const r = await S.entitlements();
+      const row = (r.active || []).find(a => a.id === IAP.max && a.jws);
+      return row ? row.jws : null;
+    }catch(e){ return null; }
+  }
+  async function aiRead(frames, isVid){
+    upAiErr = "";
+    const jws = await upEnt();
+    if(!jws){ upAiErr = "no Max subscription on this device"; return null; }
+    /* the whole strength catalogue, not the kit-filtered slice — the picker
+       reports "read N your kit can't do", and it can only do that if the AI
+       was allowed to name them */
+    const catalog = X.filter(x => x.cls !== "cardio").map(x => ({id: x.id, n: x.n}));
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), 90000);
+    try{
+      const res = await fetch(SUPA.url + "/functions/v1/read-workout", {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "apikey": SUPA.key},
+        body: JSON.stringify({jws, frames, kind: isVid ? "video" : "photo", catalog}),
+        signal: ctl.signal
+      });
+      const data = await res.json().catch(() => null);
+      if(!res.ok){
+        upAiErr = res.status === 429
+          ? "that's the month's AI reads used up"
+          : (data && data.error) || ("HTTP " + res.status);
+        return null;
+      }
+      return (data && Array.isArray(data.ids)) ? data.ids.filter(id => XMAP[id]) : [];
+    }catch(e){
+      upAiErr = e && e.name === "AbortError" ? "the read timed out" : "the network dropped";
+      return null;
+    }finally{ clearTimeout(t); }
+  }
+
+  /* ---- the on-device fallback ----
+     Vision OCR on the phone: no network call, no per-use cost. It only reads
+     writing, so it is the lesser reader — but it is the one that still works
+     in a dead spot or after the month's AI reads are spent. On the web build
+     the plugin is absent and this returns nothing, which is a normal outcome
+     rather than an error — the picker covers it. */
+  let _scanProxy = null;
+  function textScanPlugin(){
+    const C = window.Capacitor;
+    if(!(C && C.isNativePlatform && C.isNativePlatform() && C.registerPlugin)) return null;
+    if(!_scanProxy) _scanProxy = C.registerPlugin("TextScan");
+    return _scanProxy;
+  }
+  /* A reader that fell over and a photo with no writing on it are different
+     problems, and telling somebody "no words came off that one" when the
+     recogniser actually threw sends them off cropping a screenshot that was
+     fine. Keep the reason and show it. */
+  let upScanErr = "";
+  async function upScan(frames){
+    upScanErr = "";
+    const P = textScanPlugin();
+    if(!P) return "";
+    try{
+      const r = await P.read({frames});
+      return (r && r.text) || "";
+    }catch(e){
+      upScanErr = (e && (e.message || e.errorMessage)) || String(e);
+      return "";
+    }
+  }
+
+  /* Shorthand a screen uses that the catalogue never spells out, expanded
+     before matching so "3x10 DB RDL" and "Romanian Deadlift" land together. */
+  const OCR_SHORT = [
+    [/\bdb\b/g,"dumbbell"], [/\bbb\b/g,"barbell"], [/\bkb\b/g,"kettlebell"],
+    [/\bohp\b/g,"overhead press"], [/\brdls?\b/g,"romanian deadlift"],
+    [/\bsldl\b/g,"romanian deadlift"], [/\bghr\b/g,"glute ham raise"],
+    [/\bbss\b/g,"bulgarian split squat"], [/\bbw\b/g,"bodyweight"],
+    [/\bsingle arm\b/g,"one arm"], [/\bpull ?ups?\b/g,"pull up"],
+    [/\bchin ?ups?\b/g,"chin up"], [/\bpush ?ups?\b/g,"push up"],
+    [/\bsit ?ups?\b/g,"sit up"], [/\bt bar\b/g,"tbar"]
+  ];
+
+  /* A workout screenshot is mostly numbers — 4x10, 3 sets, 60s, 225 lb. They
+     are stripped first so they cannot split a movement name in half. */
+  function ocrNorm(s){
+    let t = String(s || "").toLowerCase()
+      .replace(/[‘’']/g, "")
+      .replace(/[^a-z0-9]+/g, " ")
+      .replace(/\b\d+\s*x\s*\d+\b/g, " ")
+      .replace(/\b\d+\s*(reps?|sets?|secs?|seconds?|mins?|minutes?|lbs?|kgs?|rounds?)\b/g, " ")
+      .replace(/\b\d+\b/g, " ")
+      .replace(/\s+/g, " ").trim();
+    for(const [re, to] of OCR_SHORT) t = t.replace(re, to);
+    return " " + t.replace(/\s+/g, " ").trim() + " ";
+  }
+
+  /* Every catalogue name plus the ask-box synonyms, longest phrase first so
+     "incline bench press" claims its words before "bench press" sees them. */
+  const OCR_INDEX = (() => {
+    const rows = [], seen = new Set();
+    const add = (id, phrase) => {
+      const p = ocrNorm(phrase).trim();
+      if(p.length < 4) return;
+      const k = id + "|" + p;
+      if(!seen.has(k)){ seen.add(k); rows.push([id, p]); }
+    };
+    X.forEach(x => add(x.id, x.n));
+    ASK_LIFTS.forEach(([id, words]) => words.forEach(w => add(id, w)));
+    rows.sort((a, b) => b[1].length - a[1].length);
+    return rows;
+  })();
+
+  function upMatch(text){
+    let hay = ocrNorm(text);
+    const hits = [], got = new Set();
+    for(const [id, phrase] of OCR_INDEX){
+      if(got.has(id)) continue;
+      const at = hay.indexOf(" " + phrase + " ");
+      if(at < 0) continue;
+      got.add(id); hits.push({id, at});
+      /* blank the span so a shorter name cannot re-claim the same words */
+      hay = hay.slice(0, at + 1) + " ".repeat(phrase.length) + hay.slice(at + 1 + phrase.length);
+    }
+    hits.sort((a, b) => a.at - b.at);      /* reading order, not name length */
+    return hits.map(h => h.id);
+  }
+
+  /* ---- the picker ----
+     What was read is offered as ticked rows rather than applied silently, with
+     everything the kit supports underneath. That is what turns a failed read
+     into a search box instead of a dead end. */
+  let mvPicked = new Set();
+
+  function mvRender(filter){
+    const list = $("#mvList"), q = ocrNorm(filter || "").trim();
+    const avail = availFor(state.cfg.loc);
+    const kit = X.filter(x => x.cls !== "cardio" && x.eq.every(e => avail.indexOf(e) >= 0));
+    const hit = q ? kit.filter(x => ocrNorm(x.n).indexOf(q) >= 0) : kit;
+    const chosen = hit.filter(x => mvPicked.has(x.id));
+    const rest   = hit.filter(x => !mvPicked.has(x.id));
+    const tick = '<span class="mv-tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+      'stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l6 6L20 6"/></svg></span>';
+    const row = x => '<div class="mv-row' + (mvPicked.has(x.id) ? " on" : "") + '" data-id="' + x.id + '">' +
+      tick + '<span class="mv-name">' + esc(x.n) + '</span>' +
+      '<span class="mv-kit">' + esc(x.eq.map(e => EQUIP[e].n).join(" · ")) + '</span></div>';
+
+    let html = "";
+    if(chosen.length) html += '<p class="mv-grp">In the session</p>' + chosen.map(row).join("");
+    if(rest.length)   html += '<p class="mv-grp">' + (chosen.length ? "Everything else" : "Movements") +
+                              '</p>' + rest.map(row).join("");
+    if(!hit.length)   html = '<p class="mv-none">Nothing matches that. Your kit decides what shows here — ' +
+                             'add gear under Workload if something is missing.</p>';
+    list.innerHTML = html;
+    $("#mvNote").textContent = mvPicked.size ? mvPicked.size + " picked" : "Pick at least one";
+    $("#mvGo").disabled = mvPicked.size === 0;
+  }
+
+  function mvOpen(ids, sawText){
+    const avail = availFor(state.cfg.loc);
+    const usable = ids.filter(id => XMAP[id] && XMAP[id].eq.every(e => avail.indexOf(e) >= 0));
+    const lost = ids.length - usable.length;
+    mvPicked = new Set(usable);
+
+    const read = $("#mvRead");
+    const kitNote = lost ? ", and " + lost + " your kit can't do" : "";
+    if(upVia === "ai"){
+      read.textContent = usable.length
+        ? "AI watched it and picked out " + usable.length + " movement" + (usable.length === 1 ? "" : "s") +
+          kitNote + ". Untick anything wrong, or add what it missed."
+        : lost
+        ? "AI read " + lost + " movement" + (lost === 1 ? "" : "s") + " your kit can't do. Pick something else below."
+        : "AI watched it but matched nothing in the catalogue. Pick the movements below.";
+    }else{
+      const why = upAiErr ? "The AI read didn't go through (" + upAiErr + ") — read on-device instead. " : "";
+      if(!textScanPlugin()){
+        read.textContent = why + "Reading the screen only works in the iOS app. Pick the movements below.";
+      }else if(upScanErr){
+        read.textContent = why + "The reader failed on that one (" + upScanErr + "). Pick the movements below.";
+      }else if(!sawText){
+        read.textContent = why + "No words came off that one. On-device reading works when the movements " +
+                           "are named on screen — pick them below instead.";
+      }else if(!usable.length){
+        read.textContent = why + (lost
+          ? "Read " + lost + " movement" + (lost === 1 ? "" : "s") + " your kit can't do. Pick something else below."
+          : "Read the text but recognised no movement names in it. Pick them below.");
+      }else{
+        read.textContent = why + "Read " + usable.length + " movement" + (usable.length === 1 ? "" : "s") +
+          " off the screen" + kitNote + ". Untick anything wrong, or add what it missed.";
+      }
+    }
+    $("#mvSearch").value = "";
+    mvRender("");
+    $("#moveDlg").showModal();
+  }
+
+  /* The focus the picked movements imply, so the generator fills the rest of
+     the sheet around them instead of wandering off to another body part. */
+  function upFocusFor(ids){
+    const tally = {};
+    ids.forEach(id => (XMAP[id].pri || []).forEach(m => tally[m] = (tally[m] || 0) + 1));
+    let best = null, score = 0;
+    for(const k in FOCUS){
+      if(k === "full") continue;
+      const s = FOCUS[k].m.reduce((a, m) => a + (tally[m] || 0), 0) / FOCUS[k].m.length;
+      if(s > score){ score = s; best = k; }
+    }
+    return best ? [best] : DEFAULT_CFG.focus.slice();
+  }
+
+  function upApplyIds(ids){
+    const avail = availFor(state.cfg.loc);
+    const usable = ids.filter(id => XMAP[id] && XMAP[id].eq.every(q => avail.indexOf(q) >= 0));
+    if(!usable.length){ upSay("Nothing picked.", "bad"); return; }
+
+    const c = state.cfg;
+    /* an upload is the whole request, not an edit of the last one */
+    c.focus = upFocusFor(usable); c.count = DEFAULT_CFG.count;
+    c.effort = DEFAULT_CFG.effort; c.compounds = [];
+    c.cardioOn = DEFAULT_CFG.cardioOn; c.cstyle = DEFAULT_CFG.cstyle;
+    c.failureOn = false; c.preset = null;
+
+    c.compounds = usable.slice(0, 4);
+    c.count = Math.max(usable.length, DEFAULT_CFG.count);
+
+    /* the same three lines that close askApply */
+    c.compounds = c.compounds.filter(id => XMAP[id].eq.every(q => avail.indexOf(q) >= 0));
+    c.count = Math.min(Math.max(c.count, c.compounds.length), limitsOf().moves);
+    if(c.failureOn && !limitsOf().failure) c.failureOn = false;
+
+    syncControls(); save();
+    upSay("Loaded · " + askSummary(c), "ok");
+    doForge();
+  }
+
+  $("#mvList").addEventListener("click", e => {
+    const r = e.target.closest(".mv-row"); if(!r) return;
+    const id = r.dataset.id;
+    if(mvPicked.has(id)) mvPicked.delete(id); else mvPicked.add(id);
+    mvRender($("#mvSearch").value);
+  });
+  $("#mvSearch").addEventListener("input", () => mvRender($("#mvSearch").value));
+  $("#moveDlg").addEventListener("close", () => {
+    if($("#moveDlg").returnValue === "done") upApplyIds([...mvPicked]);
+  });
+
+  async function upRun(){
+    if(upBusy) return;
+    if(upLocked()){ upSay("Reading media is a Max feature.", "bad"); return; }
+    if(!upFile){ upIn.click(); return; }
+    upBusy = true; upSec.classList.add("busy"); upProg(.08);
+    try{
+      upSay(upIsVid(upFile) ? "Pulling frames out of the clip…" : "Reading the photo…");
+      const frames = await upFrames(upFile);
+      if(!frames.length) throw new Error("Nothing readable came out of that file.");
+
+      upProg(.68); upSay("AI is watching it…");
+      let ids = await aiRead(frames, upIsVid(upFile));
+      if(ids){
+        upVia = "ai"; upSawText = true;
+      }else{
+        upVia = "ocr";
+        upProg(.82); upSay("Reading the words on screen…");
+        const text = await upScan(frames);
+        ids = upMatch(text);
+        upSawText = !!text.trim();
+      }
+      upProg(1); upSay("");
+      mvOpen(ids, upSawText);
+    }catch(e){
+      upSay(e && e.message ? e.message : "That didn't work.", "bad");
+    }finally{
+      upBusy = false; upSec.classList.remove("busy"); upProg(.08);
+    }
+  }
+
+  upDrop.addEventListener("click", () => {
+    if(!upBusy && !upLocked() && !upDrop.classList.contains("has")) upIn.click();
+  });
+  upDrop.addEventListener("keydown", e => {
+    if((e.key === "Enter" || e.key === " ") && !upLocked() && !upDrop.classList.contains("has")){
+      e.preventDefault(); upIn.click();
+    }
+  });
+  ["dragenter","dragover"].forEach(k => upDrop.addEventListener(k, e => {
+    e.preventDefault(); if(!upLocked()) upDrop.classList.add("over");
+  }));
+  ["dragleave","drop"].forEach(k => upDrop.addEventListener(k, e => {
+    e.preventDefault(); upDrop.classList.remove("over");
+  }));
+  upDrop.addEventListener("drop", e => {
+    if(upLocked()) return;
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if(f) upTake(f);
+  });
+  upIn.addEventListener("change", () => {
+    const f = upIn.files && upIn.files[0];
+    upIn.value = "";              /* so picking the same file twice still fires */
+    if(f) upTake(f);
+  });
+  function upTake(f){
+    if(f.size > UP.maxMB * 1048576){
+      upSay("That one is " + upBytes(f.size) + " — trim it under " + UP.maxMB + " MB first.", "bad");
+      return;
+    }
+    upSay("");
+    upShow(f).catch(() => upSay("iOS could not open that one.", "bad"));
+  }
+  $("#upGo").addEventListener("click", upRun);
+  /* a plan change while the app is open moves the gate too */
+  window.upLockSync = upLockSync;
 
   /* The floating forge button is gone. It existed to keep a mark reachable
      while scrolling, and the tab bar now carries one permanently in its centre

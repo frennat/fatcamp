@@ -26,6 +26,8 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Upload Media can take a photo or video of a workout right here, so Fatcamp can read the movements off it.</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Fatcamp reads workouts recorded by other apps so they count toward your streak. It stays on your device.</string>
 	<key>NSHealthUpdateUsageDescription</key>

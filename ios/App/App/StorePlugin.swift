@@ -168,6 +168,12 @@ public class StorePlugin: CAPPlugin, CAPBridgedPlugin {
                 if let exp = t.expirationDate {
                     row["expires"] = exp.timeIntervalSince1970 * 1000
                 }
+                /* The raw signed transaction, exactly as Apple signed it. This
+                   is what lets a server prove the tier for itself — it can
+                   check the signature against Apple's chain without calling
+                   Apple — instead of taking the client's word for it. The
+                   media reader's endpoint requires it. */
+                row["jws"] = result.jwsRepresentation
                 active.append(row)
             }
             call.resolve(["active": active])
