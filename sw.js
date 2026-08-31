@@ -38,6 +38,12 @@ self.addEventListener("fetch", e => {
   const url = new URL(req.url);
   if(url.origin !== self.location.origin) return;
 
+  /* The marketing site and its pages are NOT the app. Without this carve-out
+     the navigation handler below serves the cached app for /site/ too, and
+     anyone who has ever opened the app can never reach the site — or the
+     privacy policy — again, because the app swallows the navigation. */
+  if(url.pathname.indexOf("/site/") >= 0) return;
+
   /* Navigations: serve the cached shell immediately, refresh it in the
      background. You always get an app, even with no signal. */
   if(req.mode === "navigate"){
