@@ -2796,6 +2796,7 @@ function buildMesh(){
       }
     }
     const at = MUSCLE_AT[L.k] || (() => null);
+    const fb = F.length;
     for(let ri=0; ri<L.rings; ri++){
       for(let i=0;i<L.seg;i++){
         const j = (i+1)%L.seg;
@@ -2803,6 +2804,19 @@ function buildMesh(){
         F.push({a:base+ri*L.seg+i, b:base+ri*L.seg+j,
                 c:base+(ri+1)*L.seg+j, d:base+(ri+1)*L.seg+i,
                 m:at(gt((ri+0.5)/L.rings), ang, L.side || 1)});
+      }
+    }
+    /* Definition: a face whose muscle differs from a neighbour sits on the
+       line where two groups meet — the pec edge, the quad/ham split, the
+       biceps/triceps seam. Flagged once here (topology never changes) and
+       drawn a few shade steps darker, which is what reads as the cut
+       between muscles rather than a painted-on stripe. */
+    for(let ri=0; ri<L.rings; ri++){
+      for(let i=0;i<L.seg;i++){
+        const f = F[fb + ri*L.seg + i];
+        const nR = F[fb + ri*L.seg + (i+1)%L.seg];
+        const nU = ri+1 < L.rings ? F[fb + (ri+1)*L.seg + i] : null;
+        if((nR && nR.m !== f.m) || (nU && nU.m !== f.m)) f.cr = 1;
       }
     }
   });
@@ -3233,8 +3247,11 @@ function makeRig(host, archKey, opts){
       const nl = Math.hypot(nx,ny,nz) || 1; nx/=nl; ny/=nl; nz/=nl;
       const lam = Math.abs(nx*LIGHT[0] + ny*LIGHT[1] + nz*LIGHT[2]);
       const heat = Math.min(1, act[f2.m] || 0);
-      /* index into the prebuilt table; no allocation in this loop at all */
-      cols[fi] = ((heat*(HEAT_STEPS-1) + 0.5)|0)*SHADE_STEPS + ((lam*(SHADE_STEPS-1) + 0.5)|0);
+      /* index into the prebuilt table; no allocation in this loop at all.
+         Boundary faces drop a few shade steps — muscle definition. */
+      let si = (lam*(SHADE_STEPS-1) + 0.5)|0;
+      if(f2.cr && si > 3) si -= 3;
+      cols[fi] = ((heat*(HEAT_STEPS-1) + 0.5)|0)*SHADE_STEPS + si;
     }
     order.sort((p1,p2) => depth[p2] - depth[p1]);
     items.push({z:1e6, f:()=>{
