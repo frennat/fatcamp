@@ -301,11 +301,14 @@ Deno.serve(async (req) => {
   });
 
   try {
+    /* effort is an Opus/Sonnet-tier control; Haiku rejects it outright */
+    const outputConfig: Record<string, unknown> = {};
+    if (!model.includes("haiku")) outputConfig.effort = "low";
     const res = await anthropic.messages.create({
       model,
       max_tokens: 4000,
       output_config: {
-        effort: "low",
+        ...outputConfig,
         format: {
           type: "json_schema",
           schema: {
