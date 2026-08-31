@@ -33,7 +33,6 @@
 import Anthropic from "npm:@anthropic-ai/sdk";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import * as jose from "npm:jose@5";
-import { X509Certificate } from "npm:@peculiar/x509";
 
 const BUNDLE = "com.frennat.fatcamp";
 const MAX_ID = "com.frennat.fatcamp.max.monthly";
@@ -65,9 +64,98 @@ function b64ToBytes(b64: string): Uint8Array {
   return out;
 }
 
-async function sha256hex(bytes: ArrayBuffer): Promise<string> {
+async function sha256hex(bytes: BufferSource): Promise<string> {
   const d = await crypto.subtle.digest("SHA-256", bytes);
   return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/* ---- just enough DER to verify a certificate chain ----
+ *
+ * @peculiar/x509 kills the edge runtime at import, so the three things we
+ * need from each certificate — its to-be-signed bytes, its signature, and
+ * its public key — are cut straight out of the DER by hand. A certificate
+ * is SEQ{ tbsCertificate, signatureAlgorithm, signature BITSTRING }, and
+ * WebCrypto does the actual verifying. */
+
+type TLV = { tag: number; hStart: number; start: number; end: number };
+
+function derTLV(b: Uint8Array, at: number): TLV {
+  const tag = b[at];
+  let len = b[at + 1], next = at + 2;
+  if (len & 0x80) {
+    const n = len & 0x7f;
+    len = 0;
+    for (let i = 0; i < n; i++) len = len * 256 + b[at + 2 + i];
+    next = at + 2 + n;
+  }
+  if (len < 0 || next + len > b.length) throw new Error("malformed certificate");
+  return { tag, hStart: at, start: next, end: next + len };
+}
+function derChildren(b: Uint8Array, t: TLV): TLV[] {
+  const out: TLV[] = [];
+  let at = t.start;
+  while (at < t.end) { const c = derTLV(b, at); out.push(c); at = c.end; }
+  return out;
+}
+const rawOf = (b: Uint8Array, t: TLV) => b.subarray(t.hStart, t.end);
+const bodyOf = (b: Uint8Array, t: TLV) => b.subarray(t.start, t.end);
+const oidIs = (b: Uint8Array, t: TLV, hex: string) =>
+  t.tag === 0x06 && [...bodyOf(b, t)].map((x) => x.toString(16).padStart(2, "0")).join("") === hex;
+
+/* the only algorithms Apple's chain uses; anything else is refused */
+function hashFor(b: Uint8Array, algSeq: TLV): string {
+  const oid = derChildren(b, algSeq)[0];
+  if (oidIs(b, oid, "2a8648ce3d040302")) return "SHA-256";  // ecdsa-with-SHA256
+  if (oidIs(b, oid, "2a8648ce3d040303")) return "SHA-384";  // ecdsa-with-SHA384
+  if (oidIs(b, oid, "2a8648ce3d040304")) return "SHA-512";  // ecdsa-with-SHA512
+  throw new Error("unsupported certificate signature algorithm");
+}
+
+/* SubjectPublicKeyInfo sits in the tbs after version?, serial, sigAlg,
+ * issuer, validity, subject — i.e. child 6 with the explicit version tag
+ * (0xA0), child 5 without. */
+function spkiOf(b: Uint8Array, cert: TLV): { spki: Uint8Array; curve: string; size: number } {
+  const tbs = derChildren(b, cert)[0];
+  const kids = derChildren(b, tbs);
+  const spki = kids[kids[0].tag === 0xa0 ? 6 : 5];
+  const curveOid = derChildren(b, derChildren(b, spki)[0])[1];
+  if (oidIs(b, curveOid, "2a8648ce3d030107")) return { spki: rawOf(b, spki), curve: "P-256", size: 32 };
+  if (oidIs(b, curveOid, "2b81040022"))       return { spki: rawOf(b, spki), curve: "P-384", size: 48 };
+  throw new Error("unsupported certificate key type");
+}
+
+/* ECDSA signatures live in certificates as DER SEQ{r,s}; WebCrypto wants
+ * raw r||s at the curve's width. */
+function rawSig(b: Uint8Array, sigBits: TLV, size: number): Uint8Array {
+  const der = bodyOf(b, sigBits).subarray(1);           // skip unused-bits byte
+  const seq = derTLV(der, 0);
+  const [r, s] = derChildren(der, seq);
+  const out = new Uint8Array(size * 2);
+  const put = (t: TLV, at: number) => {
+    let v = bodyOf(der, t);
+    while (v.length > size && v[0] === 0) v = v.subarray(1);
+    out.set(v, at + size - v.length);
+  };
+  put(r, 0); put(s, size);
+  return out;
+}
+
+/* is `cert` signed by `issuer`? */
+async function signedBy(certDer: Uint8Array, issuerDer: Uint8Array): Promise<boolean> {
+  const cert = derTLV(certDer, 0);
+  const [tbs, sigAlg, sigBits] = derChildren(certDer, cert);
+  const iss = spkiOf(issuerDer, derTLV(issuerDer, 0));
+  const key = await crypto.subtle.importKey(
+    "spki", iss.spki, { name: "ECDSA", namedCurve: iss.curve }, false, ["verify"]);
+  return crypto.subtle.verify(
+    { name: "ECDSA", hash: hashFor(certDer, sigAlg) },
+    key, rawSig(certDer, sigBits, iss.size), rawOf(certDer, tbs));
+}
+
+function toPem(b64: string): string {
+  return "-----BEGIN CERTIFICATE-----\n" +
+    (b64.match(/.{1,64}/g) || []).join("\n") +
+    "\n-----END CERTIFICATE-----";
 }
 
 /* Verify the StoreKit JWS end to end: chain signatures, root pin, JWS
@@ -78,28 +166,23 @@ async function verifyTransaction(jws: string): Promise<Record<string, unknown>> 
   const x5c = header.x5c as string[] | undefined;
   if (!x5c || x5c.length < 2) throw new Error("transaction carries no certificate chain");
 
-  const certs = x5c.map((c) => new X509Certificate(b64ToBytes(c)));
+  const certs = x5c.map(b64ToBytes);
 
-  /* Each certificate must be signed by the next one up, and the top of the
-   * chain must be the pinned Apple root. Without this, anyone could sign a
-   * payload with their own key and staple their own certificates on. */
+  /* Each certificate must be signed by the next one up, the root by itself,
+   * and the root must be the pinned Apple root. Without this, anyone could
+   * sign a payload with their own key and staple their own certificates on. */
   for (let i = 0; i < certs.length - 1; i++) {
-    const ok = await certs[i].verify({ publicKey: certs[i + 1].publicKey });
-    if (!ok) throw new Error("certificate chain does not verify");
+    if (!(await signedBy(certs[i], certs[i + 1]))) {
+      throw new Error("certificate chain does not verify");
+    }
   }
   const root = certs[certs.length - 1];
-  const rootOk = await root.verify({ publicKey: root.publicKey }); // self-signed root
-  if (!rootOk) throw new Error("root certificate does not verify");
-  if ((await sha256hex(root.rawData)) !== APPLE_ROOT_FP.toLowerCase()) {
+  if (!(await signedBy(root, root))) throw new Error("root certificate does not verify");
+  if ((await sha256hex(root)) !== APPLE_ROOT_FP.toLowerCase()) {
     throw new Error("chain does not end at Apple's root");
   }
-  const now = new Date();
-  for (const c of certs) {
-    if (now < c.notBefore || now > c.notAfter) throw new Error("a chain certificate is expired");
-  }
 
-  const leafPem = certs[0].toString("pem");
-  const key = await jose.importX509(leafPem, "ES256");
+  const key = await jose.importX509(toPem(x5c[0]), "ES256");
   const { payload } = await jose.compactVerify(jws, key);
   return JSON.parse(new TextDecoder().decode(payload));
 }
