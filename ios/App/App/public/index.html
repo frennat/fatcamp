@@ -256,6 +256,22 @@ h1,h2,h3,h4{font-family:var(--f-display);font-weight:800;margin:0;text-wrap:bala
 }
 .ask-note.on{color:var(--accent)}
 .ask-note.bad{color:var(--p15)}
+
+/* one-time coaching for a cold visitor; gone the moment they type */
+.nudge{
+  display:flex;align-items:center;gap:12px;width:min(720px,100%);margin:10px auto 0;
+  padding:11px 14px;border-radius:14px;text-align:left;font-size:13.5px;line-height:1.5;
+  color:var(--ink-2);border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);
+  background:color-mix(in srgb,var(--accent) 7%,transparent);
+  animation:nudgein .5s ease .8s backwards;
+}
+.nudge em{color:var(--ink);font-style:italic}
+.nudge-x{
+  flex:none;margin-left:auto;border:0;background:transparent;color:var(--ink-3);
+  font-size:19px;line-height:1;cursor:pointer;padding:2px 4px;border-radius:8px;
+}
+.nudge-x:hover{color:var(--ink)}
+@keyframes nudgein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @media(max-width:560px){.askchips{display:none}}
 
 /* ---------- or ----------
@@ -4882,7 +4898,8 @@ function load(){
       if(v && v.profiles && Object.keys(v.profiles).length){
         vault = {v:2, active:v.active, theme:v.theme || null, plan:v.plan || null,
                  firstUse:v.firstUse || new Date().toISOString(),
-                 auth:v.auth || null, cloud:v.cloud || null, profiles:{}};
+                 auth:v.auth || null, cloud:v.cloud || null,
+                 src:v.src || null, aid:v.aid || null, profiles:{}};
         for(const id in v.profiles) vault.profiles[id] = migrateProfile(v.profiles[id]);
         if(!vault.profiles[vault.active]) vault.active = Object.keys(vault.profiles)[0];
         state = vault.profiles[vault.active];
@@ -4912,7 +4929,8 @@ function save(){
   vault.profiles[vault.active] = state;
   const packed = {v:2, active:vault.active, theme:vault.theme,
                   plan:vault.plan || null, firstUse:vault.firstUse || null,
-                  auth:vault.auth || null, cloud:vault.cloud || null, profiles:{}};
+                  auth:vault.auth || null, cloud:vault.cloud || null,
+                  src:vault.src || null, aid:vault.aid || null, profiles:{}};
   for(const id in vault.profiles){
     const p = vault.profiles[id];
     const o = {};
@@ -6751,8 +6769,9 @@ async function anchorTrial(){
 async function storeBuy(key){
   const S = storePlugin();
   if(!S) throw new Error("Purchases are only available in the App Store version.");
+  track("buy_start", {plan: key});
   const res = await S.purchase({id: IAP[key]});
-  if(res.status === "purchased"){ await storeSync(); return "purchased"; }
+  if(res.status === "purchased"){ track("buy_done", {plan: key}); await storeSync(); return "purchased"; }
   return res.status;              /* cancelled | pending | unverified */
 }
 async function storeRestore(){
@@ -6986,6 +7005,7 @@ function doForge(){
      and logged stays readable, because taking a session away from somebody
      mid-workout is a worse thing to do than asking them to subscribe. */
   if(locked()){
+    track("locked");
     showTab("paneProfile");
     if(typeof renderPlans === "function") renderPlans();
     requestAnimationFrame(() => {
@@ -6999,6 +7019,7 @@ function doForge(){
   const cfg = JSON.parse(JSON.stringify(state.cfg));
   cfg.seed = (Math.random()*1e9)|0;
   state.session = generate(cfg);
+  track("forge");
   buzz("forge");
   save(); renderSession(true);
   showTab("paneWorkload");                 /* the session lives here */
@@ -7609,6 +7630,7 @@ function finishSession(){
                          loc:s.cfg.loc, cardio:!!s.cardio,   /* so the ask box can quote it back */
                          mids:s.moves.map(m => m.id)});
   state.history = state.history.slice(0, 40);
+  track("bank", {sets: done + "/" + total});
   healthSave(s, s.minutes, sessionCalories(s));   /* let the rings know */
   const newBadges = checkBadges();
   if(state.week && typeof s.weekDay === "number" && state.week.days[s.weekDay]){
@@ -8247,6 +8269,37 @@ const SUPA = {
 };
 const REGIONS = ["Northeast","Southeast","Midwest","Southwest","West","Other"];
 
+/* ------------------------------------------------------------- the funnel
+   Fully wired, deliberately dormant. The privacy policy promises "no
+   analytics or telemetry of any kind", and that promise changes before this
+   flag does — flipping TRACK to true without amending privacy.html (and the
+   App Store privacy label) would make the policy a lie. Until then, track()
+   costs one boolean check and sends nothing, ever.
+
+   When it does turn on: events are anonymous — a random install id minted on
+   the device, never the account, never an email — insert-only into a table
+   nothing public can read back, tagged with the poster code that brought the
+   person in. Enough to see scans → forges → banked sessions → plans → buys,
+   and nothing else. */
+const TRACK = false;
+function aid(){
+  if(!vault.aid){
+    vault.aid = [...crypto.getRandomValues(new Uint8Array(12))]
+      .map(b => b.toString(16).padStart(2, "0")).join("");
+    save();
+  }
+  return vault.aid;
+}
+function track(ev, meta){
+  if(!TRACK) return;
+  try{
+    const m = Object.assign({}, meta || {});
+    if(vault.src) m.p = vault.src;
+    sbRaw("/rest/v1/events", {method:"POST", noAuth:true,
+      body:{install:aid(), ev, meta:Object.keys(m).length ? m : null}}).catch(() => {});
+  }catch(e){}
+}
+
 function auth(){ return vault.auth || null; }
 function signedIn(){ const a = auth(); return !!(a && a.token && a.uid); }
 
@@ -8800,6 +8853,56 @@ load();
 applyTheme();
 renderPresets(); renderFocus(); renderCardioChips(); syncControls();
 renderHUD(); renderLog(); renderSession(false); renderProfileBtn(); renderPlans(); renderWeek(); renderOffChips();
+
+/* Which poster brought you here. Every printed QR carries ?p=<code>; the
+   first one seen is kept (first touch wins — a person is recruited once) and
+   the parameter is scrubbed from the URL so it never lands in a bookmark or
+   a home-screen install. Stored locally only; it leaves the device exactly
+   when analytics does, which today is never. */
+(function sourceTag(){
+  try{
+    const p = new URLSearchParams(location.search).get("p");
+    if(p && /^[\w-]{1,24}$/.test(p)){
+      if(!vault.src){ vault.src = p; save(); }
+      history.replaceState(null, "", location.pathname);
+    }
+  }catch(e){}
+})();
+track("app_open");
+
+/* Seeing the plans is the funnel step before buying — observed rather than
+   hooked into renderPlans, because renderPlans runs at boot whether or not
+   anyone ever scrolls there. */
+(function plansEye(){
+  const pb = $("#planBody");
+  if(!pb || !("IntersectionObserver" in window)) return;
+  const ob = new IntersectionObserver(es => {
+    if(es.some(e => e.isIntersecting)){ track("plans_view"); ob.disconnect(); }
+  }, {threshold:.4});
+  ob.observe(pb);
+})();
+
+/* A stranger off a poster lands on the full UI cold. One line of coaching,
+   once, dismissed forever by using the app or by the ×. */
+(function firstRun(){
+  try{
+    if(localStorage.getItem("fc.nudge")) return;
+    if((state.history || []).length || state.session) return;
+    const host = $("#askSec .ask-in"); if(!host) return;
+    const el = document.createElement("div");
+    el.className = "nudge";
+    el.innerHTML = '<span>Type what you want to train — <em>&ldquo;push day at home, go hard&rdquo;</em> — then press the glowing mark.</span>' +
+      '<button class="nudge-x" type="button" aria-label="Dismiss">&times;</button>';
+    host.appendChild(el);
+    const off = () => {
+      try{ localStorage.setItem("fc.nudge", "1"); }catch(e){}
+      el.remove();
+    };
+    el.querySelector(".nudge-x").addEventListener("click", off);
+    const box = $("#askBox");
+    if(box) box.addEventListener("input", off, {once:true});
+  }catch(e){}
+})();
 /* The badge is artwork now rather than a generated mark, so the header and the
    favicon both point at the same file the home screen uses. logoMark() stays
    defined — it redraws itself per theme and is worth keeping if a flat
@@ -9389,6 +9492,7 @@ $("#brand").insertAdjacentHTML("afterbegin",
     if(upLocked()){ upSay("Reading media is a Max feature.", "bad"); return; }
     if(!upFile){ upIn.click(); return; }
     upBusy = true; upSec.classList.add("busy"); upProg(.08);
+    track("upload", {kind: upIsVid(upFile) ? "video" : "photo"});
     try{
       upSay(upIsVid(upFile) ? "Pulling frames out of the clip…" : "Reading the photo…");
       const frames = await upFrames(upFile);

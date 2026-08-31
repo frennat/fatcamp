@@ -228,3 +228,32 @@ begin
 end $$;
 
 revoke all on function public.ai_read_tick(text, integer) from public, anon, authenticated;
+
+-- ------------------------------------------------------------------- events
+-- Anonymous usage events, for the launch funnel: which poster code brought
+-- someone in, whether they forged, whether they saw the plans, whether they
+-- started a purchase. Dormant until the app's TRACK flag turns on — which is
+-- gated on amending the privacy policy first, because today it promises no
+-- telemetry of any kind and this table must not exist in use before the
+-- promise changes.
+--
+-- Insert-only, same reasoning as the waitlist: the publishable key is public,
+-- so anything it could read, anyone could read. No select policy, no select
+-- grant — the numbers are read from the dashboard or a service key.
+create table if not exists public.events (
+  id      uuid primary key default gen_random_uuid(),
+  t       timestamptz not null default now(),
+  install text not null check (length(install) between 8 and 64),
+  ev      text not null check (length(ev) between 2 and 24),
+  meta    jsonb check (meta is null or pg_column_size(meta) <= 512)
+);
+
+create index if not exists events_ev_t on public.events (ev, t);
+
+alter table public.events enable row level security;
+
+drop policy if exists events_insert on public.events;
+create policy events_insert on public.events
+  for insert to anon, authenticated with check (true);
+
+grant insert on public.events to anon, authenticated;

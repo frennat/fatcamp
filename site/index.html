@@ -545,6 +545,29 @@ document.getElementById("sbolt").innerHTML =
     go.disabled = false; go.textContent = was;
   });
 })();
+
+/* ------------------------------------------------------------ poster codes
+   Printed QRs land here as ?p=<code>. The code rides along into the app on
+   every "Open Fatcamp" link, so the app knows which poster recruited the
+   person. The scan counter below stays dormant until the privacy policy is
+   amended to allow it — same flag discipline as the app's own funnel. */
+(function(){
+  var TRACK = false;
+  try{
+    var p = new URLSearchParams(location.search).get("p");
+    if(!p || !/^[\w-]{1,24}$/.test(p)) return;
+    document.querySelectorAll('a[href="../index.html"]').forEach(function(a){
+      a.href = "../index.html?p=" + encodeURIComponent(p);
+    });
+    if(TRACK) fetch("https://chghvwnytjlakuvkkluv.supabase.co/rest/v1/events", {
+      method: "POST",
+      headers: {"Content-Type":"application/json",
+                "apikey":"sb_publishable_H69bdgZ5FdZIojX5LHK3aQ_2Vz2CZif",
+                "Prefer":"return=minimal"},
+      body: JSON.stringify({install:"site", ev:"scan", meta:{p:p}})
+    }).catch(function(){});
+  }catch(e){}
+})();
 </script>
 </body>
 </html>
