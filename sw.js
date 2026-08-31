@@ -4,7 +4,7 @@
    the point, because the gym is in a basement.
 
    Bump CACHE when you change index.html, or installed copies keep the old one. */
-const CACHE = "fatcamp-faae243f64";
+const CACHE = "fatcamp-6ad709aaee";
 const SHELL = [
   "./",
   "./index.html",

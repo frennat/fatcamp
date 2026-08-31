@@ -2086,10 +2086,15 @@ const ARCH = {
      touch (2.5u on a 60u trunk) while the lumbar stays near neutral — what a
      braced heavy pull actually looks like, kept far from "rounded". Offsets
      lie along the bent pose's back normal (-0.57,-0.82). */
+  /* Deadlift bottom re-authored on the Blender IK rig (3D Animation/Fatcamp
+     Rig.blend): bar starts at plate height over mid-foot instead of floating
+     at mid-shin 8u in front of it, shins travel 12u instead of 22, hips set
+     back at knee height for this figure's long legs, and the neck stays
+     neutral on the spine line instead of cranking up. */
   hinge:{v:"side",pr:["bb_hands"],
-    a:POSE(J(100,32, 101,52, 99,59, 98,88, 97,116, 100,110, 100,115, 100,166, 98,212, 112,218),
+    a:POSE(J(100,32, 101,52, 99,59, 98,88, 97,116, 100,110, 100,115, 99,166, 97,212, 111,218),
            null, null, J(0,0, 0,0)),
-    b:POSE(J(132,102, 118,117, 116,124, 114,152, 112,180, 69,151, 69,156, 118,172, 96,212, 110,218),
+    b:POSE(J(129,125, 113,136, 106,138, 105,167, 104,195, 62,164, 58,167, 109,168, 97,212, 111,218),
            null, null, J(-0.5,-1, -1.5,-2.5))},
   /* Spine: the opposite cue to the deadlift — chest proud, slight arch, so
      the line bows toward the belly normal (0.27,0.96) at the bottom. This is
