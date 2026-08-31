@@ -310,10 +310,13 @@ Sessions are deliberately **unlimited on both tiers**. Metering how often
 somebody trains is the one limit that would make the app worse at its job; the
 paid line is drawn at depth and automation instead.
 
-Billing is not wired up — there is no payment code in this build. Choosing a
-plan applies its limits so each tier can be lived with before a store release.
-Enforcement is client-side and trivially bypassed, which is fine for a personal
-build; a real release needs StoreKit or Play Billing to validate the purchase.
+Billing is wired through StoreKit 2 on iOS: subscriptions are purchased
+through Apple, and entitlement is proved server-side — the app sends the App
+Store's own signed transaction (JWS) to a Supabase edge function that verifies
+it against Apple's certificate chain before unlocking metered features. Apple's
+App Store Server Notifications feed a subscriptions ledger the same way. In the
+plain web build there is still no payment code: choosing a plan applies its
+limits so each tier can be lived with, enforced client-side only.
 
 ## Where this is going
 

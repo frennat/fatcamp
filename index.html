@@ -8502,7 +8502,7 @@ const REGIONS = ["Northeast","Southeast","Midwest","Southwest","West","Other"];
    nothing public can read back, tagged with the poster code that brought the
    person in. Enough to see scans → forges → banked sessions → plans → buys,
    and nothing else. */
-const TRACK = false;
+const TRACK = true;
 function aid(){
   if(!vault.aid){
     vault.aid = [...crypto.getRandomValues(new Uint8Array(12))]

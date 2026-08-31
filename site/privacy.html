@@ -218,13 +218,14 @@ footer{border-top:1px solid var(--line);padding:34px 0 46px;display:flex;gap:16p
 <div class="legal">
 <a class="backlink" href="./">&larr; Fatcamp</a>
 <h1>Privacy Policy</h1>
-<p class="upd">Last updated 3 August 2026</p>
+<p class="upd">Last updated 31 August 2026</p>
 
 <div class="tldr">
   <p><strong>The short version.</strong> Everything you log stays on your device. You can use
   the whole app without an account. If you make one, the only things that leave your device
-  are a handle, a rough region, and your point totals — so a leaderboard can exist. There is
-  no analytics, no advertising, no tracking, and nothing is sold or shared.</p>
+  are a handle, a rough region, and your point totals — so a leaderboard can exist. The only
+  measurement is a set of anonymous usage counts ("a session was forged today") connected to
+  nobody. There is no advertising, no third-party tracking, and nothing is sold or shared.</p>
 </div>
 
 <h2>Who this is</h2>
@@ -252,9 +253,20 @@ email address and a password to our authentication provider. After that, the app
 the interface. What you lifted, how much, and which movements you chose are never published.
 Nobody sees another person's training.</p>
 
+<h2>Anonymous usage counts</h2>
+<p>The app and this site record a small number of anonymous events — "someone opened the app",
+"a session was forged", "a session was banked", "this poster code brought someone here". Each
+event is a name, a timestamp, and a random install identifier generated on your device and
+connected to nothing else. No email, no name, no device fingerprint, no location, and no link
+to your training data — if you also have a leaderboard account, the two are never joined.
+These counts exist so we can answer questions like "do the posters work" and "do people come
+back", in aggregate. They are never sold, shared, or used for advertising, and no third-party
+analytics tool is involved — events go only to our own database.</p>
+
 <h2>What is never collected</h2>
 <ul>
-  <li>No analytics or telemetry of any kind.</li>
+  <li>No third-party analytics. The only telemetry is the anonymous usage counts described
+      above, and they identify nobody.</li>
   <li>No advertising identifiers, no ad networks, no third-party trackers.</li>
   <li>No location. "Region" is a value you pick from a list; the app does not read GPS.</li>
   <li>No contacts, photos, microphone or camera. If you upload a photo of your gym, it is read
@@ -272,7 +284,7 @@ streak and your log.</p>
 
 <h2>Service providers</h2>
 <p>Accounts and leaderboards run on <strong>Supabase</strong>, which stores the account data
-described above on our behalf. The website and app are served by <strong>GitHub Pages</strong>,
+and anonymous usage counts described above on our behalf. The website and app are served by <strong>GitHub Pages</strong>,
 which processes standard web-server request logs. If the app is distributed through the App
 Store, Apple provides download and crash statistics in aggregate. There are no other providers.</p>
 

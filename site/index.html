@@ -552,7 +552,7 @@ document.getElementById("sbolt").innerHTML =
    person. The scan counter below stays dormant until the privacy policy is
    amended to allow it — same flag discipline as the app's own funnel. */
 (function(){
-  var TRACK = false;
+  var TRACK = true;
   try{
     var p = new URLSearchParams(location.search).get("p");
     if(!p || !/^[\w-]{1,24}$/.test(p)) return;
