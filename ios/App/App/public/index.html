@@ -293,6 +293,10 @@ h1,h2,h3,h4{font-family:var(--f-display);font-weight:800;margin:0;text-wrap:bala
 .upload{position:relative;padding:20px 0 8px}
 .up-in{position:relative;z-index:1;display:grid;gap:12px;justify-items:center;text-align:center}
 .up-in h2{font-size:clamp(21px,4.2vw,32px);line-height:1;text-transform:uppercase;letter-spacing:-.028em;margin:0}
+/* worn like a plate tag, not a warning label — beta is a perk here */
+.betatag{display:inline-block;vertical-align:middle;transform:translateY(-3px);margin-left:9px;
+  padding:3px 8px 2px;border:1.5px solid var(--accent);border-radius:5px;color:var(--accent);
+  font-family:var(--f-mono);font-size:10px;font-weight:400;letter-spacing:.16em}
 .up-sub{color:var(--ink-2);font-size:14px;line-height:1.55;margin:0;max-width:46ch}
 
 .up-drop{
@@ -1612,9 +1616,10 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
   <section class="upload" id="uploadSec">
     <div class="up-in">
       <p class="eyebrow">Seen a session worth stealing</p>
-      <h2>Upload Media</h2>
+      <h2>Upload Media <span class="betatag">BETA</span></h2>
       <p class="up-sub">A screenshot of a workout, or a reel of one. AI watches the frames,
-        works out what's being trained, and Fatcamp forges the session around it.</p>
+        works out what's being trained, and Fatcamp forges the session around it.
+        In beta while the reader is perfected — it gets sharper every week.</p>
 
       <div class="glass">
         <input type="file" id="upInput" accept="image/*,video/*" hidden>
@@ -8961,6 +8966,7 @@ function renderPlans(){
           <li>Build the week — up to 4 training days</li>
           <li>One saved split</li>
           <li>3D rig, heat map, PRs, streaks</li>
+          <li>Beta features, as they open to Pro</li>
           <li>One profile</li>
         </ul></details>
         <button class="btn ${cur("pro") ? "" : "primary"}" type="button" data-plan="pro"
@@ -8979,6 +8985,7 @@ function renderPlans(){
           <li>Unlimited saved splits</li>
           <li>Failure mode &amp; Surprise Me</li>
           <li>Adaptive catch-up targeting</li>
+          <li>Every beta feature first — Upload Media is in beta now</li>
           <li>Unlimited profiles on this device</li>
         </ul></details>
         <button class="btn ${cur("max") ? "" : "primary"}" type="button" data-plan="max"
