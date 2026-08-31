@@ -50,6 +50,10 @@ export function solveKey(S){
 
 export const jline = (J) => "J(" + J.map(p => p[0] + "," + p[1]).join(", ") + ")";
 
+/* far-leg (l2) keys pass through as authored — author them at true segment
+   lengths anyway, so the app's ext() renormalisation is a no-op */
+export const l2line = (S) => S.l2 ? "J(" + S.l2.join(",") + ")" : null;
+
 /* semantic report so a bad pose is caught before it teaches bad form */
 export function report(name, J){
   const [hd, nk, sh, el, wr, hip, pv, kn, an, to] = J;
@@ -150,6 +154,52 @@ export const SPECS = {
     {pelvis:[92,129], shoulder:[115,90], head:[128,74], wrist:[108,112], elbowHint:[-1,-0.2],
      ...FEET, kneeHint:[1,0]},
   ],
+  /* Push-up: the body pivots rigidly about the TOES — shoulder height sets
+     everything else. Authored at true lengths (the old pose's legs were 30
+     units short and the renormaliser drew the feet through the floor).
+     Elbows track back at 45 degrees; chest stops a fist above the deck. */
+  pushup: [
+    {pelvis:[138,170], shoulder:[82,148], head:[58,141], wrist:[84,206], elbowHint:[1,0],
+     ankle:[227,205], toe:[241,211], kneeHint:[0,1]},
+    {pelvis:[133,185], shoulder:[75,171], head:[51,164], wrist:[84,206], elbowHint:[1,0],
+     ankle:[228,208], toe:[241,211], kneeHint:[0,1]},
+    {pelvis:[131,200], shoulder:[71,194], head:[47,190], wrist:[84,206], elbowHint:[1,0],
+     ankle:[228,210], toe:[241,211], kneeHint:[0,1]},
+  ],
+  /* Split squat / lunge: BOTH feet stay planted — the old rear foot slid a
+     metre between keys. Torso vertical, hips drop straight down; the rear
+     knee travels under the hip to brush the floor while the rear heel pivots
+     up over its fixed toe. Dumbbells hang plumb throughout. */
+  lunge: [
+    {pelvis:[100,115], shoulder:[100,58], head:[100,32], elbow:[100,86], wrist:[100,114],
+     ankle:[128,206], toe:[142,212], kneeHint:[1,0], l2:[92,175, 52,201, 56,216]},
+    {pelvis:[100,134], shoulder:[100,77], head:[100,51], elbow:[100,105], wrist:[100,133],
+     ankle:[128,206], toe:[142,212], kneeHint:[1,0], l2:[97,192, 52,202, 56,216]},
+    {pelvis:[100,152], shoulder:[100,95], head:[100,69], elbow:[100,123], wrist:[100,151],
+     ankle:[128,206], toe:[142,212], kneeHint:[1,0], l2:[98,213, 54,201, 56,216]},
+  ],
+  /* Step-up: slight forward lean INTO the drive, trailing heel peels off the
+     floor mid-rep, tall finish on the box. Box top stays at y~186 to match
+     the drawn prop. */
+  stepup: [
+    {pelvis:[96,127], shoulder:[96,70], head:[96,44], elbow:[96,98], wrist:[96,126],
+     knee:[122,152], ankle:[126,186], toe:[140,192], l2:[90,172, 88,212, 102,218]},
+    {pelvis:[104,117], shoulder:[108,60], head:[110,34], elbow:[108,88], wrist:[108,116],
+     knee:[122,148], ankle:[126,184], toe:[140,190], l2:[100,160, 102,196, 116,201]},
+    {pelvis:[102,103], shoulder:[102,46], head:[102,20], elbow:[102,74], wrist:[102,102],
+     knee:[116,132], ankle:[126,182], toe:[140,188], l2:[114,142, 118,182, 132,188]},
+  ],
+  /* Incline press: body is furniture on the bench; the bar runs from an
+     upper-chest touch to a lockout stacked over the shoulder — the old pair
+     floated 23 above the chest and travelled 26. */
+  inclinebench: [
+    {pelvis:[122,155], shoulder:[80,132], head:[56,120], elbow:[96,130], wrist:[88,122],
+     knee:[170,180], ankle:[150,220], toe:[166,224]},
+    {pelvis:[122,155], shoulder:[80,132], head:[56,120], wrist:[84,100], elbowHint:[1,-0.2],
+     knee:[170,180], ankle:[150,220], toe:[166,224]},
+    {pelvis:[122,155], shoulder:[80,132], head:[56,120], wrist:[80,77], elbowHint:[1,-0.2],
+     knee:[170,180], ankle:[150,220], toe:[166,224]},
+  ],
 };
 
 if(import.meta.url === "file://" + process.argv[1]){
@@ -157,7 +207,8 @@ if(import.meta.url === "file://" + process.argv[1]){
     console.log("== " + name);
     keys.forEach((S, i) => {
       const J = solveKey(S);
-      console.log("  " + jline(J));
+      const l2 = l2line(S);
+      console.log("  " + jline(J) + (l2 ? "  |l2 " + l2 : ""));
       console.log("  # " + report(name + "[" + i + "]", J));
     });
   }
