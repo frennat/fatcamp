@@ -99,6 +99,57 @@ export const SPECS = {
     {pelvis:[126,152], shoulder:[82,145], head:[58,138], wrist:[84,89],  elbowHint:[1,-0.2],
      ankle:[146,208], toe:[160,214], kneeHint:[0.4,-1]},
   ],
+  /* Pull-up: the bar (wrist) is the fixed point; the body travels. Dead hang
+     with a hollow line, then the chest rises TO the bar with a slight
+     lay-back — chin clears bar height at the top, knees soft behind. */
+  pullup: [
+    {pelvis:[94,146], shoulder:[98,87],  head:[104,63], wrist:[96,30], elbowHint:[1,0],
+     ankle:[102,238], toe:[112,243], kneeHint:[-1,0.2]},
+    {pelvis:[92,119], shoulder:[101,60], head:[110,38], wrist:[96,30], elbowHint:[1,0],
+     ankle:[100,208], toe:[110,214], kneeHint:[-1,0.2]},
+    {pelvis:[90,103], shoulder:[104,44], head:[112,26], wrist:[96,30], elbowHint:[-1,0.3],
+     ankle:[96,186],  toe:[106,192], kneeHint:[-1,0.2]},
+  ],
+  /* Pulldown: seated — pelvis and legs are furniture; the bar comes to the
+     collarbone while the torso rocks back a few degrees, elbows down-back. */
+  pulldown: [
+    {pelvis:[104,145], shoulder:[102,89], head:[108,68], wrist:[96,34], elbowHint:[-0.3,0.6],
+     knee:[132,158], ankle:[134,204], toe:[148,210]},
+    {pelvis:[104,145], shoulder:[101,90], head:[107,66], wrist:[100,74], elbowHint:[-0.3,0.6],
+     knee:[132,158], ankle:[134,204], toe:[148,210]},
+    {pelvis:[104,145], shoulder:[99,90],  head:[106,64], wrist:[98,96], elbowHint:[-0.3,0.6],
+     knee:[132,158], ankle:[134,204], toe:[148,210]},
+  ],
+  /* Dip: hands fixed on the bars, elbows travel BACK, and the torso tips
+     forward as it sinks — upper arm reaches parallel at the bottom. */
+  dip: [
+    {pelvis:[103,133], shoulder:[100,76], head:[102,52], wrist:[98,128], elbowHint:[-1,0],
+     knee:[118,166], ankle:[108,196], toe:[122,200]},
+    {pelvis:[98,150],  shoulder:[102,94], head:[110,72], wrist:[98,128], elbowHint:[-1,0],
+     knee:[118,172], ankle:[108,202], toe:[122,206]},
+    {pelvis:[96,160],  shoulder:[104,102],head:[114,80], wrist:[98,128], elbowHint:[-1,0],
+     knee:[118,178], ankle:[108,208], toe:[122,212]},
+  ],
+  /* Barbell row: the torso is a 42-degree table that does NOT move — the bar
+     hangs plumb from the shoulder and pulls to the lower ribs, elbow driving
+     back past the plane of the back. */
+  row: [
+    {pelvis:[75,125], shoulder:[115,80], head:[134,59], wrist:[113,136], elbowHint:[1,0],
+     ...FEET, kneeHint:[1,0]},
+    {pelvis:[75,125], shoulder:[115,80], head:[134,59], wrist:[110,118], elbowHint:[-1,0],
+     ...FEET, kneeHint:[1,0]},
+    {pelvis:[75,125], shoulder:[115,80], head:[134,59], wrist:[104,99],  elbowHint:[-1,-0.2],
+     ...FEET, kneeHint:[1,0]},
+  ],
+  /* One-arm dumbbell row: same story braced on a bench. */
+  dbrow: [
+    {pelvis:[92,129], shoulder:[115,90], head:[128,74], wrist:[113,146], elbowHint:[1,0],
+     ...FEET, kneeHint:[1,0]},
+    {pelvis:[92,129], shoulder:[115,90], head:[128,74], wrist:[111,128], elbowHint:[-1,0],
+     ...FEET, kneeHint:[1,0]},
+    {pelvis:[92,129], shoulder:[115,90], head:[128,74], wrist:[108,112], elbowHint:[-1,-0.2],
+     ...FEET, kneeHint:[1,0]},
+  ],
 };
 
 if(import.meta.url === "file://" + process.argv[1]){
