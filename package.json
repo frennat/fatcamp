@@ -2,16 +2,19 @@
   "name": "fatcamp",
   "version": "1.0.0",
   "private": true,
-  "description": "Fatcamp \u2014 a coverage-first session generator with an articulated 3D movement rig.",
+  "description": "Fatcamp — a coverage-first session generator with an articulated 3D movement rig.",
   "scripts": {
     "build": "node scripts/cache-stamp.mjs && rm -rf www && mkdir -p www && cp index.html manifest.json capacitor.js www/ && cp -R icons www/",
     "sync": "npm run build && npx cap sync ios && (git checkout -- ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved 2>/dev/null || true) && npm run verify",
     "ios": "npm run sync && npx cap open ios",
-    "verify": "cmp -s index.html ios/App/App/public/index.html || { echo 'STALE web assets: run npm run sync'; exit 1; }; test -f ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved || { echo 'MISSING Package.resolved \u2014 Xcode Cloud disables automatic dependency resolution and will fail without it. Run: (cd ios/App && xcodebuild -resolvePackageDependencies -project App.xcodeproj -scheme App)'; exit 1; }; echo 'ios assets in sync, Package.resolved present'"
+    "verify": "cmp -s index.html ios/App/App/public/index.html || { echo 'STALE web assets: run npm run sync'; exit 1; }; test -f ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved || { echo 'MISSING Package.resolved — Xcode Cloud disables automatic dependency resolution and will fail without it. Run: (cd ios/App && xcodebuild -resolvePackageDependencies -project App.xcodeproj -scheme App)'; exit 1; }; echo 'ios assets in sync, Package.resolved present'"
   },
   "dependencies": {
     "@capacitor/cli": "^8.5.0",
     "@capacitor/core": "^8.5.0",
     "@capacitor/ios": "^8.5.0"
+  },
+  "devDependencies": {
+    "supabase": "^2.116.0"
   }
 }
