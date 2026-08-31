@@ -4699,8 +4699,12 @@ function generate(cfg){
     return got;
   };
 
-  /* 1 — the compounds the lifter asked for, in the order the body prefers them */
-  const chosen = cfg.compounds.map(id => XMAP[id]).filter(x => x && has(x))
+  /* 1 — the compounds the lifter asked for, in the order the body prefers them.
+     Cardio-class lifts (a few, like battle rope slams, are named in ASK_LIFTS
+     so "battle ropes" is heard at all) have no SCHEME entry — they belong in
+     the cardio block, not the prescribed list, so they're excluded here the
+     same way the pool and swap already exclude cardio. */
+  const chosen = cfg.compounds.map(id => XMAP[id]).filter(x => x && x.cls !== "cardio" && has(x))
                   .sort((a,b) => patOrd(a.pat) - patOrd(b.pat));
   for(const x of chosen){
     if(picked.length >= cfg.count) break;
