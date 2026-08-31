@@ -237,3 +237,32 @@ long cut first, trim down.
 Every batch day: 10 minutes on each platform's trending/fitness feeds +
 trending-audio charts → pick one format to ride → write the Fatcamp twist →
 generate/capture → post with per-platform ?p= links in bio.
+
+## Day 1 production log (Aug 31, 2026)
+
+**Trend check at production time (per the standing rule).** This week: lo-fi,
+handheld, single-topic tutorials are OUTPERFORMING polished edits (the
+polish-to-value ratio inverted); before/after formats want the "after" as the
+opening hook; day-in-the-life with a specific frame is the strongest hook
+structure; repetition ("Bob") and side-by-side comparison formats are the big
+general-purpose templates. Zero-cost app captures are exactly the winning
+grain right now.
+
+**Produced today (zero cost, from the real app):**
+- `Fatcamp Day1 - Coached in 3D.mp4` (~24s) — type the ask, forge, open the
+  deadlift's 3D demo (the new authored biomechanics), orbit, end card.
+- `Fatcamp Day1 - Before After.mp4` (~21s) — opens ON the "Another one down"
+  bank celebration (after-first hook), rewinds to the 15-second ask, logs
+  sets, banks.
+- Plus `Fatcamp Demo Short v1.mp4` from Aug 30 = a three-clip Day-1 kit.
+
+**Captions, ready to paste** (link in bio gets a per-platform code:
+`?p=tt` TikTok, `?p=ig` Reels, `?p=yt` Shorts — attribution is live now):
+- Coached in 3D: "POV: your workout app actually shows you how to deadlift.
+  Hips back BEFORE they go down. #gymtok #deadlift #formcheck"
+- Before/After: "From 'idk what to train' to a banked session in under a
+  minute. No account. No email. #homeworkout #gym #fitnessapp"
+
+**Still blocked on purpose:** posting. fatcamp@gmail.com doesn't exist yet and
+the accounts follow it. The kit waits in Marketing/; the AI trend piece waits
+on a Higgsfield plan (0.38 credits left).
