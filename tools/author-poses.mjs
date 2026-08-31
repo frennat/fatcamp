@@ -200,6 +200,54 @@ export const SPECS = {
     {pelvis:[122,155], shoulder:[80,132], head:[56,120], wrist:[80,77], elbowHint:[1,-0.2],
      knee:[170,180], ankle:[150,220], toe:[166,224]},
   ],
+  /* Burpee, four keys: stand → hip-hinge crouch → hands planted deep squat →
+     plank. The spline sweeps the feet back through the air on the last
+     segment (the jump back) and reverses the whole story on the way up. */
+  burpee: [
+    {pelvis:[100,115], shoulder:[100,58], head:[100,32], elbow:[100,86], wrist:[100,114],
+     ...FEET, kneeHint:[1,0]},
+    {pelvis:[74,164], shoulder:[104,116], head:[118,102], wrist:[108,180], elbowHint:[1,0],
+     ...FEET, kneeHint:[1,0]},
+    {pelvis:[78,182], shoulder:[104,142], head:[118,130], wrist:[110,208], elbowHint:[1,0],
+     ...FEET, kneeHint:[1,0]},
+    {pelvis:[162,172], shoulder:[106,150], head:[84,140], wrist:[110,206], elbowHint:[1,0],
+     ankle:[250,206], toe:[264,212], kneeHint:[0,1]},
+  ],
+  /* Kettlebell swing: a hinge that floats. Bottom = the hike, bell behind
+     the knees with forearms on the thighs; top = standing plank with the
+     bell chest-high on straight arms. dn<1 in ARCH makes the up-swing snap. */
+  swing: [
+    {pelvis:[70,120], shoulder:[116,90], head:[134,78], wrist:[82,152], elbowHint:[1,0],
+     ...FEET, kneeHint:[1,0]},
+    {pelvis:[90,126], shoulder:[104,70], head:[110,46], wrist:[108,142], elbowHint:[1,0],
+     ...FEET, kneeHint:[1,0]},
+    {pelvis:[100,115], shoulder:[100,58], head:[100,32], wrist:[154,62], elbowHint:[1,0],
+     ...FEET, kneeHint:[1,0]},
+  ],
+  /* Sandbag clean: floor pickup → bag at the lap as the hips snap → racked
+     at the shoulder standing tall. */
+  sandbagclean: [
+    {pelvis:[80,150], shoulder:[110,110], head:[124,96], wrist:[116,170], elbowHint:[1,0],
+     ...FEET, kneeHint:[1,0]},
+    {pelvis:[94,122], shoulder:[103,68], head:[107,44], wrist:[110,124], elbowHint:[1,0],
+     ...FEET, kneeHint:[1,0]},
+    {pelvis:[100,115], shoulder:[100,58], head:[100,32], elbow:[112,76], wrist:[106,62],
+     ...FEET, kneeHint:[1,0]},
+  ],
+  /* Rope/ball slam mid key: arms sweeping down through horizontal as the
+     trunk crunches — the slam itself is the fast phase (dn<1 on the way
+     down... dn>1.12 inverted: ARCH sets dn:0.8 so the DOWN is the snap). */
+  ropeslam_m: [
+    {pelvis:[96,120], shoulder:[102,66], head:[104,40], wrist:[146,84], elbowHint:[1,-0.3],
+     ...FEET, kneeHint:[1,0]},
+  ],
+  /* RDL half-rep: hips keep travelling BACK with barely any drop, torso tips
+     through ~40°, and the bar stays glued to the thigh — the arms hang from
+     the shoulder at an angle because the lats hold the bar in, not plumb. */
+  rdl_m: [
+    {pelvis:[85,113], shoulder:[124,67], head:[136,54], wrist:[106,120], elbowHint:[1,0],
+     ...FEET, kneeHint:[1,0]},
+  ],
 };
 
 if(import.meta.url === "file://" + process.argv[1]){

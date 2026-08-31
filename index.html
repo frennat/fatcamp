@@ -2117,11 +2117,20 @@ const ARCH = {
        finishing 45 in front of the shin — a bar path nobody should copy.
        Hips go back rather than down: 30 of travel, 4 of drop, shins near
        vertical. Hips dropping is what made this read as a squat. */
+    /* Half-rep: hips keep travelling BACK with barely any drop, torso tips
+       through ~40°, bar glued to the thigh — the arms hang at an angle
+       because the lats hold the bar in, not plumb. */
+    m:POSE(J(144,46, 130,60, 124,67, 115,94, 106,120, 88,109, 85,113, 93,160, 97,212, 111,218)),
     b:POSE(J(136,92, 123,100, 120,107, 115,134, 111,162, 70,114, 70,119, 92,168, 96,212, 110,218),
            null, null, J(0.5,1.5, 0.5,2.5))},
-  swing:{v:"side",pr:["kb_hands"],
-    a:POSE(J(118,62, 111,73, 109,79, 107,108, 103,136, 87,118, 87,123, 96,167, 96,212, 110,218)),
-    b:POSE(J(100,30, 100,50, 100,58, 112,72, 132,62, 100,110, 100,115, 100,166, 98,212, 112,218))},
+  /* Kettlebell swing: a hinge that floats. Bottom is the hike — bell behind
+     the knees, forearms on the thighs, hips high; top is a standing plank
+     with the bell chest-high on straight arms. dn<1 makes the up-swing the
+     snap and the drop the slow(er) phase, which is how a swing breathes. */
+  swing:{v:"side",pr:["kb_hands"],dn:0.88,
+    a:POSE(J(141,74, 124,85, 116,90, 103,115, 82,152, 74,117, 70,120, 86,167, 97,212, 111,218)),
+    m:POSE(J(111,41, 106,61, 104,70, 106,98, 108,142, 91,121, 90,126, 111,168, 97,212, 111,218)),
+    b:POSE(J(100,29, 100,49, 100,58, 128,53, 154,62, 100,110, 100,115, 99,161, 97,212, 111,218))},
   bench:{v:"side",root:"pelvis",pr:["bench","bb_hands"],
     /* The body is a set platform — only the bar moves: touch low on the
        chest, J-curve up-and-back through m, lockout stacked over the
@@ -2315,9 +2324,16 @@ const ARCH = {
   jumprope:{v:"front",pr:["rope"],
     a:POSE(J(100,26, 100,46, 110,54, 118,80, 126,94, 100,108, 106,114, 108,162, 110,212, 110,220)),
     b:POSE(J(100,16, 100,36, 110,44, 118,70, 127,82, 100,98, 106,104, 108,150, 110,198, 110,208))},
+  /* Burpee, four keys: stand, hip-hinge crouch, hands planted in a deep
+     squat, plank — the spline sweeps the feet back through the air on the
+     last segment (the jump back) and reverses the story on the way up. The
+     old pair blended a standing reach straight into a plank, which is a
+     fall, not a burpee. */
   burpee:{v:"side",pr:[],
-    a:POSE(J(100,22, 100,42, 100,50, 112,36, 120,16, 100,102, 100,107, 100,158, 98,206, 112,212)),
-    b:POSE(J(58,156, 74,160, 82,163, 84,186, 82,208, 128,176, 132,178, 158,192, 182,208, 194,212))},
+    k:[POSE(J(100,29, 100,49, 100,58, 100,86, 100,114, 100,110, 100,115, 99,161, 97,212, 111,218)),
+       POSE(J(126,97, 109,108, 104,116, 106,144, 108,180, 77,160, 74,164, 125,176, 97,212, 111,218)),
+       POSE(J(127,126, 109,134, 104,142, 107,170, 110,208, 81,178, 78,182, 132,182, 97,212, 111,218)),
+       POSE(J(79,138, 97,147, 106,150, 108,178, 110,206, 157,170, 162,172, 205,189, 250,206, 264,212))]},
   mountain:{v:"side",root:"wrist",pr:[],
     a:POSE(J(58,142, 74,148, 82,150, 84,178, 84,206, 126,166, 130,169, 156,186, 178,206, 192,210),
            J(114,152, 100,176, 88,180)),
@@ -2354,20 +2370,27 @@ const ARCH = {
   ropewave:{v:"side",pr:["battle_ropes"],
     a:POSE(J(100,44, 100,62, 100,70, 108,96, 116,118, 98,124, 98,129, 96,172, 96,212, 110,218)),
     b:POSE(J(100,42, 100,60, 100,68, 110,90, 118,96,  98,122, 98,127, 96,170, 96,212, 110,218))},
-  ropeslam:{v:"side",pr:["battle_ropes"],
+  /* Slams: the DOWN is the throw — dn<1 makes the descent the snap. The mid
+     key sweeps the arms through horizontal as the trunk starts to crunch. */
+  ropeslam:{v:"side",pr:["battle_ropes"],dn:0.8,
     a:POSE(J(100,34, 100,52, 100,60, 100,36, 100,14, 100,110, 100,115, 100,166, 98,212, 112,218)),
+    m:POSE(J(104,37, 103,57, 102,66, 130,61, 146,84, 97,115, 96,120, 97,166, 97,212, 111,218)),
     b:POSE(J(112,86, 108,102, 106,109, 116,132, 124,158, 92,144, 92,149, 98,180, 96,212, 110,218))},
-  ballslam:{v:"side",pr:["slam_ball"],
+  ballslam:{v:"side",pr:["slam_ball"],dn:0.8,
     a:POSE(J(100,34, 100,52, 100,60, 100,36, 100,14, 100,110, 100,115, 100,166, 98,212, 112,218)),
+    m:POSE(J(104,37, 103,57, 102,66, 130,61, 146,84, 97,115, 96,120, 97,166, 97,212, 111,218)),
     b:POSE(J(112,86, 108,102, 106,109, 116,132, 124,158, 92,144, 92,149, 98,180, 96,212, 110,218))},
 
   /* ------------------------------------------------------- odd implements */
   landminepress:{v:"side",pr:["landmine_bar"],
     a:POSE(J(96,40, 98,58, 98,66, 108,86, 114,74,  98,118, 98,123, 98,168, 96,212, 110,218)),
     b:POSE(J(96,42, 98,60, 98,68, 118,58, 140,40,  98,118, 98,123, 98,168, 96,212, 110,218))},
-  sandbagclean:{v:"side",pr:["sandbag_hold"],
-    a:POSE(J(118,96, 112,112, 110,119, 112,146, 114,172, 94,146, 94,151, 104,180, 96,212, 110,218)),
-    b:POSE(J(100,32, 100,50, 100,58, 110,80,  104,66,  100,110, 100,115, 100,166, 98,212, 112,218))},
+  /* Sandbag clean: floor pickup, bag at the lap as the hips snap through,
+     racked at the shoulder standing tall. */
+  sandbagclean:{v:"side",pr:["sandbag_hold"],dn:0.85,
+    a:POSE(J(132,90, 116,102, 110,110, 113,138, 116,170, 83,146, 80,150, 125,175, 97,212, 111,218)),
+    m:POSE(J(108,39, 105,59, 103,68, 106,96, 110,124, 95,117, 94,122, 106,167, 97,212, 111,218)),
+    b:POSE(J(100,29, 100,49, 100,58, 112,76, 106,62, 100,110, 100,115, 99,161, 97,212, 111,218))},
   skierg:{v:"side",pr:["skierg_frame"],
     a:POSE(J(100,44, 100,62, 100,70, 104,44,  108,22,  100,120, 100,125, 100,170, 98,212, 112,218)),
     b:POSE(J(106,74, 104,90, 103,97, 108,124, 112,150, 94,140, 94,145, 98,180, 96,212, 110,218))},
@@ -3214,7 +3237,7 @@ function makeRig(host, archKey, opts){
     if(e.key === "ArrowDown"){ cam.pitch = Math.min(.7, cam.pitch+.09); draw(); e.preventDefault(); }
   });
 
-  return {set, cam, draw, fx, view:arch.v,
+  return {set, cam, draw, fx, view:arch.v, dn:arch.dn,
           setView(v){ cam.yaw = v; cam.pitch = .10; draw(); },
           destroy(){ if(ro) ro.disconnect(); window.removeEventListener("mousemove",move); window.removeEventListener("mouseup",up); }};
 }
@@ -3585,8 +3608,10 @@ function tick(ts){
     r.phase += FRAME_MS/1000 * r.speed * (r.rig.fx && r.rig.fx.failure ? 1.9 : 1);
     /* Down under control, up with intent: the eccentric takes 56% of the
        cycle and the concentric 44%, which is how every coach cues a rep.
-       A symmetric sinusoid reads like a machine; this reads like effort. */
-    const cyc = r.phase % 2, DOWN = 1.12;
+       A symmetric sinusoid reads like a machine; this reads like effort.
+       Ballistic archetypes override with dn — a kettlebell swing snaps UP
+       (dn<1), a slam throws DOWN. */
+    const cyc = r.phase % 2, DOWN = r.rig.dn || 1.12;
     const raw = cyc < DOWN ? cyc/DOWN : (2-cyc)/(2-DOWN);
     const t = 0.5 - 0.5*Math.cos(raw*Math.PI);
     r.rig.set(t);
