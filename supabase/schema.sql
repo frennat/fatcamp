@@ -257,3 +257,42 @@ create policy events_insert on public.events
   for insert to anon, authenticated with check (true);
 
 grant insert on public.events to anon, authenticated;
+
+-- --------------------------------------------------------------- subscriptions
+-- The live ledger behind the Finances workbook. Apple's App Store Server
+-- Notifications (V2) post to the asc-notify edge function within seconds of
+-- every purchase, renewal, lapse and refund; the function verifies each one
+-- against Apple's certificate chain and writes it down here. subs holds the
+-- current state of every subscription ever seen; sub_events is the
+-- append-only history that revenue is summed from.
+--
+-- Service role only, both tables: the numbers are money.
+create table if not exists public.subs (
+  otid        text primary key,          -- originalTransactionId
+  product_id  text not null,
+  environment text not null default 'Production',
+  status      text not null default 'active',   -- active | grace | expired | revoked
+  expires_at  timestamptz,
+  price_milli bigint,                    -- price in 1/1000s of the currency
+  currency    text,
+  updated_at  timestamptz not null default now()
+);
+
+alter table public.subs enable row level security;   -- no policies: service role only
+
+create table if not exists public.sub_events (
+  id          bigint generated always as identity primary key,
+  at          timestamptz not null default now(),
+  otid        text,
+  product_id  text,
+  event       text not null,             -- Apple's notificationType
+  subtype     text,
+  environment text,
+  price_milli bigint,
+  currency    text,
+  expires_at  timestamptz
+);
+
+create index if not exists sub_events_at on public.sub_events (at);
+
+alter table public.sub_events enable row level security;   -- no policies: service role only
