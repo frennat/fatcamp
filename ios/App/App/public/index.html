@@ -2310,16 +2310,32 @@ const ARCH = {
   pullover:{v:"side",root:"pelvis",pr:["bench","db_hands"],
     a:POSE(J(58,138, 74,142, 82,145, 68,124, 54,112, 122,150, 126,152, 152,176, 146,208, 160,214)),
     b:POSE(J(58,138, 74,142, 82,145, 82,120, 86,96,  122,150, 126,152, 152,176, 146,208, 160,214))},
-  run:{v:"side",pr:[],
-    a:POSE(J(100,30, 100,50, 100,58, 88,78, 82,62, 100,110, 100,115, 126,152, 132,188, 146,192),
-           J(86,176, 72,206, 60,208), J(114,80, 122,102)),
-    b:POSE(J(100,28, 100,48, 100,56, 112,76, 120,60, 100,108, 100,113, 88,154, 74,182, 62,186),
-           J(122,170, 132,200, 146,204), J(88,78, 80,100))},
-  bike:{v:"side",root:"pelvis",pr:["bike"],
-    a:POSE(J(88,86, 94,100, 96,106, 108,124, 122,132, 106,146, 108,150, 138,152, 130,186, 142,190),
-           J(132,168, 148,180, 160,182)),
-    b:POSE(J(88,86, 94,100, 96,106, 108,124, 122,132, 106,146, 108,150, 132,168, 148,180, 160,182),
-           J(138,152, 130,186, 142,190))},
+  /* Run is the first CYCLIC archetype: four gait phases — contact, mid-stance,
+     push-off, swing (knee lift, heel tucked) — with the far leg and far arm
+     riding the same cycle two phases out. cyc closes the spline into a loop,
+     so the stride never plays backwards; the old two-key run moonwalked back
+     through itself every other beat. */
+  run:{v:"side",pr:[],cyc:1,
+    k:[POSE(J(110,28, 105,48, 104,57, 88,92, 78,110, 100,108, 100,113, 118,164, 128,206, 142,210),
+            J(82,162, 64,198, 72,212), J(112,86, 126,70)),
+       POSE(J(110,28, 105,48, 104,57, 96,92, 98,114, 100,111, 100,116, 104,170, 98,214, 112,218),
+            J(136,147, 124,187, 130,199), J(96,92, 98,114)),
+       POSE(J(110,28, 105,48, 104,57, 112,86, 126,70, 100,108, 100,113, 82,162, 64,198, 72,212),
+            J(118,164, 128,206, 142,210), J(88,92, 78,110)),
+       POSE(J(110,28, 105,48, 104,57, 96,92, 98,114, 100,111, 100,116, 136,147, 124,187, 130,199),
+            J(104,170, 98,214, 112,218), J(96,92, 98,114))]},
+  /* Pedalling is a circle, and a ping-pong blend rode it backwards half the
+     time. The ankles now trace the crank circle through four keys and the
+     far leg holds the opposite pedal. */
+  bike:{v:"side",root:"pelvis",pr:["bike"],cyc:1,
+    k:[POSE(J(84,79, 94,97, 96,106, 108,124, 122,132, 107,145, 108,150, 157,135, 165,180, 179,183),
+            J(152,168, 165,212, 179,215)),
+       POSE(J(84,79, 94,97, 96,106, 108,124, 122,132, 107,145, 108,150, 156,157, 181,196, 195,199),
+            J(157,151, 149,196, 163,199)),
+       POSE(J(84,79, 94,97, 96,106, 108,124, 122,132, 107,145, 108,150, 152,168, 165,212, 179,215),
+            J(157,135, 165,180, 179,183)),
+       POSE(J(84,79, 94,97, 96,106, 108,124, 122,132, 107,145, 108,150, 157,151, 149,196, 163,199),
+            J(156,157, 181,196, 195,199))]},
   erg:{v:"side",root:"pelvis",pr:["erg"],
     a:POSE(J(76,120, 88,130, 92,136, 108,146, 126,150, 100,166, 104,170, 140,150, 156,180, 168,180)),
     b:POSE(J(60,130, 74,138, 78,144, 100,152, 124,154, 92,172, 96,176, 148,178, 160,182, 172,180))},
@@ -2336,11 +2352,18 @@ const ARCH = {
        POSE(J(126,97, 109,108, 104,116, 106,144, 108,180, 77,160, 74,164, 125,176, 97,212, 111,218)),
        POSE(J(127,126, 109,134, 104,142, 107,170, 110,208, 81,178, 78,182, 132,182, 97,212, 111,218)),
        POSE(J(79,138, 97,147, 106,150, 108,178, 110,206, 157,170, 162,172, 205,189, 250,206, 264,212))]},
-  mountain:{v:"side",root:"wrist",pr:[],
-    a:POSE(J(58,142, 74,148, 82,150, 84,178, 84,206, 126,166, 130,169, 156,186, 178,206, 192,210),
-           J(114,152, 100,176, 88,180)),
-    b:POSE(J(58,142, 74,148, 82,150, 84,178, 84,206, 126,166, 130,169, 110,178, 96,198, 84,202),
-           J(158,186, 180,206, 194,210))},
+  /* Mountain climbers: tuck under the chest, airborne switch (both legs pass
+     low together, hips popping up a touch), full extension — a real
+     alternating cycle instead of two legs sliding past each other. */
+  mountain:{v:"side",root:"wrist",pr:[],cyc:1,
+    k:[POSE(J(54,140, 73,145, 82,148, 83,176, 84,206, 129,164, 134,166, 89,192, 129,206, 142,210),
+            J(177,184, 219,202, 233,207)),
+       POSE(J(54,140, 73,145, 82,148, 83,176, 84,206, 129,162, 134,163, 155,208, 199,212, 213,216),
+            J(155,208, 199,212, 213,216)),
+       POSE(J(54,140, 73,145, 82,148, 83,176, 84,206, 129,164, 134,166, 177,184, 219,202, 233,207),
+            J(89,192, 129,206, 142,210)),
+       POSE(J(54,140, 73,145, 82,148, 83,176, 84,206, 129,162, 134,163, 155,208, 199,212, 213,216),
+            J(155,208, 199,212, 213,216))]},
   sled:{v:"side",pr:["sled"],
     a:POSE(J(80,58, 90,70, 94,76, 108,90, 122,96, 100,116, 102,120, 118,158, 108,204, 122,208),
            J(90,166, 76,202, 64,206)),
@@ -2920,13 +2943,24 @@ function mix(a,b,t){ return "rgb("+Math.round(a[0]+(b[0]-a[0])*t)+","+Math.round
    first-to-last blend, and one missing from either end stays off — the
    pre-sequence behaviour, not a degraded one. Segment lengths drift a touch
    on any blend; solve() renormalises regardless. */
-function splineChan(keys, ch, t){
+function splineChan(keys, ch, t, wrap){
   const K = keys.length, first = keys[0][ch], last = keys[K-1][ch];
   if(!first || !last) return null;
   for(let i=0;i<K;i++) if(!keys[i][ch]) return lerpArr(first, last, t);
   if(K === 2) return lerpArr(first, last, t);
-  const s = t*(K-1), seg = Math.min(K-2, Math.max(0, Math.floor(s))), u = s-seg;
-  const P = i => keys[Math.min(K-1, Math.max(0, i))][ch];
+  /* wrap: the sequence is a LOOP (a gait, a pedal stroke) — the spline closes
+     back on key 0 and t=1 lands where t=0 started, so the cycle never has to
+     play backwards. Otherwise it clamps at the ends (a rep turns around). */
+  let seg, u, P;
+  if(wrap){
+    const s = (t - Math.floor(t)) * K;
+    seg = Math.min(K-1, Math.floor(s)); u = s - seg;
+    P = i => keys[((i % K) + K) % K][ch];
+  }else{
+    const s = t*(K-1);
+    seg = Math.min(K-2, Math.max(0, Math.floor(s))); u = s - seg;
+    P = i => keys[Math.min(K-1, Math.max(0, i))][ch];
+  }
   const A = P(seg-1), B = P(seg), C = P(seg+1), D = P(seg+2);
   const n = first.length, o = new Array(n), u2 = u*u, u3 = u2*u;
   for(let x=0;x<n;x++){
@@ -2938,8 +2972,9 @@ function splineChan(keys, ch, t){
 function blendPose(arch, t){
   const k = arch._k ||
     (arch._k = arch.k || (arch.m ? [arch.a, arch.m, arch.b] : [arch.a, arch.b]));
-  return solve(splineChan(k, "j", t), arch.root || "ankle",
-    splineChan(k, "l2", t), splineChan(k, "a2", t), splineChan(k, "sp", t));
+  const w = arch.cyc;
+  return solve(splineChan(k, "j", t, w), arch.root || "ankle",
+    splineChan(k, "l2", t, w), splineChan(k, "a2", t, w), splineChan(k, "sp", t, w));
 }
 
 /* world-space bounds across the whole rep, so the figure fills the frame */
@@ -3270,7 +3305,7 @@ function makeRig(host, archKey, opts){
     if(e.key === "ArrowDown"){ cam.pitch = Math.min(.7, cam.pitch+.09); draw(); e.preventDefault(); }
   });
 
-  return {set, cam, draw, fx, view:arch.v, dn:arch.dn,
+  return {set, cam, draw, fx, view:arch.v, dn:arch.dn, cyc:arch.cyc,
           setView(v){ cam.yaw = v; cam.pitch = .10; draw(); },
           destroy(){ if(ro) ro.disconnect(); window.removeEventListener("mousemove",move); window.removeEventListener("mouseup",up); }};
 }
@@ -3644,11 +3679,20 @@ function tick(ts){
        A symmetric sinusoid reads like a machine; this reads like effort.
        Ballistic archetypes override with dn — a kettlebell swing snaps UP
        (dn<1), a slam throws DOWN. */
-    const cyc = r.phase % 2, DOWN = r.rig.dn || 1.12;
-    const raw = cyc < DOWN ? cyc/DOWN : (2-cyc)/(2-DOWN);
-    const t = 0.5 - 0.5*Math.cos(raw*Math.PI);
-    r.rig.set(t);
-    if(r.onPhase) r.onPhase(cyc < DOWN, t);
+    const cyc = r.phase % 2;
+    if(r.rig.cyc){
+      /* cyclic motion (gait, pedal stroke): constant rate, never reverses —
+         easing belongs to reps, not to strides */
+      const t = (r.phase * 0.5) % 1;
+      r.rig.set(t);
+      if(r.onPhase) r.onPhase(cyc < 1, t);
+    }else{
+      const DOWN = r.rig.dn || 1.12;
+      const raw = cyc < DOWN ? cyc/DOWN : (2-cyc)/(2-DOWN);
+      const t = 0.5 - 0.5*Math.cos(raw*Math.PI);
+      r.rig.set(t);
+      if(r.onPhase) r.onPhase(cyc < DOWN, t);
+    }
   }
   rafId = requestAnimationFrame(tick);
 }
