@@ -2094,6 +2094,10 @@ const ARCH = {
   hinge:{v:"side",pr:["bb_hands"],
     a:POSE(J(100,32, 101,52, 99,59, 98,88, 97,116, 100,110, 100,115, 99,166, 97,212, 111,218),
            null, null, J(0,0, 0,0)),
+    /* m is the half-rep keypose off the Blender rig: hips travel back before
+       they travel down, so the knees never cross the toes mid-descent and
+       the bar rides the thigh on a vertical line over mid-foot. */
+    m:POSE(J(129,70, 116,85, 110,88, 107,117, 104,145, 74,124, 70,128, 104,166, 97,212, 111,218)),
     b:POSE(J(129,125, 113,136, 106,138, 105,167, 104,195, 62,164, 58,167, 109,168, 97,212, 111,218),
            null, null, J(-0.5,-1, -1.5,-2.5))},
   /* Spine: the opposite cue to the deadlift — chest proud, slight arch, so
@@ -2790,16 +2794,38 @@ function palette(){
 const mixArr = (a,b,t) => [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t];
 function mix(a,b,t){ return "rgb("+Math.round(a[0]+(b[0]-a[0])*t)+","+Math.round(a[1]+(b[1]-a[1])*t)+","+Math.round(a[2]+(b[2]-a[2])*t)+")"; }
 
+/* Blending two keyposes moves every joint on a straight line, which is why
+   the lifts read robotic: a real bar path curves, and hips and knees do not
+   travel in lockstep. An archetype may therefore carry an optional third
+   keypose m, authored at half-rep on the Blender rig; the blend becomes a
+   quadratic that passes through m exactly at t=.5. Aux channels (l2/a2/sp)
+   fall back to the straight blend when m does not carry them. Segment
+   lengths drift a touch on any blend; solve() renormalises regardless. */
+function blendArr(a, m, b, t){
+  if(!m) return lerpArr(a, b, t);
+  if(!a||!b) return a||b;
+  const o=[], u=1-t, w0=u*u, w1=2*u*t, w2=t*t;
+  for(let i=0;i<a.length;i++){
+    const c = 2*m[i] - 0.5*(a[i]+b[i]);   /* control point so the curve hits m at t=.5 */
+    o[i] = w0*a[i] + w1*c + w2*b[i];
+  }
+  return o;
+}
+function blendPose(arch, t){
+  const m = arch.m || null;
+  return solve(blendArr(arch.a.j, m&&m.j, arch.b.j, t), arch.root || "ankle",
+    (arch.a.l2&&arch.b.l2) ? blendArr(arch.a.l2, m&&m.l2, arch.b.l2, t) : null,
+    (arch.a.a2&&arch.b.a2) ? blendArr(arch.a.a2, m&&m.a2, arch.b.a2, t) : null,
+    (arch.a.sp&&arch.b.sp) ? blendArr(arch.a.sp, m&&m.sp, arch.b.sp, t) : null);
+}
+
 /* world-space bounds across the whole rep, so the figure fills the frame */
 function boundsFor(arch){
   if(arch._b3) return arch._b3;
   let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
   for(let i=0;i<=6;i++){
     const t = i/6;
-    const sol = solve(lerpArr(arch.a.j, arch.b.j, t), arch.root || "ankle",
-      (arch.a.l2&&arch.b.l2) ? lerpArr(arch.a.l2, arch.b.l2, t) : null,
-      (arch.a.a2&&arch.b.a2) ? lerpArr(arch.a.a2, arch.b.a2, t) : null,
-      (arch.a.sp&&arch.b.sp) ? lerpArr(arch.a.sp, arch.b.sp, t) : null);
+    const sol = blendPose(arch, t);
     const J3 = pose3(sol, arch.v);
     for(const k in J3){
       const p = J3[k];
@@ -2987,10 +3013,7 @@ function makeRig(host, archKey, opts){
   }
 
   function poseAt(t){
-    const sol = solve(lerpArr(arch.a.j, arch.b.j, t), arch.root || "ankle",
-      (arch.a.l2&&arch.b.l2) ? lerpArr(arch.a.l2, arch.b.l2, t) : null,
-      (arch.a.a2&&arch.b.a2) ? lerpArr(arch.a.a2, arch.b.a2, t) : null,
-      (arch.a.sp&&arch.b.sp) ? lerpArr(arch.a.sp, arch.b.sp, t) : null);
+    const sol = blendPose(arch, t);
     const J3 = pose3(sol, arch.v);
     const S = {};
     for(const k in J3) S[k] = project(J3[k], cam, fit);
@@ -3493,11 +3516,14 @@ function tick(ts){
     if(r.orbit){ r.rig.cam.yaw += dt/1000 * 0.42; if(!r.playing) r.rig.draw(); }
     if(!r.playing){ continue; }
     r.phase += FRAME_MS/1000 * r.speed * (r.rig.fx && r.rig.fx.failure ? 1.9 : 1);
-    const cyc = r.phase % 2;
-    const raw = cyc < 1 ? cyc : 2-cyc;
+    /* Down under control, up with intent: the eccentric takes 56% of the
+       cycle and the concentric 44%, which is how every coach cues a rep.
+       A symmetric sinusoid reads like a machine; this reads like effort. */
+    const cyc = r.phase % 2, DOWN = 1.12;
+    const raw = cyc < DOWN ? cyc/DOWN : (2-cyc)/(2-DOWN);
     const t = 0.5 - 0.5*Math.cos(raw*Math.PI);
     r.rig.set(t);
-    if(r.onPhase) r.onPhase(cyc < 1, t);
+    if(r.onPhase) r.onPhase(cyc < DOWN, t);
   }
   rafId = requestAnimationFrame(tick);
 }
