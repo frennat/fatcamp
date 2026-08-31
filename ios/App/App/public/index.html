@@ -2073,15 +2073,22 @@ const J = (...n) => n;
 const POSE = (j,l2,a2,sp) => ({j,l2:l2||null,a2:a2||null,sp:sp||null});
 
 const ARCH = {
+  /* High-bar back squat, authored on the segment-true solver (tools/
+     author-poses.mjs): the bar rides the shoulders, so shoulder x IS bar x
+     and holds over mid-foot all the way down (97→103→105 vs mid-foot 104).
+     Hips break back first (m), knees track forward past the toes at depth —
+     that is what high-bar ankles do — and the bottom sits just below
+     parallel at a ~34° torso. */
   squat:{v:"side",pr:["bb_back"],
-    a:POSE(J(98,32, 99,52, 97,59, 86,74, 93,57, 99,110, 99,115, 100,166, 98,212, 112,218)),
-    /* Hips were 21 behind the heel — a figure falling over backwards. Now 9
-       behind the ankle, where they sit with a forward torso lean. Depth is
-       unchanged and still below parallel: hip y 179 vs knee y 174. */
-    b:POSE(J(108,104, 103,122, 106,130, 94,154, 101,128, 88,174, 89,179, 124,174, 97,212, 112,218))},
+    a:POSE(J(98,30, 97,50, 97,59, 86,74, 93,57, 99,110, 99,115, 98,161, 97,212, 111,218)),
+    m:POSE(J(117,69, 108,87, 103,95, 92,110, 99,93, 75,144, 73,148, 118,171, 97,212, 111,218)),
+    b:POSE(J(122,101, 110,117, 105,125, 94,140, 101,123, 73,172, 70,176, 124,175, 97,212, 111,218))},
+  /* Front squat: elbows HIGH (upper arm near horizontal — the rack collapses
+     if they drop), torso ~20° vs the back squat's 34°, knees further forward. */
   frontsquat:{v:"side",pr:["bb_front"],
-    a:POSE(J(100,32, 101,52, 99,59, 108,80, 110,58, 100,110, 100,115, 101,166, 99,212, 113,218)),
-    b:POSE(J(90,97, 88,116, 90,124, 104,144, 98,122, 77,175, 78,180, 126,176, 98,212, 112,218))},
+    a:POSE(J(100,30, 99,50, 99,59, 125,67, 110,58, 100,110, 100,115, 98,161, 97,212, 111,218)),
+    m:POSE(J(106,61, 100,80, 97,89, 123,97, 108,88, 81,141, 80,146, 121,173, 97,212, 111,218)),
+    b:POSE(J(108,91, 102,110, 99,119, 125,127, 110,118, 80,170, 78,175, 130,180, 97,212, 111,218))},
   /* Spine: dead straight at lockout; at the floor the thoracic rounds a
      touch (2.5u on a 60u trunk) while the lumbar stays near neutral — what a
      braced heavy pull actually looks like, kept far from "rounded". Offsets
@@ -2116,20 +2123,29 @@ const ARCH = {
     a:POSE(J(118,62, 111,73, 109,79, 107,108, 103,136, 87,118, 87,123, 96,167, 96,212, 110,218)),
     b:POSE(J(100,30, 100,50, 100,58, 112,72, 132,62, 100,110, 100,115, 100,166, 98,212, 112,218))},
   bench:{v:"side",root:"pelvis",pr:["bench","bb_hands"],
-    /* The bar used to stop 23 above the chest and travel only 28 — a short
-       floaty press that never touched. It now comes to the chest and the
-       press runs 49, which is what makes the rep legible. */
-    a:POSE(J(58,138, 74,142, 82,145, 97,142, 86,137, 122,150, 126,152, 152,176, 146,208, 160,214)),
-    b:POSE(J(58,138, 74,142, 82,145, 84,116, 85,88,  122,150, 126,152, 152,176, 146,208, 160,214))},
+    /* The body is a set platform — only the bar moves: touch low on the
+       chest, J-curve up-and-back through m, lockout stacked over the
+       shoulder. Legs re-solved at true segment lengths: the old knee sat
+       where a half-metre thigh cannot reach, and the renormaliser was
+       quietly redrawing it anyway — this is the honest leg-drive tuck. */
+    a:POSE(J(54,136, 73,144, 82,145, 97,142, 86,137, 121,151, 126,152, 169,168, 146,208, 160,214)),
+    m:POSE(J(54,136, 73,144, 82,145, 106,131, 85,112, 121,151, 126,152, 169,168, 146,208, 160,214)),
+    b:POSE(J(54,136, 73,144, 82,145, 83,117, 84,89, 121,151, 126,152, 169,168, 146,208, 160,214))},
   inclinebench:{v:"side",root:"pelvis",pr:["bench_incl","db_hands"],
     a:POSE(J(56,120, 72,128, 80,132, 94,120, 84,110, 118,152, 122,155, 170,180, 150,220, 166,224)),
     b:POSE(J(56,120, 72,128, 80,132, 82,108, 82,84,  118,152, 122,155, 170,180, 150,220, 166,224))},
   fly:{v:"side",root:"pelvis",pr:["bench","db_hands"],
     a:POSE(J(58,138, 74,142, 82,145, 74,120, 62,106, 122,150, 126,152, 152,176, 146,208, 160,214)),
     b:POSE(J(58,138, 74,142, 82,145, 82,118, 86,94,  122,150, 126,152, 152,176, 146,208, 160,214))},
+  /* Overhead press: bar starts ON the clavicle and arcs AROUND the face —
+     hips nudge forward and the head retreats at half-rep (m), then the head
+     comes "through the window" at a stacked lockout with a hint of shrug.
+     The old pair started the bar at chin height and pressed on a straight
+     line through where the chin would be. */
   ohp:{v:"side",pr:["bb_hands"],
-    a:POSE(J(100,32, 100,50, 100,58, 88,76, 97,54,  100,110, 100,115, 100,166, 98,212, 112,218)),
-    b:POSE(J(100,34, 100,52, 100,58, 101,37, 101,14, 100,110, 100,115, 100,166, 98,212, 112,218))},
+    a:POSE(J(100,29, 100,49, 100,58, 112,83, 102,66, 100,110, 100,115, 99,161, 97,212, 111,218)),
+    m:POSE(J(94,29, 98,49, 99,58, 126,51, 104,34, 104,110, 104,115, 100,161, 97,212, 111,218)),
+    b:POSE(J(103,26, 100,46, 100,55, 105,28, 100,0, 101,110, 101,115, 99,161, 97,212, 111,218))},
   pushpress:{v:"side",pr:["bb_hands"],
     a:POSE(J(98,44, 98,62, 97,69, 86,86, 95,66,  98,120, 98,125, 102,166, 98,212, 112,218)),
     b:POSE(J(100,30, 100,48, 100,56, 101,34, 101,12, 100,108, 100,113, 100,166, 98,212, 112,218))},
