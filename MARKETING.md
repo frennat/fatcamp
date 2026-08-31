@@ -174,3 +174,66 @@ per-location codes baked in, print-ready. Say the word and tell me:
 - Print size (11×17 is the usual community-board size; 8.5×11 fits more places)
 - Whether to match the app's dark look or invert to light for cheaper printing
   (dark posters eat toner and look bad on a home printer — worth deciding early)
+
+---
+
+## Short-form video, and the trend mandate *(added Aug 30, 2026)*
+
+**Standing rule from Tanner: every AI-generated video follows current trends.**
+Before each batch, check what's actually pulling views that week — formats,
+sounds, hooks — and shape the batch to ride it. Trends are checked at
+production time, never assumed from an old note (this section's snapshot
+included).
+
+### The hybrid production model
+
+Two content streams, one feed:
+
+1. **Zero-cost app captures** (the recording rig): the real product forging
+   real sessions. These carry the proof. Cost: $0, unlimited.
+2. **AI-generated b-roll and trend riffs** (Higgsfield): gym atmosphere,
+   trend-format skits, hooks. These carry the reach. Cost: credits.
+
+The AI garnishes the real thing — never the reverse. A stranger should always
+land on what the app actually does.
+
+### Budget math (Higgsfield credits)
+
+Measured ratios from their live pricing: a basic clip (Kling-tier, 5s) ≈ 5
+credits; a premium clip (Seedance-tier) ≈ 25 credits; a finished video takes
+2–3 generation attempts. Rule of thumb: **plan ~15 credits per finished basic
+clip, ~60 per finished premium clip.** An entry-tier plan (~300–400
+credits/mo) supports roughly 5–7 finished basic clips or ~5 premium hero
+clips per month — so the cadence below leans on the free stream for volume
+and spends credits on the highest-leverage trend pieces.
+
+### Cadence that fits an entry plan
+
+4–5 posts/week across TikTok + Reels + Shorts (same video, re-cut):
+- 2–3 × zero-cost app captures (new ask lines each time — "leg day, 45
+  minutes", "bad shoulder, work around it")
+- 1–2 × AI-assisted trend pieces (this week's format, Fatcamp twist)
+
+Platform cuts: TikTok 15–30s · Reels 30–60s · Shorts 60–90s. Longer
+(60–90s) currently outperforms ultra-short on most platforms — make the
+long cut first, trim down.
+
+### Formats that map to Fatcamp (trend snapshot, Aug 2026)
+
+- **Micro-education clips** — one movement, why it's in the session. The
+  app's own "why it's here" coaching lines are ready-made scripts.
+- **"With me" companion videos** — "forge today's workout with me": type the
+  ask on camera, session appears, go lift.
+- **Serialized storytelling** — "Day N of letting AI write my workouts."
+  Recurring, cheap, compounding.
+- **Founder visibility** — Tanner building the thing, unscripted.
+- **Fitness-side trends** — variety training (mobility, boxing, dance),
+  tech-in-training, community/leaderboard angles.
+- Word-level captions on everything; sound added natively in-app at post
+  time for algorithmic favor.
+
+### The weekly ritual
+
+Every batch day: 10 minutes on each platform's trending/fitness feeds +
+trending-audio charts → pick one format to ride → write the Fatcamp twist →
+generate/capture → post with per-platform ?p= links in bio.
