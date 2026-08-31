@@ -2796,27 +2796,40 @@ function mix(a,b,t){ return "rgb("+Math.round(a[0]+(b[0]-a[0])*t)+","+Math.round
 
 /* Blending two keyposes moves every joint on a straight line, which is why
    the lifts read robotic: a real bar path curves, and hips and knees do not
-   travel in lockstep. An archetype may therefore carry an optional third
-   keypose m, authored at half-rep on the Blender rig; the blend becomes a
-   quadratic that passes through m exactly at t=.5. Aux channels (l2/a2/sp)
-   fall back to the straight blend when m does not carry them. Segment
-   lengths drift a touch on any blend; solve() renormalises regardless. */
-function blendArr(a, m, b, t){
-  if(!m) return lerpArr(a, b, t);
-  if(!a||!b) return a||b;
-  const o=[], u=1-t, w0=u*u, w1=2*u*t, w2=t*t;
-  for(let i=0;i<a.length;i++){
-    const c = 2*m[i] - 0.5*(a[i]+b[i]);   /* control point so the curve hits m at t=.5 */
-    o[i] = w0*a[i] + w1*c + w2*b[i];
+   travel in lockstep. An archetype's motion is therefore its KEY SEQUENCE:
+
+     a / b            — the classic pair (straight blend, exactly as ever)
+     a / m / b        — plus a half-rep keypose, hit exactly at t=.5
+     k: [POSE, ...]   — an explicit sequence, start to turnaround, for
+                        movements that pass through genuinely different
+                        shapes (a burpee is a squat, a plank and a jump)
+
+   Sequences run through a Catmull-Rom spline, so the path curves smoothly
+   THROUGH every authored moment; keys are spaced evenly in rep time. A
+   channel (l2/a2/sp) present on only some keys falls back to the straight
+   first-to-last blend, and one missing from either end stays off — the
+   pre-sequence behaviour, not a degraded one. Segment lengths drift a touch
+   on any blend; solve() renormalises regardless. */
+function splineChan(keys, ch, t){
+  const K = keys.length, first = keys[0][ch], last = keys[K-1][ch];
+  if(!first || !last) return null;
+  for(let i=0;i<K;i++) if(!keys[i][ch]) return lerpArr(first, last, t);
+  if(K === 2) return lerpArr(first, last, t);
+  const s = t*(K-1), seg = Math.min(K-2, Math.max(0, Math.floor(s))), u = s-seg;
+  const P = i => keys[Math.min(K-1, Math.max(0, i))][ch];
+  const A = P(seg-1), B = P(seg), C = P(seg+1), D = P(seg+2);
+  const n = first.length, o = new Array(n), u2 = u*u, u3 = u2*u;
+  for(let x=0;x<n;x++){
+    o[x] = 0.5*(2*B[x] + (C[x]-A[x])*u +
+                (2*A[x]-5*B[x]+4*C[x]-D[x])*u2 + (3*B[x]-A[x]-3*C[x]+D[x])*u3);
   }
   return o;
 }
 function blendPose(arch, t){
-  const m = arch.m || null;
-  return solve(blendArr(arch.a.j, m&&m.j, arch.b.j, t), arch.root || "ankle",
-    (arch.a.l2&&arch.b.l2) ? blendArr(arch.a.l2, m&&m.l2, arch.b.l2, t) : null,
-    (arch.a.a2&&arch.b.a2) ? blendArr(arch.a.a2, m&&m.a2, arch.b.a2, t) : null,
-    (arch.a.sp&&arch.b.sp) ? blendArr(arch.a.sp, m&&m.sp, arch.b.sp, t) : null);
+  const k = arch._k ||
+    (arch._k = arch.k || (arch.m ? [arch.a, arch.m, arch.b] : [arch.a, arch.b]));
+  return solve(splineChan(k, "j", t), arch.root || "ankle",
+    splineChan(k, "l2", t), splineChan(k, "a2", t), splineChan(k, "sp", t));
 }
 
 /* world-space bounds across the whole rep, so the figure fills the frame */
