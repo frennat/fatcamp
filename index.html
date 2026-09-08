@@ -7961,10 +7961,15 @@ async function healthSave(session, minutes, calories){
    that never leaves the device. A local schedule also keeps working on a
    plane, which a push does not.
 
-   Two kinds. A standing reminder on the days you said you train, repeating
-   weekly so iOS owns the recurrence. And a late nudge that only exists on
-   days you have not logged yet; every sync rebuilds it, so banking a session
-   clears tonight's before it can fire. */
+   Two kinds. A training-time reminder on the days you said you train — every
+   one in the next two weeks scheduled individually, with copy written from
+   your actual data for that particular day. And a late nudge on today and
+   tomorrow only, when nothing is logged yet.
+
+   The trick that makes the copy honest: every app open rebuilds this queue,
+   so a notification k days out only ever fires after k days of real silence.
+   The lapse arc — gentle at two days, warmer at a week, a dignified sign-off
+   at the end of the window — is staged in advance and always fires true. */
 let _notifProxy = null;
 function notifPlugin(){
   const C = window.Capacitor;
@@ -8024,45 +8029,105 @@ async function remindSync(){
   const offd = state.offDays || [];
   const days = ((r.days && r.days.length) ? r.days : [0,1,2,3,4,5,6]).filter(d => !offd.includes(d));
   const list = [];
+  const now = new Date(), trained = allTrainedKeys();
+  const gap0 = lastTrainedGap(trained, now);
 
-  /* the standing reminder — weekday is 1=Sunday in both iOS and Capacitor */
-  for(const d of days) list.push({
-    id: 100 + d,
-    title: "Time to train",
-    body: remindLine(),
-    schedule: {on:{weekday:d + 1, hour:r.hour, minute:r.min}, allowWhileIdle:true}
+  /* Training-time reminders, one per training day for two weeks, each with
+     copy for THAT day (see the header comment for why the lapse math holds). */
+  const ahead = [];
+  for(let k = 0; k < 14; k++){
+    const at = new Date(now.getFullYear(), now.getMonth(), now.getDate() + k, r.hour, r.min, 0);
+    if(at <= now || !days.includes(at.getDay())) continue;
+    ahead.push({k, at});
+  }
+  ahead.forEach(({k, at}, i) => {
+    const fin = i === ahead.length - 1 && k > 6;   /* the sign-off, not mid-week */
+    const c = remindCopy(k, gap0, fin, r);
+    list.push({id:100 + k, title:c.t, body:c.b,
+               schedule:{at:at.getTime(), allowWhileIdle:true}});
   });
 
-  /* the nudge — only on days with nothing logged, and only ahead of now */
+  /* The late nudge: today and tomorrow only. Past that the training-time
+     reminders carry the story — two escalating pings a day is nagging. */
   if(r.nudge){
-    const trained = allTrainedKeys(), now = new Date();
-    for(let k = 0; k < 14; k++){
+    for(let k = 0; k < 2; k++){
       const at = new Date(now.getFullYear(), now.getMonth(), now.getDate() + k, 20, 30, 0);
       if(at <= now || trained[dayKey(at)] || offd.includes(at.getDay())) continue;
-      list.push({
-        id: 200 + k,
-        title: k === 0 ? "Streak closes at midnight" : "Nothing logged today",
-        body: nudgeLine(k),
-        schedule: {at:at.getTime(), allowWhileIdle:true}
-      });
+      list.push({id:200 + k, title:nudgeTitle(k), body:nudgeLine(k),
+                 schedule:{at:at.getTime(), allowWhileIdle:true}});
     }
   }
   try{ await N.schedule({notifications:list}); }catch(e){}
 }
 
-/* Copy that knows what you have done. A generic "time to work out" gets
-   swiped away; the streak number is the part people actually respond to. */
-function remindLine(){
-  const n = state.streak || 0;
-  if(n >= 100) return n + " days deep. Keep it.";
-  if(n > 0)    return "Day " + (n + 1) + " is waiting. Forge a session.";
-  return "Pick a slot and forge a session — it takes about a minute.";
+/* Copy that knows the person — streak, points, PRs, rank, name, and how long
+   they have actually been away. The salt rotates variants by calendar day so
+   two Tuesdays never read identical. Generic "time to work out" gets swiped;
+   your own number is the part that lands. */
+function lastTrainedGap(trained, now){
+  for(let g = 0; g <= 60; g++){
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - g);
+    if(trained[dayKey(d)]) return g;
+  }
+  return null;                       /* nothing on file — a fresh start */
+}
+function timeLabel(r){
+  const h12 = ((r.hour + 11) % 12) + 1, ap = r.hour < 12 ? "am" : "pm";
+  return h12 + (r.min ? ":" + String(r.min).padStart(2, "0") : "") + ap;
+}
+function remindCopy(k, gap0, fin, r){
+  const n = state.streak || 0, xp = state.xp || 0, prs = prList().length;
+  const me = (state.name && state.name !== "You") ? state.name : "";
+  const next = rankFor(xp).next;
+  const g = gap0 === null ? null : gap0 + k;
+  const pick = a => a[(new Date().getDate() + k) % a.length];
+
+  if(fin) return {t:"Going quiet (for now) 🤝",
+    b:"Last reminder of this run — no more after today. The forge stays lit whenever you're ready."};
+
+  if(g === null) return {t:"Time to train ⚡", b:pick([
+    "First one's the hardest. Forge a session — it takes about a minute to make.",
+    "The forge is lit. Say what you've got and it writes the session."])};
+
+  if(g >= 7) return {t:"The comeback window is open 🌱", b:pick([
+    "A " + g + "-day break happens to everyone. One easy session today and you're back — that's the whole assignment.",
+    (me ? me + " — " : "") + g + " days out. Your " + xp.toLocaleString() + " points waited. Come add to them."])};
+
+  if(g >= 4) return {t:"Missed you at the rack 🪫", b:pick([
+    g + " days without a session. The points don't rust, but you know what does. Something light today.",
+    "Day " + g + " of the break. End it with the easiest session you'd still respect."])};
+
+  if(g >= 2) return {t:"Missed you at the rack 😤", b:pick([
+    g + " quiet days" + (me ? ", " + me : "") + ". The bar didn't move either. Today resets it.",
+    "Recovery was yesterday. Today is the choice between a reset and a rut — forge something light."])};
+
+  /* on track */
+  if(n >= 100) return {t:"Day " + (n + 1) + " 🏛️",
+    b:n + " days. That's not a streak anymore, it's a monument. Add a brick."};
+  if(n >= 30) return {t:"Day " + (n + 1) + " 🔥", b:pick([
+    n + " straight. You stopped negotiating with this a month ago — " + timeLabel(r) + " as always.",
+    "A " + n + "-day streak doesn't need a pep talk. See you under the bar."])};
+  if(n >= 7) return {t:"Day " + (n + 1) + " 🔥", b:pick([
+    "The " + n + "-day streak says you'll show. Day " + (n + 1) + " at " + timeLabel(r) + ".",
+    n + " in a row" + (me ? ", " + me : "") + ". Day " + (n + 1) + " is waiting on you."])};
+  if(n >= 1) return {t:"Day " + (n + 1) + " ⚡", b:pick([
+    "Day " + (n + 1) + " is sitting there. Bank it and the streak keeps breathing.",
+    n + " down. Forge day " + (n + 1) + " — future you already said thanks."])};
+  if(prs > 0) return {t:"Time to train 💪",
+    b:prs + " PR" + (prs === 1 ? "" : "s") + " in the book and room for one more. Forge today's session."};
+  if(next) return {t:"Time to train ⬆️",
+    b:(next.xp - xp).toLocaleString() + " points to " + next.n + ". One banked session takes a real bite out of that."};
+  return {t:"Time to train ⚡", b:"Nothing banked yet this run. Forge one — easy counts."};
+}
+function nudgeTitle(k){
+  if(k === 0) return (state.streak || 0) > 1 ? "Streak closes at midnight ⏳" : "Nothing logged today 🌙";
+  return "Yesterday slipped 🌙";
 }
 function nudgeLine(k){
   const n = state.streak || 0;
-  if(k === 0 && n > 1) return "Your " + n + "-day streak ends tonight unless something lands.";
-  if(k === 0)          return "Still time. Even an easy day counts.";
-  return "A rest day is allowed. Two in a row is not.";
+  if(k === 0 && n > 1) return "Your " + n + "-day streak ends tonight. Even 20 easy minutes keeps it alive.";
+  if(k === 0)          return "Still time today — easy counts, and banked beats perfect.";
+  return "A rest day is allowed. Two in a row is a decision — make the other one.";
 }
 async function remindOff(){
   const N = notifPlugin();
