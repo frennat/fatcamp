@@ -46,15 +46,33 @@ Deno.serve(async (req) => {
 
   /* Volumes are tiny for a long time to come, so rows are fetched and summed
    * here rather than pushed into SQL aggregates. */
-  const [subsQ, evQ, wlQ, aiQ] = await Promise.all([
+  const d7 = new Date(now.getTime() - 7 * 864e5).toISOString();
+  const [subsQ, evQ, wlQ, aiQ, fnQ, fnAllQ] = await Promise.all([
     db.from("subs").select("product_id,environment,status,expires_at,price_milli,currency"),
     db.from("sub_events").select("at,event,environment,price_milli,currency").gte("at", d30),
     db.from("waitlist").select("id", { count: "exact", head: true }),
     db.from("ai_reads").select("k,n"),
+    /* the launch funnel: last 30 days of anonymous events, paged past
+     * PostgREST's silent 1000-row default */
+    db.from("events").select("t,install,ev,meta").gte("t", d30).range(0, 9999),
+    db.from("events").select("id", { count: "exact", head: true }),
   ]);
-  for (const q of [subsQ, evQ, aiQ]) {
+  for (const q of [subsQ, evQ, aiQ, fnQ]) {
     if (q.error) return new Response("query failed: " + q.error.message, { status: 500 });
   }
+
+  const fn = (fnQ.data || []) as Row[];
+  const since = (d: string) => fn.filter((e) => String(e.t) >= d);
+  const cnt = (rows: Row[], ev: string) => rows.filter((e) => e.ev === ev).length;
+  const installs = (rows: Row[]) => new Set(rows.map((e) => String(e.install))).size;
+  const f7 = since(d7);
+  const srcCount: Record<string, number> = {};
+  for (const e of fn) {
+    const m = e.meta as Record<string, unknown> | null;
+    const src = m && typeof m.src === "string" ? m.src : "";
+    if (src && e.ev === "app_open") srcCount[src] = (srcCount[src] || 0) + 1;
+  }
+  const topSrc = Object.entries(srcCount).sort((a, b) => b[1] - a[1]).slice(0, 8);
 
   const subs = (subsQ.data || []) as Row[];
   const live = (s: Row) =>
@@ -101,6 +119,17 @@ Deno.serve(async (req) => {
     ["paid_transactions_30d", paid30.length],
     ["sandbox_active_subs", activeSand.length],
     ["waitlist_signups", wlQ.count ?? 0],
+    ["events_total", fnAllQ.count ?? 0],
+    ["installs_30d", installs(fn)],
+    ["installs_7d", installs(f7)],
+    ["app_opens_7d", cnt(f7, "app_open")],
+    ["forges_7d", cnt(f7, "forge")],
+    ["banks_7d", cnt(f7, "bank")],
+    ["plans_viewed_7d", cnt(f7, "plans_view")],
+    ["buy_started_30d", cnt(fn, "buy_start")],
+    ["buy_completed_30d", cnt(fn, "buy_done")],
+    ["forge_to_bank_7d", cnt(f7, "forge") ? (cnt(f7, "bank") / cnt(f7, "forge")).toFixed(2) : "0.00"],
+    ...topSrc.map(([src, n]) => ["opens_from_" + src, n] as [string, number]),
     ["ai_reads_this_month", aiMonth],
     ["ai_read_subscribers_this_month", aiSubs],
   ];
