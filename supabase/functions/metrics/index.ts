@@ -124,6 +124,8 @@ Deno.serve(async (req) => {
     ["installs_7d", installs(f7)],
     ["app_opens_7d", cnt(f7, "app_open")],
     ["forges_7d", cnt(f7, "forge")],
+    ["shares_7d", cnt(f7, "share")],
+    ["review_asks_7d", cnt(f7, "review_ask")],
     ["banks_7d", cnt(f7, "bank")],
     ["plans_viewed_7d", cnt(f7, "plans_view")],
     ["buy_started_30d", cnt(fn, "buy_start")],

@@ -335,3 +335,7 @@ limits so each tier can be lived with, enforced client-side only.
 
 Warm up. Leave a rep in the tank when the prescription says so. If something
 hurts in a way that isn't muscular, stop and talk to someone qualified.
+
+## Reading the funnel
+
+`npm run funnel` prints the live metrics CSV — subscribers, revenue, installs, forges, banks, shares, and opens by `?p=` source — as a table. The key is deliberately not in this repository: put it in `~/.config/fatcamp/metrics.key` or export `FATCAMP_METRICS_KEY`.

@@ -1301,6 +1301,10 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
    The mark leaves the Create slot, takes the middle of the screen, and the
    room goes dark around it. Bolts and the bar flicker over everything —
    deliberately theme-blind: the blackout and forge colours are the moment. */
+.bfx-share{position:absolute;left:50%;bottom:17vh;transform:translateX(-50%);z-index:3;padding:12px 24px;border-radius:999px;border:1.5px solid #4FD9FF;background:rgba(14,11,9,.55);color:#4FD9FF;font-family:var(--f-display);font-size:14px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;opacity:0;transition:opacity .45s ease 1.7s}
+.bankfx.on .bfx-share{opacity:1}
+.hshare{flex:none;margin-left:6px;padding:4px 10px;border-radius:999px;border:1px solid currentColor;background:transparent;color:var(--ink-3);font-family:var(--f-mono);font-size:11px;cursor:pointer}
+.hshare:hover,.hshare:focus-visible{color:var(--accent)}
 .bankfx{position:fixed;inset:0;z-index:85;background:rgba(14,11,9,.94);opacity:0;transition:opacity .32s ease;touch-action:none;overflow:hidden;cursor:pointer}
 .bankfx.on{opacity:1}
 /* The mark rises quiet and dim from the Create slot; the electricity builds
@@ -4992,7 +4996,7 @@ const LEGACY_KEY = "liftedai.v2", LEGACY_OLD_KEY = "liftedai.v1";
 const PROFILE_FIELDS = ["name","color","equip","customEquip","gymPhoto","xp","streak",
                         "freezes","lastDay","history","badges","limits","cfg","session",
                         "rewards","redeemed","calView","prs","prPick","unit","lastWeight","load","body",
-                        "week","savedSplits","boardScope","offDays"];
+                        "week","savedSplits","boardScope","offDays","reviewAsk"];
 const PROFILE_COLORS = ["var(--p25)","var(--p20)","var(--p15)","var(--p10)"];
 /* Movement limitations. Each one names the muscles and patterns to keep out of
    a session, so ticking a box changes what gets generated rather than just
@@ -6396,7 +6400,7 @@ function bankLines(){
   }catch(e){}
   return [BANK_TOP[ti], BANK_BOT[bi]];
 }
-function bankFx(done){
+function bankFx(done, receipt){
   const calm = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
   const [top, bot] = bankLines();
   const BOLT = "M56,20L43.5,52H50.5L45,80L57,48H49.5Z";
@@ -6445,6 +6449,7 @@ function bankFx(done){
   inner += '<div class="bfx-line top">' + esc(top) + '</div>';
   inner += '<div class="bfx-mark"><img src="icons/icon-512.png" alt="" decoding="async">' + arcs + '</div>';
   inner += '<div class="bfx-line bot">' + esc(bot) + '</div>';
+  if(receipt) inner += '<button class="bfx-share" type="button">Share the receipt</button>';
   inner += '<div class="bfx-skip">tap to carry on</div>';
   ov.innerHTML = inner;
   document.body.appendChild(ov);
@@ -6474,7 +6479,12 @@ function bankFx(done){
     setTimeout(() => { ov.remove(); done(); }, 340);
   };
   ov.addEventListener("pointerdown", finish);
-  setTimeout(finish, 5200);
+  const sh = ov.querySelector(".bfx-share");
+  if(sh){
+    sh.addEventListener("pointerdown", e => e.stopPropagation());
+    sh.addEventListener("click", e => { e.stopPropagation(); shareReceipt(receipt); });
+  }
+  setTimeout(finish, receipt ? 6500 : 5200);
 }
 
 /* ------------------------------------------------------------------ the mark
@@ -7877,8 +7887,79 @@ function finishSession(){
   bankFx(() => {
     toast("Banked", msg, "+"+earned + (already ? " (+"+already+" claimed)" : ""));
     $("#logPanel").scrollIntoView({behavior:"smooth", block:"start"});
-  });
+    setTimeout(maybeAskReview, 900);
+  }, state.history[0]);
   if(signedIn()) syncNow(true);
+}
+
+/* ------------------------------------------------------------ the receipt
+   A banked session is a receipt, and receipts get shown around. One tap
+   hands it to the share sheet with a ?p=sh link, so the funnel can tell a
+   friend's recommendation from a poster. Native sheet on iOS, the Web Share
+   API elsewhere, clipboard as the floor. */
+const SHARE_URL = "https://frennat.github.io/fatcamp/?p=sh";
+let _shareProxy = null;
+function sharePlugin(){
+  const C = window.Capacitor;
+  if(!(C && C.isNativePlatform && C.isNativePlatform() && C.registerPlugin)) return null;
+  if(!_shareProxy) _shareProxy = C.registerPlugin("Share");
+  return _shareProxy;
+}
+function receiptText(h){
+  const bits = ["Banked +" + (h.xp || 0), h.title, h.moves ? h.moves + " movements" : "",
+                h.sets ? h.sets + " sets" : "", h.minutes ? h.minutes + " min" : ""];
+  return bits.filter(Boolean).join(" \u00b7 ") +
+         "\nTyped what I wanted to train. Fatcamp wrote the session in 15 seconds. No account, no email.";
+}
+async function copyReceipt(text){
+  await navigator.clipboard.writeText(text + "\n" + SHARE_URL);
+  toast("Copied", "Receipt and link are on your clipboard.", "");
+}
+async function shareReceipt(h){
+  if(!h) return;
+  const text = receiptText(h), title = "Fatcamp receipt";
+  try{
+    const S = sharePlugin();
+    if(S){
+      const r = await S.share({title, text, url:SHARE_URL});
+      if(r && r.completed) track("share", {method:"native", via:r.activity || ""});
+    }else if(navigator.share){
+      await navigator.share({title, text, url:SHARE_URL});
+      track("share", {method:"web"});
+    }else{
+      await copyReceipt(text);
+      track("share", {method:"copy"});
+    }
+  }catch(e){
+    if(e && e.name === "AbortError") return;      /* sheet dismissed, nothing shared */
+    try{ await copyReceipt(text); track("share", {method:"copy"}); }catch(e2){}
+  }
+}
+
+/* ------------------------------------------------------------ rate the app
+   Apple's rating sheet, asked after the celebration on the 3rd, 15th and
+   50th banked session and never twice inside 120 days. The system decides
+   whether it actually appears (three a year at most, never in TestFlight),
+   so this only ever asks; it never nags. iOS app only. */
+const REVIEW_AT = [3, 15, 50];
+let _reviewProxy = null;
+function reviewPlugin(){
+  const C = window.Capacitor;
+  if(!(C && C.isNativePlatform && C.isNativePlatform() && C.registerPlugin)) return null;
+  if(!_reviewProxy) _reviewProxy = C.registerPlugin("Review");
+  return _reviewProxy;
+}
+function maybeAskReview(){
+  try{
+    const n = (state.history || []).length;
+    if(!REVIEW_AT.includes(n)) return;
+    const R = reviewPlugin(); if(!R) return;
+    const last = state.reviewAsk && state.reviewAsk.t ? Date.parse(state.reviewAsk.t) : 0;
+    if(last && Date.now() - last < 120 * 864e5) return;
+    state.reviewAsk = {n, t:new Date().toISOString()}; save();
+    track("review_ask", {n});
+    R.request().catch(() => {});
+  }catch(e){}
 }
 
 /* -------------------------------------------------------------------- log */
@@ -8320,18 +8401,20 @@ function renderLog(){
     <div class="hist">${
       !state.history.length
         ? `<div class="empty">No sessions banked yet. Get in the slot, forge a session, tick the sets off as you go.</div>`
-        : state.history.map(h => `
+        : state.history.map((h, i) => `
       <div class="histrow">
         <span class="hdot" style="--c:${EFFORT_COLOR[h.effort||2]}"></span>
         <span class="hd">${new Date(h.date).toLocaleDateString([], {month:"short", day:"numeric"})}</span>
         <span class="hn">${esc(h.title)}</span>
         <span class="hmeta num">${h.sets||""} sets · ${h.coverage}% · ${h.minutes}m</span>
         <span class="hx num">+${h.xp}</span>
+        <button class="hshare" type="button" data-share="${i}" aria-label="Share this receipt">Share</button>
       </div>`).join("")}</div>`;
 
   $$("#logBody [data-cal]").forEach(b => b.addEventListener("click", () => {
     state.calView = b.dataset.cal; save(); renderLog();
   }));
+  $$("#logBody [data-share]").forEach(b => b.addEventListener("click", () => shareReceipt(state.history[+b.dataset.share])));
   renderRewards();
 }
 
