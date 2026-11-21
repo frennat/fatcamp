@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Terms of Use — Fatcamp</title>
+<meta name="description" content="The terms for using Fatcamp, including the health and safety disclaimer.">
+<meta name="theme-color" content="#EFEDE7">
+<style>
+:root{
+  --bg:#EFEDE7; --bg-sunk:#E4E1D9; --surface:#FBFAF7; --surface-2:#F4F2EC;
+  --line:#D2CDC2; --line-hard:#B4AEA1; --ink:#1B1A19; --ink-2:#4A4742; --ink-3:#7C776D;
+  --p25:#D8382B; --p20:#2B62C4; --p15:#E8B21C; --p10:#1F8A52;
+  --accent:var(--p25); --accent-2:#F2705C; --accent-ink:#fff; --accent-wash:rgba(216,56,43,.10);
+  --f-display:"Avenir Next","Avenir","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
+  --f-body:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;
+  --f-mono:"SF Mono","Menlo",ui-monospace,"Roboto Mono",monospace;
+  --r:14px; --r-sm:10px; --r-pill:80px; --r-card:16px 48px 16px 16px;
+  --pad:clamp(16px,4vw,26px); --maxw:1120px;
+  --sh-1:0 4px 8px -2px rgba(16,24,40,.10), 0 2px 4px -2px rgba(16,24,40,.06);
+  --sh-2:0 12px 16px -4px rgba(16,24,40,.10), 0 4px 6px -2px rgba(16,24,40,.04);
+  --sh-3:0 24px 48px -12px rgba(16,24,40,.20);
+  --grain:rgba(27,26,25,.045);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#17161A; --bg-sunk:#121114; --surface:#1F1E23; --surface-2:#26242A;
+    --line:#33313A; --line-hard:#4A4753; --ink:#F0EDE6; --ink-2:#B8B3AA; --ink-3:#837E77;
+    --p25:#E8503F; --p20:#4E7EDB; --p15:#F0C13C; --p10:#2FA765;
+    --accent:var(--p25); --accent-2:#FF8A72; --accent-ink:#17161A; --accent-wash:rgba(232,80,63,.14);
+    --grain:rgba(255,255,255,.035);
+    --sh-1:0 4px 10px -2px rgba(0,0,0,.5);
+    --sh-2:0 14px 24px -8px rgba(0,0,0,.6);
+    --sh-3:0 30px 60px -16px rgba(0,0,0,.75);
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;overflow-x:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:radial-gradient(var(--grain) 1px,transparent 1px);background-size:3px 3px;
+}
+.wrap{position:relative;z-index:1;max-width:var(--maxw);margin:0 auto;padding:0 var(--pad)}
+h1,h2,h3{font-family:var(--f-display);font-weight:800;letter-spacing:-.03em;margin:0}
+.eyebrow{
+  font-family:var(--f-mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 14px;
+}
+
+/* ---------- top ---------- */
+.top{display:flex;align-items:center;gap:12px;padding:20px 0 0}
+.top .name{font-family:var(--f-display);font-weight:800;font-size:20px;letter-spacing:-.02em;
+  text-transform:uppercase;color:var(--accent)}
+.top .sp{margin-left:auto}
+
+/* ---------- hero ---------- */
+.hero{padding:44px 0 8px;text-align:center;display:grid;justify-items:center;gap:16px}
+@media(min-width:760px){.hero{padding:70px 0 14px}}
+.hero h1{font-size:clamp(38px,8vw,78px);line-height:.92;text-transform:uppercase;max-width:14ch}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero .lede{color:var(--ink-2);font-size:clamp(15px,2.2vw,18px);max-width:52ch;margin:0}
+.cta{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+.btn{
+  font:inherit;font-family:var(--f-display);font-weight:800;text-transform:uppercase;
+  letter-spacing:-.01em;font-size:16px;border-radius:var(--r-pill);padding:15px 30px;
+  border:1px solid var(--line-hard);background:var(--surface);color:var(--ink);
+  cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:10px;
+  transition:transform .14s, box-shadow .18s, filter .18s;box-shadow:var(--sh-1);
+}
+.btn:hover{transform:translateY(-2px);box-shadow:var(--sh-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.hero .fine{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-3);margin:2px 0 0}
+
+/* the mark, reused from the app */
+.bolt{width:22px;height:22px;flex:none}
+
+/* ---------- shot ---------- */
+.shot{
+  margin:34px auto 0;max-width:820px;border-radius:var(--r-card);overflow:hidden;
+  border:1px solid var(--line);background:var(--surface);box-shadow:var(--sh-3);
+}
+.shot .bar{display:flex;gap:6px;padding:11px 14px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.shot .bar i{width:10px;height:10px;border-radius:50%;background:var(--line-hard);display:block}
+.shot .body{padding:26px 22px 30px;text-align:left;display:grid;gap:14px}
+.shot .ask{
+  border:1px solid var(--line-hard);border-radius:22px;padding:16px 18px;background:var(--bg-sunk);
+  font-size:15px;color:var(--ink-2);display:flex;align-items:center;gap:14px;
+}
+.shot .ask span{flex:1}
+.shot .out{display:grid;gap:7px}
+.shot .row{
+  display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid var(--line);
+  border-radius:var(--r);background:var(--bg);font-size:14px;
+}
+.shot .row b{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);width:2ch}
+.shot .row .m{flex:1}
+.shot .row .s{font-family:var(--f-mono);font-size:12px;color:var(--ink-2)}
+
+/* ---------- sections ---------- */
+section{padding:60px 0}
+@media(min-width:760px){section{padding:86px 0}}
+.shead{max-width:60ch;margin-bottom:30px}
+.shead h2{font-size:clamp(28px,5vw,46px);line-height:.98;text-transform:uppercase}
+.shead p{color:var(--ink-2);margin:14px 0 0;font-size:16px}
+.grid{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:680px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:980px){.grid.three{grid-template-columns:repeat(3,1fr)}}
+.card{
+  border:1px solid var(--line);border-radius:var(--r-card);background:var(--surface);
+  padding:24px 22px;box-shadow:var(--sh-1);position:relative;overflow:hidden;
+}
+.card h3{font-size:19px;text-transform:uppercase;margin-bottom:8px}
+.card p{margin:0;color:var(--ink-2);font-size:14.5px;line-height:1.6}
+.card .k{
+  font-family:var(--f-mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--accent);display:block;margin-bottom:11px;
+}
+
+/* ---------- steps ---------- */
+.steps{display:grid;gap:16px;counter-reset:s}
+@media(min-width:820px){.steps{grid-template-columns:repeat(3,1fr)}}
+.step{position:relative;padding-left:56px}
+.step::before{
+  counter-increment:s;content:counter(s);position:absolute;left:0;top:-4px;
+  width:42px;height:42px;border-radius:50%;display:grid;place-items:center;
+  font-family:var(--f-mono);font-size:17px;font-weight:600;
+  background:var(--accent);color:var(--accent-ink);
+}
+.step h3{font-size:17px;text-transform:uppercase;margin-bottom:6px}
+.step p{margin:0;color:var(--ink-2);font-size:14.5px}
+
+/* ---------- pricing ---------- */
+.plans{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:820px){.plans{grid-template-columns:repeat(3,1fr)}}
+.plan{
+  border:1px solid var(--line);border-radius:var(--r-card);background:var(--surface);
+  padding:26px 24px;display:flex;flex-direction:column;gap:4px;box-shadow:var(--sh-1);
+}
+.plan.hot{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent),var(--sh-2)}
+.tag{
+  font-family:var(--f-mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:6px;
+}
+.plan.hot .tag{color:var(--accent)}
+.plan b.nm{font-family:var(--f-display);font-weight:800;font-size:23px;text-transform:uppercase;letter-spacing:-.02em}
+.price{font-family:var(--f-mono);font-size:34px;font-weight:600;line-height:1;margin:8px 0 0}
+.price .per{font-size:12px;color:var(--ink-3);font-weight:400}
+.each{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.05em;line-height:1.55;
+  margin:12px 0 4px;padding:9px 12px;border-radius:var(--r-sm);
+  background:var(--accent-wash);color:var(--ink-2);
+}
+.each b{font-size:15px;color:var(--accent)}
+.plan ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px;font-size:13.5px;color:var(--ink-2)}
+.plan li{padding-left:21px;position:relative;line-height:1.45}
+.plan li::before{content:"✓";position:absolute;left:0;color:var(--accent);font-weight:700}
+.pricenote{margin:22px 0 0;font-size:13.5px;color:var(--ink-3);max-width:70ch}
+
+/* ---------- install ---------- */
+.install{
+  border:1px dashed var(--line-hard);border-radius:var(--r-card);padding:28px 26px;
+  background:var(--surface-2);
+}
+.install ol{margin:14px 0 0;padding-left:22px;display:grid;gap:10px;color:var(--ink-2);font-size:15px}
+.install code{
+  font-family:var(--f-mono);font-size:13px;background:var(--bg-sunk);
+  padding:2px 7px;border-radius:6px;border:1px solid var(--line);
+}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line);padding:34px 0 46px;display:flex;gap:16px;
+  flex-wrap:wrap;align-items:center;font-size:13px;color:var(--ink-3)}
+.appsoon{
+  display:inline-flex;align-items:center;gap:11px;background:#000;color:#fff;
+  border-radius:11px;padding:9px 16px 10px 14px;border:1px solid rgba(255,255,255,.22);
+  text-decoration:none;flex:none;
+}
+.appsoon svg{width:26px;height:26px;fill:#fff;flex:none;margin-top:-2px}
+.appsoon .as-t{display:flex;flex-direction:column;line-height:1;gap:3px}
+.appsoon .as-t small{font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;opacity:.92;font-weight:500}
+.appsoon .as-t b{font-size:21px;font-weight:500;letter-spacing:-.01em}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<style>
+.legal{max-width:74ch;margin:0 auto;padding:0 var(--pad) 60px}
+.legal h1{font-family:var(--f-display);font-weight:800;font-size:clamp(30px,6vw,50px);
+  text-transform:uppercase;letter-spacing:-.03em;line-height:.95;margin:36px 0 6px}
+.legal .upd{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 26px}
+.legal h2{font-family:var(--f-display);font-weight:800;font-size:19px;text-transform:uppercase;
+  letter-spacing:-.01em;margin:32px 0 8px}
+.legal p,.legal li{font-size:15px;line-height:1.65;color:var(--ink-2);margin:0 0 12px}
+.legal ul{padding-left:20px;margin:0 0 14px}
+.legal strong{color:var(--ink)}
+.legal a{color:var(--accent)}
+.tldr{border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:var(--r-sm);
+  background:var(--surface);padding:16px 18px;margin:0 0 26px}
+.tldr p{margin:0;font-size:15px;color:var(--ink)}
+.legal table{width:100%;border-collapse:collapse;margin:0 0 16px;font-size:14px}
+.legal th,.legal td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);
+  color:var(--ink-2);vertical-align:top}
+.legal th{font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-3)}
+.backlink{display:inline-block;font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-3);text-decoration:none;margin:26px 0 0}
+.backlink:hover{color:var(--accent)}
+</style>
+
+</head>
+<body>
+
+<div class="legal">
+<a class="backlink" href="./">&larr; Fatcamp</a>
+<h1>Terms of Use</h1>
+<p class="upd">Last updated 21 November 2026</p>
+
+<div class="tldr">
+  <p><strong>The short version.</strong> Fatcamp writes training suggestions. It is not a doctor,
+  a physical therapist or a personal trainer watching you lift. Check with a doctor before you start
+  if you have any health condition, injury or doubt; warm up; use loads you can control; and stop
+  if anything hurts. You train at your own risk. Subscriptions are sold and billed by Apple.</p>
+</div>
+
+<h2>Who we are and what this covers</h2>
+<p>Fatcamp ("Fatcamp", "we", "us") makes the Fatcamp app for iPhone and Apple Watch, the web app at
+frennat.github.io/fatcamp, and this website (together, "the Service"). Contact:
+<a href="mailto:fatcamp.ai@gmail.com">fatcamp.ai@gmail.com</a>. By using the Service you agree to
+these terms. If you got the app from the App Store, Apple's
+<a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" rel="noopener">Licensed Application End User License Agreement</a>
+also applies; where the two differ about the licence to use the app, Apple's agreement controls.
+Our <a href="privacy.html">Privacy Policy</a> explains what data is used and how.</p>
+
+<h2>Health and safety — please read</h2>
+<ul>
+  <li><strong>Not medical advice.</strong> Sessions, movements, sets, reps, loads, rest times,
+      calorie estimates and anything else the Service shows are general fitness information
+      generated by rules and, for Upload Media, by an AI model. They are not medical, physical
+      therapy or dietary advice, and they are not tailored to your health by a professional.</li>
+  <li><strong>See a doctor first if in doubt.</strong> Talk to a qualified health professional
+      before starting or changing an exercise program — especially if you are pregnant, have heart,
+      lung, joint, bone, blood-pressure or other conditions, take medication, are recovering from
+      an injury, or have not exercised in a while.</li>
+  <li><strong>Listen to your body.</strong> Stop immediately and seek help if you feel pain,
+      dizziness, faintness, chest discomfort or shortness of breath beyond normal effort.</li>
+  <li><strong>Equipment and form are on you.</strong> The 3D demonstrations are illustrations, not
+      a substitute for coaching. Use equipment that is in good condition, use a spotter or safety
+      bars for heavy lifts, and choose loads you can control. "Failure" sets and higher effort
+      settings increase risk.</li>
+  <li><strong>Movement limitations are a filter, not a diagnosis.</strong> Telling the app about
+      an injury helps it avoid some movements; it cannot judge what is safe for your body.</li>
+  <li><strong>Watch and Health data are estimates.</strong> Heart rate, calories, distance and
+      detected sets come from your devices and may be wrong. Do not rely on them for medical
+      decisions or for safety.</li>
+  <li><strong>You assume the risk.</strong> Exercise carries inherent risk of injury. To the
+      extent the law allows, you train voluntarily and at your own risk.</li>
+</ul>
+
+<h2>Who can use it</h2>
+<p>You must be at least 13 to use the Service, and if you are under 18 (or the age of majority
+where you live) a parent or guardian must agree to these terms for you and should supervise your
+training.</p>
+
+<h2>Subscriptions</h2>
+<p>Fatcamp offers optional auto-renewing subscriptions (Pro and Max), with an introductory first
+month. They are sold and billed by Apple through your Apple ID. Prices are shown in the app before
+you buy. A subscription renews automatically each month unless you cancel it at least 24 hours
+before the renewal date in your Apple ID settings. Refunds are handled by Apple under its policies;
+we cannot issue them directly. Features included in each plan may change over time; features marked
+"beta" may change, be limited by monthly caps, or be withdrawn.</p>
+
+<h2>Upload Media (AI reading)</h2>
+<p>If you use Upload Media, you confirm you have the right to use the screenshots or clips you
+choose. The AI may misread what it sees; check the session it builds before you train it.</p>
+
+<h2>Accounts and leaderboards</h2>
+<p>Accounts are optional. If you create one, keep your login secure and choose a handle that is
+not offensive, impersonating or infringing. Don't try to cheat the leaderboards, attack or overload
+the Service, reverse-engineer its servers, or use it to break the law. We may remove handles,
+reset scores or close accounts that break these rules.</p>
+
+<h2>Our content</h2>
+<p>The app, its design, the 3D figures, the exercise library and the Fatcamp name and marks belong
+to Fatcamp. You may use the Service for your own personal training. Your training log is yours.</p>
+
+<h2>Changes and availability</h2>
+<p>We may update the Service or these terms. If a change is material we will update the date
+above and, where reasonable, tell you in the app. Continuing to use the Service after a change
+means you accept it. The Service is provided as available and may be interrupted or discontinued.</p>
+
+<h2>Disclaimers</h2>
+<p>To the fullest extent permitted by law, the Service is provided "as is" and "as available",
+without warranties of any kind, whether express or implied, including fitness for a particular
+purpose, accuracy, and non-infringement. We do not warrant that any workout, estimate, count or
+result is accurate, safe or suitable for you.</p>
+
+<h2>Limitation of liability</h2>
+<p>To the fullest extent permitted by law, Fatcamp will not be liable for any indirect, incidental,
+special, consequential or punitive damages, or for any personal injury, loss of data or loss of
+profits arising from your use of the Service or any workout it suggests. Our total liability for
+any claim relating to the Service is limited to the amount you paid for the Service in the twelve
+months before the claim, or US$50, whichever is greater. Some places do not allow these limits,
+so they may not apply to you in full.</p>
+
+<h2>Governing law</h2>
+<p>These terms are governed by the laws of the State of New York, USA, without regard to
+conflict-of-law rules. Any dispute will be brought in the state or federal courts located in
+New York, and you and we consent to their jurisdiction, except where the law where you live
+gives you the right to bring a claim locally.</p>
+
+<h2>Contact</h2>
+<p>Questions about these terms: <a href="mailto:fatcamp.ai@gmail.com">fatcamp.ai@gmail.com</a>.</p>
+
+<a class="backlink" href="./">&larr; Fatcamp</a>
+</div>
+</body>
+</html>

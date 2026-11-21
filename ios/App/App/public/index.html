@@ -1204,6 +1204,7 @@ dialog::backdrop{background:rgba(10,9,12,.62);backdrop-filter:blur(3px)}
 .codebox{width:100%;margin-top:10px;font-family:var(--f-mono);font-size:11px;word-break:break-all;
   padding:9px 11px;border-radius:var(--r);border:1px solid var(--line-hard);
   background:var(--surface-2);color:var(--ink-2);resize:vertical}
+#termsDlg a{color:var(--accent)}
 .dlg-note{font-size:12px;color:var(--ink-3);margin-right:auto;align-self:center}
 
 /* ---------- settings ---------- */
@@ -1813,6 +1814,7 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
     <span class="tag">Fatcamp</span>
     <span style="font-size:12px;color:var(--ink-3)">Everything is stored on this device. Not medical advice — warm up, and leave a rep in the tank when the bar says so.</span>
     <a href="site/privacy.html" class="linkbtn" style="text-decoration:none">Privacy</a>
+    <a href="site/terms.html" class="linkbtn" style="text-decoration:none">Terms</a>
     <button class="linkbtn" id="resetBtn" type="button" style="margin-left:auto">Reset all progress</button>
     <span style="flex-basis:100%;height:0"></span>
     <span class="appsoon" role="img" aria-label="Coming soon to the App Store">
@@ -1858,6 +1860,27 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
     <div class="dlg-ft">
       <span class="dlg-note">Changes save as you make them</span>
       <button class="btn primary" value="done" type="submit">Done</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="termsDlg">
+  <form method="dialog">
+    <div class="dlg-hd"><h3>Before your first session</h3></div>
+    <div class="dlg-bd">
+      <p style="margin:0 0 10px">Fatcamp writes training suggestions. It isn't medical advice, and it
+      can't see your form or know your health.</p>
+      <ul style="margin:0 0 10px;padding-left:18px;color:var(--ink-2);font-size:14px;line-height:1.5">
+        <li>Check with a doctor first if you have an injury, a condition, or any doubt.</li>
+        <li>Warm up, use loads you can control, and use a spotter or safeties on heavy lifts.</li>
+        <li>Stop if anything hurts, or you feel dizzy, faint or short of breath.</li>
+      </ul>
+      <p style="margin:0;font-size:13px;color:var(--ink-3)">By continuing you agree to the
+      <a href="site/terms.html" target="_blank" rel="noopener">Terms of Use</a> and
+      <a href="site/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>. You train at your own risk.</p>
+    </div>
+    <div class="dlg-ft">
+      <button class="btn" value="ok" id="termsOk" type="submit">Got it — forge it</button>
     </div>
   </form>
 </dialog>
@@ -7263,6 +7286,24 @@ function doForge(){
           "Pick a plan to keep forging sessions. Everything you have already logged stays put.", "");
     return;
   }
+  /* One time, before the very first session: the health and safety basics and the
+     terms, acknowledged with a tap. Remembered per device; never asked again. */
+  let agreed = false;
+  try{ agreed = !!localStorage.getItem("fc.terms"); }catch(e){ agreed = true; }
+  if(!agreed){
+    const td = $("#termsDlg");
+    if(td && td.showModal){
+      td.addEventListener("close", function once(){
+        td.removeEventListener("close", once);
+        if(td.returnValue !== "ok") return;
+        try{ localStorage.setItem("fc.terms", new Date().toISOString()); }catch(e){}
+        doForge();
+      });
+      td.returnValue = "";
+      td.showModal();
+      return;
+    }
+  }
   const cfg = JSON.parse(JSON.stringify(state.cfg));
   cfg.seed = (Math.random()*1e9)|0;
   state.session = generate(cfg);
@@ -9289,7 +9330,9 @@ function renderPlans(){
     <p class="plannote legallinks">
       <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" rel="noopener">Terms of Use (EULA)</a>
       &nbsp;·&nbsp;
-      <a href="https://frennat.github.io/fatcamp/site/privacy.html" target="_blank" rel="noopener">Privacy Policy</a></p>`;
+      <a href="https://frennat.github.io/fatcamp/site/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+      &nbsp;·&nbsp;
+      <a href="https://frennat.github.io/fatcamp/site/terms.html" target="_blank" rel="noopener">Fatcamp Terms</a></p>`;
   $$("#planBody [data-plan]").forEach(b => b.addEventListener("click", async () => {
     const key = b.dataset.plan || null;
 

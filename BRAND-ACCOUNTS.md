@@ -26,7 +26,7 @@ Rotate the password (it was pasted into a chat once), turn on 2-step verificatio
 
 ### App Store Connect metadata (app 6799269953) — movable: partially
 
-- **Bound to:** The developer team above. App Review contact = Tanner Francis / +1 716 870 7151 / tfrancis26@jcu.edu (memory). Support URL and Privacy URL point at frennat.github.io (GitHub username). Copyright 'Tater Tot Studios'. Both subscriptions' metadata untouched during 1.3 review.
+- **Bound to:** The developer team above. App Review contact = Tanner Francis / +1 716 870 7151 / tfrancis26@jcu.edu (memory). Support URL and Privacy URL point at frennat.github.io (GitHub username). Copyright 'Tater Tot Studios' (to change to 'Fatcamp' on the next version, 2026-11-21). Both subscriptions' metadata untouched during 1.3 review.
 - **Role:** Listing, review correspondence, subscriptions, TestFlight, Xcode Cloud, server-notification webhook registration (Production + Sandbox).
 - **How:** Contact email/phone: edit on the next editable version (1.4 in Prepare for Submission). Support/Privacy URLs: change only if/when the site URL changes (custom domain). Add fatcamp.ai@gmail.com as an ASC user for notifications. Ownership moves only via App Transfer (previous row).
 - **Risk:** FLAGGED: nothing should be edited on a version Apple is currently reviewing; current review state on 2026-09-12 is unknown from files (1.3 approved 8/31; 1.4 pre-review pass still pending per memory) — check ASC first. If the GitHub Pages URL ever changes, Apple will see a dead privacy URL.
