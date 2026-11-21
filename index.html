@@ -5183,6 +5183,7 @@ function save(){
         toast("Photo dropped", "This device ran out of local storage, so the gym photo was removed. Your progress is safe.", "");
     }
   }
+  if(typeof watchPush === "function") watchPush();   /* the wrist always shows the latest */
 }
 function switchProfile(id){
   if(!vault.profiles[id] || id === vault.active) return;
@@ -7182,11 +7183,17 @@ function askApply(raw){
   for(const k in ASK_FOCUS) if(ASK_FOCUS[k].some(left)) foc.push(k);
   if(foc.length){ c.focus = foc.indexOf("full") >= 0 ? ["full"] : foc.slice(0, 4); heard++; }
 
+  /* treadmill minutes belong to the treadmill, not to the lifting: "push day,
+     20 min treadmill" is a push day plus a 20-minute belt, not a 3-movement day */
+  const TREAD = /(\d+)\s*(?:minutes|mins|min)\s+(?:on\s+(?:the\s+|a\s+)?)?(?:treadmill|tread|incline walk)|(?:treadmill|tread|incline walk)\s+(?:for\s+)?(\d+)\s*(?:minutes|mins|min)/;
+  const tm = t.match(TREAD);
+  const td = tm ? t.replace(tm[0], " ") : t;
+
   /* how much — a duration is a movement count wearing a disguise */
   let n = null, m;
-  if((m = t.match(/(\d+)\s*(?:movements?|moves?|lifts?|exercises?)/))) n = +m[1];
-  else if((m = t.match(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty)\s+(?:movements?|moves?|lifts?|exercises?)/))) n = ASK_WORDNUM[m[1]];
-  else if((m = t.match(/(\d+)\s*(?:min|mins|minutes)/))) n = Math.round(+m[1]/8);
+  if((m = td.match(/(\d+)\s*(?:movements?|moves?|lifts?|exercises?)/))) n = +m[1];
+  else if((m = td.match(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty)\s+(?:movements?|moves?|lifts?|exercises?)/))) n = ASK_WORDNUM[m[1]];
+  else if((m = td.match(/(\d+)\s*(?:min|mins|minutes)/))) n = Math.round(+m[1]/8);
   else if(has("an hour") || has("1 hour") || has("one hour")) n = 7;
   else if(has("half an hour")) n = 4;
   else if(has("two hours") || has("2 hours")) n = 11;
@@ -7213,7 +7220,11 @@ function askApply(raw){
   const cardioWords = ["cardio","conditioning","run","running","jog","row","rowing","bike",
     "biking","sprint","sprints","hiit","interval","intervals","finisher","jump rope",
     "skipping","burpees","engine","zone 2","zone two","steady state"];
-  if(cardioWords.some(left)){
+  if(tm || has("treadmill") || has("incline walk") || has("tread")){
+    c.cardioOn = true; c.cstyle = "treadmill"; heard++;
+    if(tm) c.tmins = Math.max(5, Math.min(120, +(tm[1] || tm[2])));
+  }
+  else if(cardioWords.some(left)){
     c.cardioOn = true; heard++;
     if(has("hiit") || has("interval") || has("intervals") || has("sprint") || has("sprints")) c.cstyle = "intervals";
     else if(has("finisher") || has("burpees")) c.cstyle = "finisher";
@@ -7433,6 +7444,7 @@ function cardioBlock(c, animate){
       <h3>${esc(c.x.n)}</h3>
       <span class="badge cardio">${esc(c.styleName)}</span>
       <span style="font-size:12.5px;color:var(--ink-3)">${esc(c.styleDesc)}</span>
+      ${c.done ? `<span class="badge cardio">Logged ${c.via ? "from " + esc(c.via) : "on watch"} · ${c.doneMins|0} min${c.kcal ? " · " + (c.kcal|0) + " kcal" : ""}</span>` : ""}
       <span class="num" style="margin-left:auto;font-size:20px;font-weight:600">${c.mins}<span style="font-size:11px"> min</span></span>
     </div>
     <div class="cb">
@@ -7843,12 +7855,17 @@ function updateProgress(){
 }
 
 /* ----------------------------------------------------------------- finish */
-function finishSession(){
+function finishSession(opts){
   const s = state.session;
+  if(!s) return;
+  const quiet = !!(opts && opts.quiet);     /* banked from the watch: nobody is here to answer a dialog */
   const done = s.moves.reduce((a,m) => a + m.doneSets.filter(Boolean).length, 0);
   const total = s.moves.reduce((a,m) => a + m.sets, 0);
-  const ratio = total ? done/total : 0;
-  if(ratio === 0 && !confirm("No sets logged. Bank it anyway for partial credit?")) return;
+  /* a cardio block logged on the watch counts as one more unit of work done;
+     an unlogged one costs nothing, since the phone has never tracked cardio */
+  const cd = s.cardio && s.cardio.done ? 1 : 0;
+  const ratio = (total + cd) ? (done + cd)/(total + cd) : 0;
+  if(ratio === 0 && (quiet || !confirm("No sets logged. Bank it anyway for partial credit?"))) return;
 
   recordLoads(s);            /* before the session is cleared, so the next one
                                 opens knowing what happened in this one */
@@ -7867,7 +7884,8 @@ function finishSession(){
                          mids:s.moves.map(m => m.id)});
   state.history = state.history.slice(0, 40);
   track("bank", {sets: done + "/" + total});
-  healthSave(s, s.minutes, sessionCalories(s));   /* let the rings know */
+  /* let the rings know — unless the watch already recorded the real workout */
+  if(!s.watchWorkout) healthSave(s, s.minutes, sessionCalories(s));
   const newBadges = checkBadges();
   if(state.week && typeof s.weekDay === "number" && state.week.days[s.weekDay]){
     state.week.days[s.weekDay].doneDate = new Date().toISOString();
@@ -8032,6 +8050,129 @@ async function healthSave(session, minutes, calories){
   if(!H || !healthOn() || !minutes) return;
   /* the Swift side has always accepted calories; nothing was ever sending any */
   try{ await H.saveWorkout({minutes:Math.round(minutes), calories:Math.round(calories||0)}); }catch(e){}
+}
+
+/* ── Apple Watch ────────────────────────────────────────────────────────────
+   The phone stays the source of truth. Every save hands today's session to the
+   watch as a small display-ready copy; the watch sends back what happened on the
+   wrist: a set ticked by tap or detected from motion, a cardio block that logged
+   itself once the target minutes of movement were reached, a workout recorded
+   to Health, or a request to bank. Events land in a native inbox first, so one
+   that arrives while this page is asleep is applied on the next resume, and
+   each carries an id so it is applied exactly once. */
+let _watchProxy = null;
+function watchPlugin(){
+  const C = window.Capacitor;
+  if(!(C && C.isNativePlatform && C.isNativePlatform() && C.registerPlugin)) return null;
+  if(!_watchProxy) _watchProxy = C.registerPlugin("Watch");
+  return _watchProxy;
+}
+function cardioTarget(c){ return c.style === "treadmill" ? Math.max(1, c.mins - 5) : c.mins; }
+function watchPayload(s){
+  if(!s) return "";
+  return JSON.stringify({
+    sid:String(s.date), title:s.title, effort:s.cfg.effort|0, unit:state.unit || "lb",
+    streak:state.streak|0, points:scoreSession(s, state.streak).total,
+    moves:s.moves.map((m, i) => ({i, n:m.x.n, sets:m.sets, reps:String(repsLabel(m)), rest:m.rest|0,
+      done:Array.from({length:m.sets}, (_, k) => !!m.doneSets[k]), claimed:!!m.claimed,
+      failure:!!m.failure, weight:String(m.weight || ""), cls:m.x.cls})),
+    cardio:s.cardio ? {n:s.cardio.x.n, style:s.cardio.style, styleName:s.cardio.styleName,
+      mins:s.cardio.mins|0, target:cardioTarget(s.cardio), segs:s.cardio.segs || [],
+      done:!!s.cardio.done, doneMins:s.cardio.doneMins != null ? s.cardio.doneMins : null} : null
+  });
+}
+let _watchT = 0, _watchLast = null;
+function watchPush(){
+  if(!watchPlugin()) return;
+  clearTimeout(_watchT);
+  _watchT = setTimeout(() => {
+    const json = watchPayload(state.session);
+    if(json === _watchLast) return;
+    _watchLast = json;
+    watchPlugin().push({session:json}).catch(() => { _watchLast = null; });
+  }, 250);
+}
+function watchSeen(){
+  try{ return JSON.parse(localStorage.getItem("fc.watchSeen") || "[]"); }catch(e){ return []; }
+}
+async function watchDrain(){
+  const W = watchPlugin();
+  if(!W) return;
+  let events = [];
+  try{ ({events} = await W.drain()); }catch(e){ return; }
+  if(!events || !events.length) return;
+  const seen = watchSeen();
+  let changed = false, bank = false;
+  for(const e of events){
+    if(!e || (e.eid && seen.indexOf(e.eid) >= 0)) continue;
+    if(e.eid) seen.push(e.eid);
+    if(e.type === "bank") bank = true;
+    else changed = watchApply(e) || changed;
+  }
+  try{ localStorage.setItem("fc.watchSeen", JSON.stringify(seen.slice(-300))); }catch(e){}
+  if(changed){ save(); unmountAll(); renderSession(false); renderHUD(); }
+  if(bank && state.session && String(state.session.date) === String((events.find(e => e && e.type === "bank") || {}).sid))
+    finishSession({quiet:true});
+}
+function watchApply(e){
+  const s = state.session;
+  if(!s || String(s.date) !== String(e.sid)) return false;     /* an older session's leftovers */
+  if(e.type === "set"){
+    const m = s.moves[e.move|0];
+    if(!m || (e.set|0) >= m.sets) return false;
+    m.doneSets[e.set|0] = !!e.done;
+    const done = m.doneSets.filter(Boolean).length;
+    if(done === m.sets && !m.claimed){
+      const pts = Math.round(movePoints(m, s.cfg.effort) * done / m.sets);
+      m.claimed = true; m.claimedPts = pts; state.xp += pts;
+      toast(m.x.n + " banked", "From your watch" + (e.src === "auto" ? ", detected from motion" : "") +
+            ". Point balance is now " + state.xp.toLocaleString() + ".", "+" + pts);
+    }
+    return true;
+  }
+  if(e.type === "cardio" && s.cardio){
+    Object.assign(s.cardio, {done:true, doneMins:e.mins|0, kcal:e.kcal|0, km:+e.km || 0, hr:e.hr|0, auto:!!e.auto});
+    toast(s.cardio.x.n + " logged", (e.auto ? "Your watch counted " : "Logged from your watch: ") +
+          ((e.mins|0) > 0 ? (e.mins|0) + " min of movement" : "under a minute of movement") + (e.kcal ? " · " + (e.kcal|0) + " kcal" : "") + ".", "");
+    return true;
+  }
+  if(e.type === "workout"){
+    /* the watch already wrote this to Health — banking must not write a second copy */
+    s.watchWorkout = true;
+    s.watchKcal = (s.watchKcal|0) + (e.kcal|0);
+    return true;
+  }
+  return false;
+}
+/* Cardio done anywhere counts. If today's conditioning block isn't logged yet and
+   Health holds a matching workout recorded after the session was made (Apple's
+   Workout app on a treadmill, a Peloton, a rower app), credit it, with the minutes
+   that were actually done. Only workouts at least as long as the target count. */
+const CARDIO_TYPES = ["Run","Walk","Cycle","Row","Elliptical","Stairs","HIIT","Cross training","Hike"];
+async function healthCreditCardio(){
+  const H = healthPlugin(), s = state.session;
+  if(!H || !healthOn() || !s || !s.cardio || s.cardio.done) return false;
+  try{
+    const {workouts} = await H.recentWorkouts({days:2});
+    const since = new Date(s.date).getTime() - 10*60*1000;
+    const need = cardioTarget(s.cardio);
+    const hit = (workouts || []).find(w => !w.mine && CARDIO_TYPES.indexOf(w.type) >= 0 &&
+      new Date(w.start).getTime() >= since && (w.minutes|0) >= need);
+    if(!hit) return false;
+    Object.assign(s.cardio, {done:true, doneMins:hit.minutes|0, auto:true, via:hit.source || "Health"});
+    save(); unmountAll(); renderSession(false);
+    toast(s.cardio.x.n + " logged", "Found a " + (hit.minutes|0) + "-minute " + hit.type.toLowerCase() +
+          " from " + (hit.source || "Health") + " in Apple Health.", "");
+    return true;
+  }catch(e){ return false; }
+}
+document.addEventListener("visibilitychange", () => { if(!document.hidden) healthCreditCardio(); });
+setTimeout(healthCreditCardio, 1500);
+
+if(watchPlugin()){
+  watchPlugin().addListener("watchEvents", watchDrain);
+  document.addEventListener("visibilitychange", () => { if(!document.hidden){ watchDrain(); watchPush(); } });
+  setTimeout(() => { watchDrain(); watchPush(); }, 700);
 }
 
 /* Every day that counts, from either source. */

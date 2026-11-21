@@ -95,7 +95,10 @@ public class HealthPlugin: CAPPlugin, CAPBridgedPlugin {
                 ]
                 /* our own sessions come back through this query too; the app
                    filters them out by bundle id so nothing is double counted */
-                row["mine"] = w.sourceRevision.source.bundleIdentifier == Bundle.main.bundleIdentifier
+                /* the watch app's bundle id extends the phone's (…fatcamp.watchkitapp), and its
+                   workouts belong to a Fatcamp session the phone banks, so they're ours too */
+                let src = w.sourceRevision.source.bundleIdentifier
+                row["mine"] = src == Bundle.main.bundleIdentifier || src.hasPrefix((Bundle.main.bundleIdentifier ?? "~") + ".")
                 return row
             }
             call.resolve(["workouts": out])

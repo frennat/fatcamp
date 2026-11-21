@@ -15,6 +15,7 @@ class MainViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(HapticsPlugin())
         bridge?.registerPluginInstance(SharePlugin())
         bridge?.registerPluginInstance(ReviewPlugin())
+        bridge?.registerPluginInstance(WatchPlugin())
         if #available(iOS 15.0, *) { bridge?.registerPluginInstance(StorePlugin()) }
     }
 }

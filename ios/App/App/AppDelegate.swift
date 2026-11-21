@@ -1,5 +1,6 @@
 import UIKit
 import Capacitor
+import HealthKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -9,6 +10,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         return true
+    }
+
+    /// The watch app asks for Health access on the wrist, but Apple shows that
+    /// permission sheet on the iPhone. This hand-off is what lets the sheet
+    /// appear; without it the watch's request is never answered and its
+    /// workouts can't be saved to Health or show up in Fitness.
+    func applicationShouldRequestHealthAuthorization(_ application: UIApplication) {
+        HKHealthStore().handleAuthorizationForExtension { _, _ in }
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
