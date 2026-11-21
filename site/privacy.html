@@ -218,7 +218,7 @@ footer{border-top:1px solid var(--line);padding:34px 0 46px;display:flex;gap:16p
 <div class="legal">
 <a class="backlink" href="./">&larr; Fatcamp</a>
 <h1>Privacy Policy</h1>
-<p class="upd">Last updated 12 September 2026</p>
+<p class="upd">Last updated 21 November 2026</p>
 
 <div class="tldr">
   <p><strong>The short version.</strong> Everything you log stays on your device. You can use
@@ -269,10 +269,20 @@ analytics tool is involved — events go only to our own database.</p>
       above, and they identify nobody.</li>
   <li>No advertising identifiers, no ad networks, no third-party trackers.</li>
   <li>No location. "Region" is a value you pick from a list; the app does not read GPS.</li>
-  <li>No contacts, photos, microphone or camera. If you upload a photo of your gym, it is read
-      in your browser to detect equipment and is never uploaded anywhere.</li>
+  <li>No contacts, microphone or camera. If you add a photo of your gym, it is read in your
+      browser to detect equipment and is never uploaded anywhere. The one time an image leaves
+      your device is Upload Media, below, and only when you choose to use it.</li>
   <li>Nothing is sold, rented, or shared with anyone for any purpose.</li>
 </ul>
+
+<h2>Upload Media <span style="font-weight:400;font-size:.7em;color:var(--ink-3)">(Max plan, beta)</span></h2>
+<p>If you choose to read a workout from a screenshot or a clip, the app pulls a few still frames
+from it on your device and sends only those frames to our server, which passes them to
+<strong>Anthropic</strong>'s Claude model to recognise the exercises shown. The answer is a list of
+exercise names; the frames are not stored by us once it comes back. We keep a count of how many
+reads each subscription has used this month, to enforce the plan's limit, and nothing else about
+the request. Anthropic processes the frames under its commercial API terms, which do not allow
+them to be used to train its models. Nothing is sent unless you start a read yourself.</p>
 
 <h2>Apple Health <span style="font-weight:400;font-size:.7em;color:var(--ink-3)">(iOS app, when available)</span></h2>
 <p>The iOS version can ask permission to read workouts recorded by other apps, so sessions you
@@ -281,11 +291,17 @@ Health. This is opt-in through Apple's own permission dialog and can be revoked 
 iOS Settings. <strong>Health data is read on the device and never transmitted to us or anyone
 else</strong> — it is not synced, not stored on a server, and not used for anything but your
 streak and your log.</p>
+<p><strong>Apple Watch.</strong> When you start a workout in the Fatcamp watch app, it records an
+Apple Watch workout: it reads your heart rate, active calories and distance while the workout
+runs, shows them on your wrist, and saves the finished workout to Health so it counts toward your
+rings and appears in the Fitness app. Your sets and logged cardio go from the watch to your iPhone
+over Apple's own watch connection. None of this is sent to us.</p>
 
 <h2>Service providers</h2>
 <p>Accounts and leaderboards run on <strong>Supabase</strong>, which stores the account data
 and anonymous usage counts described above on our behalf. The website and app are served by <strong>GitHub Pages</strong>,
-which processes standard web-server request logs. If the app is distributed through the App
+which processes standard web-server request logs. Upload Media reads, when you use them, are
+processed by <strong>Anthropic</strong> as described above. If the app is distributed through the App
 Store, Apple provides download and crash statistics in aggregate. There are no other providers.</p>
 
 <h2>Children</h2>
