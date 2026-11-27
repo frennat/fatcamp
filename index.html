@@ -5075,6 +5075,11 @@ const PLANS = {
   max:{n:"Max", price:14.99, moves:20, failure:true,  surprise:true,  profiles:99, adaptive:true, weekDays:7, splits:99}
 };
 const FIRST_MONTH = 4.99;              /* everything in Max, for the first month */
+/* THE PAYWALL SWITCH. false = personal build: everything unlocked, no StoreKit
+   calls, no plans panel, nothing asks for an Apple ID. true = the App Store
+   setup exactly as it shipped in 1.3/1.4 (see PAYWALL-RESTORE.md). Flip this one
+   line, run npm run sync, push. Nothing else changes. */
+const PAYWALL = false;
 /* What a session actually costs, from the plan price and the days it allows.
    Computed rather than written down, so the copy cannot drift from the price. */
 const WEEKS_PER_MONTH = 52/12;
@@ -5091,6 +5096,7 @@ function trialDaysLeft(){          /* the paid first month, not a free trial */
   return Math.max(0, 30 - Math.floor((Date.now() - t0) / 86400000));
 }
 function tierOf(){
+  if(!PAYWALL) return "max";
   if(vault.plan === "pro" || vault.plan === "max") return vault.plan;
   return trialDaysLeft() > 0 ? "trial" : "expired";
 }
@@ -6949,6 +6955,7 @@ const IAP = {
 };
 let _storeProxy = null;
 function storePlugin(){
+  if(!PAYWALL) return null;         /* personal build: StoreKit stays asleep */
   const C = window.Capacitor;
   if(!(C && C.isNativePlatform && C.isNativePlatform() && C.registerPlugin)) return null;
   if(!_storeProxy) _storeProxy = C.registerPlugin("Store");
@@ -9260,6 +9267,7 @@ function renderRewards(){
 
 /* ------------------------------------------------------------------ plans UI */
 function renderPlans(){
+  if(!PAYWALL){ const pp = $("#planPanel"); if(pp) pp.hidden = true; return; }
   const host = $("#planBody"); if(!host) return;
   const tier = tierOf(), days = trialDaysLeft();
   const cur = t => tier === t;
@@ -9595,7 +9603,7 @@ $("#brand").insertAdjacentHTML("afterbegin",
      below Max the drop target becomes the pitch. tierOf is deliberately
      strict here: the paid first month gets Max limits everywhere else, and
      not this, because every read spends real money on the API. */
-  function upLocked(){ return tierOf() !== "max"; }
+  function upLocked(){ return PAYWALL ? tierOf() !== "max" : true; }
   function upLockSync(){
     const gated = upLocked();
     upSec.classList.toggle("gated", gated);
@@ -9604,13 +9612,16 @@ $("#brand").insertAdjacentHTML("afterbegin",
       upDrop.classList.remove("has");
       upDrop.innerHTML =
         '<div class="up-lock">' +
-          '<span class="bestval">Max only</span>' +
+          '<span class="bestval">' + (PAYWALL ? 'Max only' : 'Off in this build') + '</span>' +
           '<p class="up-cta">AI reads workouts off your camera roll</p>' +
-          '<p class="up-hint">On Max, any reel or screenshot becomes a session — ' +
-            'AI picks the movements out and the forge does the rest.</p>' +
-          '<button class="up-max" type="button" id="upMaxGo">See the plans</button>' +
+          (PAYWALL
+            ? '<p class="up-hint">On Max, any reel or screenshot becomes a session — ' +
+              'AI picks the movements out and the forge does the rest.</p>' +
+              '<button class="up-max" type="button" id="upMaxGo">See the plans</button>'
+            : '<p class="up-hint">Each read is checked against a paid Max subscription, ' +
+              'so it returns when the paywall does.</p>') +
         '</div>';
-      $("#upMaxGo").addEventListener("click", e => {
+      if($("#upMaxGo")) $("#upMaxGo").addEventListener("click", e => {
         e.stopPropagation();
         showTab("paneProfile");
         const p = $("#planBody"); if(p) p.scrollIntoView({behavior:"smooth", block:"start"});
