@@ -1200,7 +1200,9 @@ function generate(cfg){
   const avail = availFor(cfg.loc).slice();
   const lim = state.limits || [];
   const has = x => x.eq.every(t => avail.includes(t)) && !blockedBy(x, lim);
-  const pool = X.filter(x => x.cls !== "cardio" && has(x));
+  /* custom:true movements came off a video someone uploaded: they belong to
+     that one session and never enter the generator's pool */
+  const pool = X.filter(x => x.cls !== "cardio" && !x.custom && has(x));
 
   const targets = new Set();
   const focusKeys = cfg.focus.length ? cfg.focus : ["full"];
@@ -1246,7 +1248,7 @@ function generate(cfg){
      so "battle ropes" is heard at all) have no SCHEME entry — they belong in
      the cardio block, not the prescribed list, so they're excluded here the
      same way the pool and swap already exclude cardio. */
-  const chosen = cfg.compounds.map(id => XMAP[id]).filter(x => x && x.cls !== "cardio" && has(x))
+  const chosen = cfg.compounds.map(id => XMAP[id]).filter(x => x && x.cls !== "cardio" && !x.custom && has(x))
                   .sort((a,b) => patOrd(a.pat) - patOrd(b.pat));
   for(const x of chosen){
     if(picked.length >= cfg.count) break;
@@ -1563,7 +1565,11 @@ function limitsOf(){
 function packSession(sess){
   if(!sess) return null;
   const o = Object.assign({}, sess);
-  o.moves = sess.moves.map(m => { const c = Object.assign({}, m); delete c.x; return c; });
+  /* a custom (video) movement is not in the catalogue, so it travels with the
+     session as xc — any device or the cloud can rebuild it from that alone */
+  o.moves = sess.moves.map(m => { const c = Object.assign({}, m); delete c.x;
+    if(m.x && m.x.custom) c.xc = Object.assign({}, m.x);
+    return c; });
   if(sess.cardio){ o.cardio = Object.assign({}, sess.cardio, {xid:sess.cardio.x.id}); delete o.cardio.x; }
   return o;
 }

@@ -32,6 +32,10 @@
 	<string>Fatcamp reads workouts recorded by other apps so they count toward your streak. It stays on your device.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Fatcamp saves the sessions you finish to Health, so the rest of your rings and history know about them.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Upload Media opens the workout video you choose so Fatcamp can read the movements, sets and reps off it.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Upload Media listens to a workout video's audio, on your phone, to pick out the movements, sets and reps.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

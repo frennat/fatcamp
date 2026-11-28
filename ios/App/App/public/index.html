@@ -347,6 +347,7 @@ h1,h2,h3,h4{font-family:var(--f-display);font-weight:800;margin:0;text-wrap:bala
   padding:5px 10px;border-radius:var(--r-pill);cursor:pointer;transition:border-color .15s,color .15s;
 }
 .up-swap:hover{border-color:var(--accent);color:var(--accent)}
+.up-pick{display:flex;gap:8px;justify-content:center;margin-top:4px}
 
 /* a thin determinate bar while frames are pulled and sent */
 .up-bar{position:relative;height:2px;border-radius:2px;margin:0 10px 8px;overflow:hidden;background:color-mix(in srgb,var(--ink) 10%,transparent);display:none}
@@ -720,6 +721,9 @@ input[type=range]::-moz-range-thumb{
 }
 .rig3d{position:relative;width:100%;height:100%;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
 .rig3d.grabbing{cursor:grabbing}
+.rig3d.media{cursor:default;touch-action:auto;overflow:hidden;border-radius:inherit;background:#000}
+.rig3d.media video,.rig3d.media img{display:block;width:100%;height:100%;object-fit:contain}
+.rig3d.media .drag-hint{display:none}
 .rig3d canvas{display:block;width:100%;outline:none}
 .rig3d canvas:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .rigctl{display:flex;align-items:center;gap:8px;padding:8px 10px;border-top:1px solid var(--line);background:var(--surface);flex-wrap:wrap}
@@ -3981,6 +3985,60 @@ function mountRig(host, archKey, opts){
   rig.set(0);
   return inst;
 }
+/* A movement that came off a video has no rig: its "3D" is the clip cut from
+   the video where it is performed, or a reference image when it never shows.
+   Same box, same handle shape as mountRig, so the drawer code drives either. */
+/* Clips are saved under the app's Documents folder, whose absolute path can
+   change when iOS updates or restores the app. The link is rebuilt from this
+   launch's folder (VideoRead.base) using only the clip's file name. */
+let CLIP_BASE = null;
+function clipSrc(src){
+  if(!src) return src;
+  const i = src.indexOf("/fatcamp-videos/clips/");
+  if(i < 0 || !CLIP_BASE) return src;
+  return CLIP_BASE + src.slice(i + "/fatcamp-videos/clips/".length);
+}
+try{
+  const C = window.Capacitor;
+  if(C && C.isPluginAvailable && C.isPluginAvailable("VideoRead"))
+    C.registerPlugin("VideoRead").base().then(r => { if(r && r.src) CLIP_BASE = r.src; }).catch(() => {});
+}catch(e){}
+function mountMedia(host, x, opts){
+  opts = opts || {};
+  const wrap = document.createElement("div");
+  wrap.className = "rig3d media";
+  wrap.style.height = (opts.h || 250) + "px";
+  let v = null;
+  if(x.clip){
+    v = document.createElement("video");
+    v.muted = true; v.defaultMuted = true; v.loop = true; v.autoplay = true; v.playsInline = true;
+    for(const a of ["muted","loop","playsinline","autoplay"]) v.setAttribute(a, "");
+    v.src = clipSrc(x.clip);
+    v.setAttribute("aria-label", x.n + ", from your video");
+    wrap.appendChild(v);
+  }else{
+    const im = document.createElement("img");
+    im.src = x.img; im.alt = x.n; im.decoding = "async";
+    im.referrerPolicy = "no-referrer";
+    wrap.appendChild(im);
+  }
+  host.innerHTML = ""; host.appendChild(wrap);
+  if(v){ try{ const pr = v.play(); if(pr && pr.catch) pr.catch(() => {}); }catch(e){} }
+  let playing = true, speed = (opts.speed || 0.62);
+  return {
+    media: true, phase: 0, orbit: false,
+    rig: {set(){}, setView(){}, draw(){}, destroy(){}, fx: null},
+    get playing(){ return playing; },
+    set playing(on){ playing = !!on; if(v){ try{ on ? v.play().catch(() => {}) : v.pause(); }catch(e){} } },
+    get speed(){ return speed; },
+    set speed(n){ speed = n; if(v) v.playbackRate = Math.max(.25, Math.min(3, n / 0.62)); }
+  };
+}
+/* the one entry point a movement view uses: library rig, else video clip, else image */
+function mountMove(host, x, opts){
+  if(x && x.custom && (x.clip || x.img)) return mountMedia(host, x, opts);
+  return mountRig(host, x ? x.arch : null, opts);
+}
 function unmountAll(){ for(const r of RIGS){ if(r.rig.destroy) r.rig.destroy(); } RIGS.clear(); }
 /* @forge:begin — copied to supabase/functions/forge/gen.js by scripts/build-forge.mjs */
 /* --------------------------------------------------------------- equipment */
@@ -5053,7 +5111,9 @@ function generate(cfg){
   const avail = availFor(cfg.loc).slice();
   const lim = state.limits || [];
   const has = x => x.eq.every(t => avail.includes(t)) && !blockedBy(x, lim);
-  const pool = X.filter(x => x.cls !== "cardio" && has(x));
+  /* custom:true movements came off a video someone uploaded: they belong to
+     that one session and never enter the generator's pool */
+  const pool = X.filter(x => x.cls !== "cardio" && !x.custom && has(x));
 
   const targets = new Set();
   const focusKeys = cfg.focus.length ? cfg.focus : ["full"];
@@ -5099,7 +5159,7 @@ function generate(cfg){
      so "battle ropes" is heard at all) have no SCHEME entry — they belong in
      the cardio block, not the prescribed list, so they're excluded here the
      same way the pool and swap already exclude cardio. */
-  const chosen = cfg.compounds.map(id => XMAP[id]).filter(x => x && x.cls !== "cardio" && has(x))
+  const chosen = cfg.compounds.map(id => XMAP[id]).filter(x => x && x.cls !== "cardio" && !x.custom && has(x))
                   .sort((a,b) => patOrd(a.pat) - patOrd(b.pat));
   for(const x of chosen){
     if(picked.length >= cfg.count) break;
@@ -5416,14 +5476,165 @@ function limitsOf(){
 function packSession(sess){
   if(!sess) return null;
   const o = Object.assign({}, sess);
-  o.moves = sess.moves.map(m => { const c = Object.assign({}, m); delete c.x; return c; });
+  /* a custom (video) movement is not in the catalogue, so it travels with the
+     session as xc — any device or the cloud can rebuild it from that alone */
+  o.moves = sess.moves.map(m => { const c = Object.assign({}, m); delete c.x;
+    if(m.x && m.x.custom) c.xc = Object.assign({}, m.x);
+    return c; });
   if(sess.cardio){ o.cardio = Object.assign({}, sess.cardio, {xid:sess.cardio.x.id}); delete o.cardio.x; }
   return o;
 }
 /* @forge:end */
+/* ---- custom movements ----
+   A movement read off an uploaded video that the catalogue does not have. It
+   is registered into X and XMAP so everything that looks a move up by id
+   (coverage, points, the log, the watch) treats it like any other, but it is
+   flagged custom:true and every pool that picks movements filters it out. */
+function customReg(x){
+  if(!x || !x.id) return null;
+  const cur = XMAP[x.id];
+  if(cur && !cur.custom) return cur;           /* never shadow a catalogue entry */
+  if(cur){ Object.assign(cur, x); return cur; } /* same object, so live sessions see it */
+  const c = Object.assign({arch:null, eq:["bw"], cls:"acc", pat:"custom", pri:[], sec:[], cue:"",
+                           clip:null, img:null, unit:"reps", uni:false}, x, {custom:true});
+  c.pri = (c.pri || []).filter(m => M[m]); c.sec = (c.sec || []).filter(m => M[m]);
+  c.eq = (c.eq || []).filter(e => EQUIP[e]); if(!c.eq.length) c.eq = ["bw"];
+  X.push(c); XMAP[c.id] = c;
+  return c;
+}
+function customLoad(){
+  const c = vault.customX || {};
+  for(const id in c) c[id] = customReg(c[id]);
+}
+function customSave(x){
+  vault.customX = vault.customX || {};
+  vault.customX[x.id] = x;
+}
+/* Short, stable id from the name, so the same movement read off two videos
+   lands on the same custom entry (and its history) instead of a new one. */
+function vxId(name){
+  const k = String(name || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  let h = 5381;
+  for(let i = 0; i < k.length; i++) h = ((h << 5) + h + k.charCodeAt(i)) >>> 0;
+  return "vx_" + h.toString(36);
+}
+let _videoReadProxy = null;
+function videoReadPlugin(){
+  const C = window.Capacitor;
+  if(!(C && C.isNativePlatform && C.isNativePlatform() && C.registerPlugin)) return null;
+  /* an older native build without the plugin keeps the frame-based path */
+  if(typeof C.isPluginAvailable === "function" && !C.isPluginAvailable("VideoRead")) return null;
+  if(!_videoReadProxy) _videoReadProxy = C.registerPlugin("VideoRead");
+  return _videoReadProxy;
+}
+/* The focus a set of movements implies — only so the coverage meter and the
+   sheet's copy have a target to talk about. Nothing is generated from it. */
+function focusOfMoves(xs){
+  const tally = {};
+  xs.forEach(x => (x.pri || []).forEach(m => tally[m] = (tally[m] || 0) + 1));
+  let best = null, score = 0;
+  for(const k in FOCUS){
+    if(k === "full") continue;
+    const sc = FOCUS[k].m.reduce((a, m) => a + (tally[m] || 0), 0) / FOCUS[k].m.length;
+    if(sc > score){ score = sc; best = k; }
+  }
+  /* a video that spreads across the body is a full-body session */
+  const hitGroups = new Set(Object.keys(tally).map(m => M[m] && M[m].grp));
+  return (best && hitGroups.size <= 2) ? [best] : ["full"];
+}
+/* The video agent's workout, turned into a session in exactly the shape
+   generate() returns — so the sheet, scoring, the watch and the log need no
+   special case. Library matches keep their rig; everything else becomes a
+   custom movement whose figure is the clip cut from the video (or an image). */
+async function videoSession(w, vid, VR){
+  const rounds = Math.max(1, Math.min(20, parseInt(w.rounds) || 1));
+  const moves = [], seen = new Set();
+  for(const mv of (w.movements || [])){
+    if(!mv || !String(mv.name || "").trim()) continue;
+    const name = String(mv.name).trim().slice(0, 80);
+    let x = null;
+    const lib = mv.catalog_id && XMAP[mv.catalog_id];
+    if(lib && !lib.custom && lib.cls !== "cardio") x = lib;
+    if(!x){
+      const id = vxId(name);
+      const prev = XMAP[id] && XMAP[id].custom ? XMAP[id] : null;
+      const unit = mv.unit === "sec" ? "sec" : "reps";
+      const draft = {id, n:name, arch:null,
+        eq:(mv.equipment || []).filter(e => EQUIP[e]),
+        cls:"acc", pat:"custom",
+        pri:(mv.pri || []).filter(m => M[m]),
+        sec:(mv.sec || []).filter(m => M[m] && !(mv.pri || []).includes(m)),
+        cue:String(mv.cue || "").slice(0, 400) || "Move the way the video does.",
+        custom:true, clip:null, img:null, unit, uni:!!mv.each};
+      if(!draft.eq.length) draft.eq = ["bw"];
+      const c = mv.clip;
+      if(VR && vid && c && isFinite(+c.t0) && isFinite(+c.t1) && +c.t1 > +c.t0){
+        try{
+          const r = await VR.clip({vid, t0:+c.t0, t1:+c.t1});
+          if(r && r.src) draft.clip = r.src;
+        }catch(e){}
+      }
+      if(!draft.clip && mv.image_url && /^https:\/\//i.test(mv.image_url)) draft.img = String(mv.image_url);
+      /* a re-read that found no picture keeps the one an earlier read cut */
+      if(prev && !draft.clip && !draft.img){ draft.clip = prev.clip || null; draft.img = prev.img || null; }
+      x = customReg(draft);
+      customSave(x);
+    }
+    if(seen.has(x.id)) continue;
+    seen.add(x.id);
+    const unit = mv.unit === "sec" ? "sec" : mv.unit === "reps" ? "reps" : (x.unit || "reps");
+    let sets = Math.max(1, Math.min(20, parseInt(mv.sets) || 1));
+    /* a circuit written as "N rounds" of single sets is N sets of each */
+    if(rounds > 1 && sets === 1) sets = rounds;
+    let reps = String(mv.reps == null ? "" : mv.reps).trim().slice(0, 24);
+    if(!reps) reps = unit === "sec" ? "30 sec" : "10";
+    const src = {speech:"what's said", caption:"the captions", visual:"what's shown", inferred:"the context"}[mv.source] || "the video";
+    moves.push({
+      i:moves.length + 1, id:x.id, x,
+      reason:"From the video — read off " + src + ".",
+      sets, reps,
+      rest:(mv.rest_sec != null && isFinite(+mv.rest_sec)) ? Math.max(0, Math.min(600, Math.round(+mv.rest_sec))) : 0,
+      rpe:"As filmed", tempo:"", note:null,
+      unit, each:!!mv.each, failure:false,
+      doneSets:[], weight:"", claimed:false
+    });
+  }
+  if(!moves.length) return null;
+
+  const xs = moves.map(m => m.x);
+  const focus = focusOfMoves(xs);
+  const cfg = Object.assign({}, JSON.parse(JSON.stringify(state.cfg || DEFAULT_CFG)), {
+    focus, count:moves.length, compounds:[], effort:DEFAULT_CFG.effort,
+    cardioOn:false, failureOn:false, preset:null, seed:(Math.random()*1e9)|0
+  });
+  const targets = new Set(); focus.forEach(k => FOCUS[k].m.forEach(m => targets.add(m)));
+  const act = activationOf(moves);
+  const coverage = coverageOf(act, focus.includes("full") ? null : targets);
+  let mins = 4;
+  for(const m of moves){
+    const rp = parseInt(m.reps) || 12;
+    const work = m.unit === "sec" ? rp * (/min/i.test(m.reps) ? 60 : 1) : rp * 2.5 * (m.each ? 2 : 1);
+    mins += m.sets * (work + m.rest) / 60;
+  }
+  return {
+    id:"s" + Date.now(),
+    date:new Date().toISOString(),
+    cfg, moves, cardio:null,
+    act, coverage,
+    minutes:Math.max(1, Math.round(mins)),
+    title:String(w.title || "").trim().slice(0, 60) || "From your video",
+    trimmed:0, caughtUp:[], xp:0,
+    fromVideo:true,
+    notes:String(w.notes || "").trim().slice(0, 200), rounds
+  };
+}
 function unpackSession(sess){
   if(!sess) return null;
-  if(sess.moves) sess.moves.forEach(m => { m.x = XMAP[m.id] || m.x; });
+  if(sess.moves) sess.moves.forEach(m => {
+    m.x = XMAP[m.id] || (m.xc ? customReg(m.xc) : m.x) ||
+          customReg({id:m.id, n:"Movement from a video"});
+    delete m.xc;
+  });
   if(sess.cardio && sess.cardio.xid) sess.cardio.x = XMAP[sess.cardio.xid];
   if(sess.cardio && !sess.cardio.x) sess.cardio = null;
   return sess;
@@ -5461,7 +5672,9 @@ function load(){
         vault = {v:2, active:v.active, theme:v.theme || null, plan:v.plan || null,
                  firstUse:v.firstUse || new Date().toISOString(),
                  auth:v.auth || null, cloud:v.cloud || null,
-                 src:v.src || null, aid:v.aid || null, profiles:{}};
+                 src:v.src || null, aid:v.aid || null,
+                 customX:(v.customX && typeof v.customX === "object") ? v.customX : {}, profiles:{}};
+        customLoad();          /* before the profiles, so their sessions find them */
         for(const id in v.profiles) vault.profiles[id] = migrateProfile(v.profiles[id]);
         if(!vault.profiles[vault.active]) vault.active = Object.keys(vault.profiles)[0];
         state = vault.profiles[vault.active];
@@ -5492,7 +5705,8 @@ function save(){
   const packed = {v:2, active:vault.active, theme:vault.theme,
                   plan:vault.plan || null, firstUse:vault.firstUse || null,
                   auth:vault.auth || null, cloud:vault.cloud || null,
-                  src:vault.src || null, aid:vault.aid || null, profiles:{}};
+                  src:vault.src || null, aid:vault.aid || null,
+                  customX:vault.customX || {}, profiles:{}};
   for(const id in vault.profiles){
     const p = vault.profiles[id];
     const o = {};
@@ -6012,7 +6226,7 @@ function remindEditor(){
 /* how much of the library survives the current limitations, for the note above */
 function poolLeft(){
   const avail = availFor(state.cfg.loc);
-  return X.filter(x => x.cls !== "cardio" && x.eq.every(t => avail.includes(t))
+  return X.filter(x => x.cls !== "cardio" && !x.custom && x.eq.every(t => avail.includes(t))
                        && !blockedBy(x, state.limits || [])).length;
 }
 function wireSettings(){
@@ -7659,12 +7873,13 @@ function renderSession(animate){
       <div class="top">
         <div>
           <h2>${esc(s.title)}</h2>
-          <div class="sub">${EFFORT_N[s.cfg.effort]} · ${s.cfg.loc === "public" ? "Public gym" : s.cfg.loc === "body" ? "Bodyweight" : "Home gym"} · ${s.moves.length} movements${s.cardio ? " + "+esc(s.cardio.styleName.toLowerCase()) : ""}</div>
+          <div class="sub">${s.fromVideo ? "From your video" : EFFORT_N[s.cfg.effort] + " · " + (s.cfg.loc === "public" ? "Public gym" : s.cfg.loc === "body" ? "Bodyweight" : "Home gym")} · ${s.moves.length} movements${s.cardio ? " + "+esc(s.cardio.styleName.toLowerCase()) : ""}${s.fromVideo && s.rounds > 1 ? " · " + s.rounds + " rounds" : ""}</div>
+          ${s.fromVideo && s.notes ? `<div class="sub note">${esc(s.notes)}</div>` : ""}
           ${s.trimmed > 0 ? `<div class="sub note">Asked for ${s.cfg.count} — your kit and focus only support ${s.moves.length} without repeating or going off-target.</div>` : ""}
           ${(s.caughtUp||[]).length ? `<div class="sub note up">Catching up on ${esc(musList(s.caughtUp))} — the log says you've been skipping ${s.caughtUp.length>1?"them":"it"}.</div>` : ""}
         </div>
         <div class="actions">
-          <button class="btn" id="rerollBtn" type="button">Re-roll</button>
+          ${s.fromVideo ? "" : '<button class="btn" id="rerollBtn" type="button">Re-roll</button>'}
           <button class="btn ghost" id="clearBtn" type="button">Discard</button>
         </div>
       </div>
@@ -7772,6 +7987,7 @@ function repsLabel(m){
   return m.unit === "sec" ? m.reps : m.reps + (m.each ? " each" : "");
 }
 /* @forge:end */
+function restLabel(m){ return m.rest ? m.rest + "s rest" : "no rest"; }
 function moveRow(m){
   const x = m.x;
   const reps = repsLabel(m);
@@ -7789,7 +8005,7 @@ function moveRow(m){
           <span>${esc(x.pri.map(p => M[p].n).join(" · "))}</span>
         </span>
       </span>
-      <span class="mscheme num">${m.sets} × ${esc(reps)}<small>${m.failure ? "to failure" : esc(m.rpe)} · ${m.rest}s rest</small></span>
+      <span class="mscheme num">${m.sets} × ${esc(reps)}<small>${m.failure ? "to failure" : esc(m.rpe)} · ${restLabel(m)}</small></span>
       <span class="chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></span>
     </button>
     <div class="drawer"></div>
@@ -7822,7 +8038,7 @@ function cardioBlock(c, animate){
 /* ---------------------------------------------------- session interaction */
 function wireSession(){
   const s = state.session;
-  $("#rerollBtn").addEventListener("click", () => {
+  if($("#rerollBtn")) $("#rerollBtn").addEventListener("click", () => {
     const cfg = JSON.parse(JSON.stringify(s.cfg)); cfg.seed = (Math.random()*1e9)|0;
     state.session = generate(cfg); save(); renderSession(true);
     toast("Re-rolled", "Same criteria, different session.", "");
@@ -7936,7 +8152,7 @@ function buildDrawer(row, m){
         </div>
         ${m.note ? `<p style="font-size:12.5px;color:var(--p15);margin:10px 0 0">${esc(m.note)}</p>` : ""}
         <p style="font-size:12px;color:var(--ink-3);margin:10px 0 0">
-          ${m.sets} sets of ${esc(m.reps)}${m.each ? " per side" : ""} · ${esc(m.rpe)} · rest ${m.rest} seconds ·
+          ${m.sets} sets of ${esc(m.reps)}${m.each ? " per side" : ""} · ${esc(m.rpe)} · ${m.rest ? "rest " + m.rest + " seconds" : "no rest"} ·
           ${esc(x.eq.map(t => EQUIP[t].n).join(" + "))}
         </p>
       </div>
@@ -7945,10 +8161,16 @@ function buildDrawer(row, m){
   const host = d.querySelector(".rig-host");
   const phaseEl = d.querySelector("[data-phase]");
   if(m.failure) d.querySelector(".rigbox").classList.add("tofail");
-  const inst = mountRig(host, x.arch, {h:250, speed:.62, x:x, onPhase:(down) => {
+  const inst = mountMove(host, x, {h:250, speed:.62, x:x, onPhase:(down) => {
     const t = down ? phaseWord(x, 0) : phaseWord(x, 1);
     if(phaseEl.textContent !== t) phaseEl.textContent = t;
   }});
+  if(inst.media){
+    phaseEl.textContent = x.clip ? "From your video" : "Reference";
+    /* a clip has one camera — no angles to pick; an image has nothing to play */
+    const vbx = d.querySelector(".rigctl .viewbtns"); if(vbx) vbx.style.display = "none";
+    if(!x.clip){ const rc = d.querySelector(".rigctl"); if(rc) rc.style.display = "none"; }
+  }
   row._rig = inst;
   if(inst.rig.fx) inst.rig.fx.failure = !!m.failure;
 
@@ -8056,7 +8278,7 @@ function buildDrawer(row, m){
     row.classList.toggle("tofail", m.failure);
     const sch = row.querySelector(".mscheme");
     if(sch) sch.innerHTML = m.sets + " × " + esc(repsLabel(m)) +
-      "<small>" + (m.failure ? "to failure" : esc(m.rpe)) + " · " + m.rest + "s rest</small>";
+      "<small>" + (m.failure ? "to failure" : esc(m.rpe)) + " · " + restLabel(m) + "</small>";
     let badge = row.querySelector(".badge.fail");
     if(m.failure && !badge){
       const b3 = document.createElement("span"); b3.className = "badge fail"; b3.textContent = "To failure";
@@ -8129,7 +8351,7 @@ function swapMove(m){
   const off = wholeBody ? 3.2 : 0.5;
   let best = null, bs = -1e9;
   for(const x of X){
-    if(x.cls === "cardio" || x.id === m.id) continue;
+    if(x.cls === "cardio" || x.custom || x.id === m.id) continue;
     if(!x.eq.every(t => avail.includes(t))) continue;
     if(s.moves.some(o => o.id === x.id)) continue;
     if(!wholeBody && x.pat !== "core" &&
@@ -8169,7 +8391,7 @@ function surpriseMove(m){
   const wholeBody = (s.cfg.focus.length ? s.cfg.focus : ["full"]).includes("full");
 
   const pool = X.filter(x =>
-    x.cls !== "cardio" && x.id !== m.id &&
+    x.cls !== "cardio" && !x.custom && x.id !== m.id &&
     x.eq.every(t => avail.includes(t)) &&
     !s.moves.some(o => o.id === x.id) &&
     (x.pat === m.x.pat || x.cls === m.x.cls) &&
@@ -9926,6 +10148,25 @@ $("#brand").insertAdjacentHTML("afterbegin",
   };
   let upFile = null, upBusy = false, upVia = "ai", upSawText = false;
   const upSec = $("#uploadSec"), upDrop = $("#upDrop"), upIn = $("#upInput");
+  /* In the iOS app a video goes through the native VideoRead plugin instead of
+     the frame grabber: it hears the audio and reads the captions on the phone,
+     and the agent builds the workout from that. Photos keep the old path. */
+  let upVid = null;             /* {vid, duration, width, height} from VideoRead.pick */
+  const VR = videoReadPlugin();
+  if(VR){
+    upIn.accept = "image/*";
+    const cta = upDrop.querySelector(".up-cta");
+    if(cta) cta.textContent = "Choose a video or photo";
+    const hint = upDrop.querySelector(".up-hint");
+    if(hint) hint.textContent = "A video is heard and read on your phone — the voiceover and the captions " +
+      "become the workout, movement by movement.";
+    const pk = document.createElement("span");
+    pk.className = "up-pick";
+    pk.innerHTML = '<button class="up-swap" type="button" data-vpick>Video</button>' +
+                   '<button class="up-swap" type="button" data-ppick>Photo</button>';
+    upDrop.appendChild(pk);
+    upDrop.setAttribute("aria-label", "Choose a video or photo from your camera roll");
+  }
   const UP_EMPTY = upDrop.innerHTML;   /* the untouched drop target, for unlocking */
 
   function upSay(msg, tone){
@@ -10149,6 +10390,7 @@ $("#brand").insertAdjacentHTML("afterbegin",
   /* The thumbnail doubles as proof we can decode what was handed over: if it
      draws, the frames will too, and the failure lands before the network. */
   async function upShow(file){
+    if(upVid) upForget();
     upFile = file;
     const vid = upIsVid(file);
     let thumb = "";
@@ -10192,7 +10434,7 @@ $("#brand").insertAdjacentHTML("afterbegin",
     /* the whole strength catalogue, not the kit-filtered slice — the picker
        reports "read N your kit can't do", and it can only do that if the AI
        was allowed to name them */
-    const catalog = X.filter(x => x.cls !== "cardio").map(x => ({id: x.id, n: x.n}));
+    const catalog = X.filter(x => x.cls !== "cardio" && !x.custom).map(x => ({id: x.id, n: x.n}));
     const ctl = new AbortController();
     const t = setTimeout(() => ctl.abort(), 90000);
     try{
@@ -10223,6 +10465,112 @@ $("#brand").insertAdjacentHTML("afterbegin",
      in a dead spot or after the month's AI reads are spent. On the web build
      the plugin is absent and this returns nothing, which is a normal outcome
      rather than an error — the picker covers it. */
+  /* ---- video → workout (native) ---- */
+  function upChoose(){ if(VR) upPickVideo(); else upIn.click(); }
+  async function upForget(){
+    const v = upVid; upVid = null;
+    if(v && VR){ try{ await VR.forget({vid: v.vid}); }catch(e){} }
+  }
+  async function upPickVideo(){
+    if(upBusy || upLocked()) return;
+    let r;
+    try{ r = await VR.pick(); }
+    catch(e){
+      const msg = (e && (e.message || e.errorMessage)) || String(e);
+      if(!/cancel/i.test(msg)) upSay("iOS could not open that video (" + msg + ").", "bad");
+      return;
+    }
+    if(!r || !r.vid){ upSay("iOS could not open that video.", "bad"); return; }
+    if(upVid && upVid.vid !== r.vid) upForget();
+    upFile = null; upVid = r;
+    const secs = Math.max(1, Math.round(+r.duration || 0));
+    upDrop.classList.add("has");
+    upDrop.innerHTML =
+      '<div class="up-shot">' +
+        '<span class="up-thumb"></span>' +
+        '<div class="up-facts">' +
+          '<p class="up-name">Video</p>' +
+          '<p class="up-size">Video · ' + secs + ' s</p>' +
+          '<button class="up-swap" type="button" id="upSwap">Choose another</button>' +
+        '</div>' +
+      '</div>';
+    $("#upSwap").addEventListener("click", e => { e.stopPropagation(); upChoose(); });
+    upSay("Ready — press the mark to read it.");
+  }
+
+  let upVidErr = "";
+  async function videoAgent(an){
+    upVidErr = "";
+    const owner = PAYWALL ? "" : ownerKey();
+    const jws = owner ? null : await upEnt();
+    if(!jws && !owner){ upVidErr = "no Max subscription on this device"; return null; }
+    const catalog = X.filter(x => x.cls !== "cardio" && !x.custom).map(x => ({id: x.id, n: x.n, eq: x.eq}));
+    /* video-agent rejects the whole read over one span longer than 500 chars or
+       a list over 2000 rows, and a text-heavy frame can OCR past that: trim here */
+    const spans = a => (Array.isArray(a) ? a : []).filter(s => s && typeof s.text === "string" && s.text.trim())
+      .slice(0, 2000).map(s => ({t0: +s.t0 || 0, t1: +s.t1 || 0, text: s.text.slice(0, 500)}));
+    const body = {duration: +an.duration || 0, transcript: spans(an.transcript), captions: spans(an.captions),
+                  frames: (an.frames || []).slice(0, 24), catalog, muscles: MUSCLE_IDS, equipment: EQUIP_IDS};
+    if(owner) body.owner = owner; else body.jws = jws;
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), 150000);
+    try{
+      const res = await fetch(SUPA.url + "/functions/v1/video-agent", {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "apikey": SUPA.key},
+        body: JSON.stringify(body),
+        signal: ctl.signal
+      });
+      const data = await res.json().catch(() => null);
+      if(!res.ok){
+        upVidErr = res.status === 429
+          ? "that's the month's AI reads used up"
+          : (data && data.error) || ("HTTP " + res.status);
+        return null;
+      }
+      const w = data && data.workout;
+      if(!w || !Array.isArray(w.movements) || !w.movements.length){
+        upVidErr = "it found no movements in that video";
+        return null;
+      }
+      return w;
+    }catch(e){
+      upVidErr = e && e.name === "AbortError" ? "the read timed out" : "the network dropped";
+      return null;
+    }finally{ clearTimeout(t); }
+  }
+
+  async function upRunVideo(){
+    const v = upVid;
+    upProg(.12); upSay("Listening to the audio…");
+    /* analyze is one native call; the second line is when it has usually
+       moved from the audio on to the captions */
+    const swap = setTimeout(() => upSay("Reading the captions…"), 3500);
+    let an;
+    try{ an = await VR.analyze({vid: v.vid}); }
+    catch(e){
+      clearTimeout(swap);
+      throw new Error("The phone could not read that video (" + ((e && (e.message || e.errorMessage)) || e) + ").");
+    }
+    clearTimeout(swap);
+    upProg(.55); upSay("Building your workout…");
+    const w = await videoAgent(an || {});
+    if(!w) throw new Error("Couldn't build a workout from that video — " + upVidErr + ".");
+    upProg(.85);
+    const s = await videoSession(w, v.vid, VR);
+    if(!s) throw new Error("Couldn't build a workout from that video — none of its movements were usable.");
+    await upForget();
+    state.session = s;
+    save(); unmountAll(); renderSession(true);
+    if(typeof watchPush === "function") watchPush();
+    upDrop.classList.remove("has"); upDrop.innerHTML = UP_EMPTY;
+    upProg(1);
+    upSay("Loaded · " + s.title + " · " + s.moves.length + " movement" + (s.moves.length === 1 ? "" : "s"), "ok");
+    buzz("forge");
+    showTab("paneWorkload");                 /* the session lives here, same as a forge */
+    requestAnimationFrame(() => { const sp = $("#sessionPanel"); if(sp) sp.scrollIntoView({behavior:"smooth", block:"start"}); });
+  }
+
   let _scanProxy = null;
   function textScanPlugin(){
     const C = window.Capacitor;
@@ -10284,7 +10632,7 @@ $("#brand").insertAdjacentHTML("afterbegin",
       const k = id + "|" + p;
       if(!seen.has(k)){ seen.add(k); rows.push([id, p]); }
     };
-    X.forEach(x => add(x.id, x.n));
+    X.forEach(x => { if(!x.custom) add(x.id, x.n); });
     ASK_LIFTS.forEach(([id, words]) => words.forEach(w => add(id, w)));
     rows.sort((a, b) => b[1].length - a[1].length);
     return rows;
@@ -10314,7 +10662,7 @@ $("#brand").insertAdjacentHTML("afterbegin",
   function mvRender(filter){
     const list = $("#mvList"), q = ocrNorm(filter || "").trim();
     const avail = availFor(state.cfg.loc);
-    const kit = X.filter(x => x.cls !== "cardio" && x.eq.every(e => avail.indexOf(e) >= 0));
+    const kit = X.filter(x => x.cls !== "cardio" && !x.custom && x.eq.every(e => avail.indexOf(e) >= 0));
     const hit = q ? kit.filter(x => ocrNorm(x.n).indexOf(q) >= 0) : kit;
     const chosen = hit.filter(x => mvPicked.has(x.id));
     const rest   = hit.filter(x => !mvPicked.has(x.id));
@@ -10426,10 +10774,11 @@ $("#brand").insertAdjacentHTML("afterbegin",
   async function upRun(){
     if(upBusy) return;
     if(upLocked()){ upSay("Reading media is a Max feature.", "bad"); return; }
-    if(!upFile){ upIn.click(); return; }
+    if(!upFile && !upVid){ upChoose(); return; }
     upBusy = true; upSec.classList.add("busy"); upProg(.08);
-    track("upload", {kind: upIsVid(upFile) ? "video" : "photo"});
+    track("upload", {kind: upVid || upIsVid(upFile) ? "video" : "photo"});
     try{
+      if(upVid){ await upRunVideo(); return; }
       upSay(upIsVid(upFile) ? "Pulling frames out of the clip…" : "Reading the photo…");
       const frames = await upFrames(upFile);
       if(!frames.length) throw new Error("Nothing readable came out of that file.");
@@ -10454,12 +10803,16 @@ $("#brand").insertAdjacentHTML("afterbegin",
     }
   }
 
-  upDrop.addEventListener("click", () => {
-    if(!upBusy && !upLocked() && !upDrop.classList.contains("has")) upIn.click();
+  upDrop.addEventListener("click", e => {
+    if(upBusy || upLocked() || upDrop.classList.contains("has")) return;
+    const pp = e.target.closest && e.target.closest("[data-ppick]");
+    if(pp){ e.stopPropagation(); upIn.click(); return; }
+    upChoose();
   });
   upDrop.addEventListener("keydown", e => {
     if((e.key === "Enter" || e.key === " ") && !upLocked() && !upDrop.classList.contains("has")){
-      e.preventDefault(); upIn.click();
+      if(e.target.closest && e.target.closest("button")) return;
+      e.preventDefault(); upChoose();
     }
   });
   ["dragenter","dragover"].forEach(k => upDrop.addEventListener(k, e => {

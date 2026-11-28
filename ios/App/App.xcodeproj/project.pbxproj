@@ -22,6 +22,7 @@
 		6002A5C5C51C8D6A82F40854 /* Coach.swift in Sources */ = {isa = PBXBuildFile; fileRef = 889ED13229E236E95E2A32F3 /* Coach.swift */; };
 		70CBCAD955AEA491F1B2DD4E /* BankFX.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A2637A8BDA992C79970140 /* BankFX.swift */; };
 		7FA18D9132EA420854C73122 /* WorkoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0CB6639F5386DBAA6A91F38 /* WorkoutManager.swift */; };
+		8BEA1A052117CBB178B83938 /* VideoReadPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B07884987B4E8EB6EB6FDBB /* VideoReadPlugin.swift */; };
 		8E534F95E188B1FDF3359F8B /* RigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36C944EBEFCDED5EA8E64A5B /* RigView.swift */; };
 		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
 		97F34895F4404EBA3C9E5319 /* RepDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 771FF910B31F4B6BCEACCAB1 /* RepDetector.swift */; };
@@ -133,6 +134,7 @@
 		92A53C1DDF50CBA59087A181 /* WatchSession.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchSession.swift; sourceTree = "<group>"; };
 		9582B6822FE993A50072D4E8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
+		9B07884987B4E8EB6EB6FDBB /* VideoReadPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VideoReadPlugin.swift; sourceTree = "<group>"; };
 		9C8575F8ACBEDE8C65124DD0 /* SessionStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		A1F0C0DE0000000000000001 /* HealthPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthPlugin.swift; sourceTree = "<group>"; };
 		A1F0C0DE0000000000000003 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
@@ -243,6 +245,7 @@
 				2FAD9762203C412B000D30F8 /* config.xml */,
 				50B271D01FEDC1A000F3C39B /* public */,
 				3017B8F82EF6168DB005B607 /* WatchPlugin.swift */,
+				9B07884987B4E8EB6EB6FDBB /* VideoReadPlugin.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -490,6 +493,7 @@
 				A1F0C0DE0000000000000005 /* MainViewController.swift in Sources */,
 				9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */,
 				C692FE7A24EA82E8F342FF7A /* WatchPlugin.swift in Sources */,
+				8BEA1A052117CBB178B83938 /* VideoReadPlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

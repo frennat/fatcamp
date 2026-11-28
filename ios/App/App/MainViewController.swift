@@ -12,6 +12,7 @@ class MainViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(HealthPlugin())
         bridge?.registerPluginInstance(NotifyPlugin())
         bridge?.registerPluginInstance(TextScanPlugin())
+        bridge?.registerPluginInstance(VideoReadPlugin())
         bridge?.registerPluginInstance(HapticsPlugin())
         bridge?.registerPluginInstance(SharePlugin())
         bridge?.registerPluginInstance(ReviewPlugin())
