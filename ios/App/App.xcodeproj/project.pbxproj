@@ -17,7 +17,7 @@
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
-		56CC12A52BE66ECFFC8676E6 /* FatcampWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 81B7572411921FADFB0B6C03 /* FatcampWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		56CC12A52BE66ECFFC8676E6 /* Fatcamp.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 81B7572411921FADFB0B6C03 /* Fatcamp.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		6002A5C5C51C8D6A82F40854 /* Coach.swift in Sources */ = {isa = PBXBuildFile; fileRef = 889ED13229E236E95E2A32F3 /* Coach.swift */; };
 		70CBCAD955AEA491F1B2DD4E /* BankFX.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A2637A8BDA992C79970140 /* BankFX.swift */; };
 		7FA18D9132EA420854C73122 /* WorkoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0CB6639F5386DBAA6A91F38 /* WorkoutManager.swift */; };
@@ -34,11 +34,13 @@
 		A1F0C0DE0000000000000017 /* SharePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0C0DE0000000000000016 /* SharePlugin.swift */; };
 		A1F0C0DE0000000000000019 /* ReviewPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0C0DE0000000000000018 /* ReviewPlugin.swift */; };
 		A609DF971A23F01E0AEBC29F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 33696B7A4C71CF72F6F03ABB /* Assets.xcassets */; };
+		A79EF65A8E0B87022438F485 /* SpeakView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CCB937E60A08BBE160B6F57 /* SpeakView.swift */; };
 		AF287833B8A7A2008E8DF5ED /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A581EC10C38171DE086E5CA /* Typography.swift */; };
 		BB16618EC9147D03739D0467 /* MoveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC13041C19E439DE23B0F7AE /* MoveView.swift */; };
 		C0058AF36A9B71E33E3ABB63 /* SessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75114F166AC857869627ABF3 /* SessionView.swift */; };
 		C692FE7A24EA82E8F342FF7A /* WatchPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3017B8F82EF6168DB005B607 /* WatchPlugin.swift */; };
 		D146188A7EBE4ED71D1A34BF /* FatcampWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B1A22E8C8C1A915EADAEA0A /* FatcampWatchApp.swift */; };
+		D14B0BC390CD2376A0406132 /* Forge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53385963B4987C5F6A4D5554 /* Forge.swift */; };
 		FA7CA1B00000000000000002 /* PaywallTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA7CA1B00000000000000001 /* PaywallTests.swift */; };
 		FA7CA1B00000000000000004 /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = FA7CA1B00000000000000003 /* Products.storekit */; };
 		FD9FE514F1CADF793A4425DE /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 23B75B556E991F3B6873454E /* Foundation.framework */; };
@@ -68,7 +70,7 @@
 			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
 			dstSubfolderSpec = 16;
 			files = (
-				56CC12A52BE66ECFFC8676E6 /* FatcampWatch.app in Embed Watch Content */,
+				56CC12A52BE66ECFFC8676E6 /* Fatcamp.app in Embed Watch Content */,
 			);
 			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -93,9 +95,11 @@
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
+		53385963B4987C5F6A4D5554 /* Forge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Forge.swift; sourceTree = "<group>"; };
+		5CCB937E60A08BBE160B6F57 /* SpeakView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpeakView.swift; sourceTree = "<group>"; };
 		75114F166AC857869627ABF3 /* SessionView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SessionView.swift; sourceTree = "<group>"; };
 		771FF910B31F4B6BCEACCAB1 /* RepDetector.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RepDetector.swift; sourceTree = "<group>"; };
-		81B7572411921FADFB0B6C03 /* FatcampWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FatcampWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		81B7572411921FADFB0B6C03 /* Fatcamp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Fatcamp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		889ED13229E236E95E2A32F3 /* Coach.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Coach.swift; sourceTree = "<group>"; };
 		92A53C1DDF50CBA59087A181 /* WatchSession.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchSession.swift; sourceTree = "<group>"; };
 		9582B6822FE993A50072D4E8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -171,7 +175,7 @@
 			children = (
 				FA7CA1B00000000000000005 /* FatcampTests.xctest */,
 				504EC3041FED79650016851F /* Fatcamp.app */,
-				81B7572411921FADFB0B6C03 /* FatcampWatch.app */,
+				81B7572411921FADFB0B6C03 /* Fatcamp.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -228,8 +232,9 @@
 				4C70CFD741F8CEA88616F8E5 /* FatcampWatch.entitlements */,
 				0A581EC10C38171DE086E5CA /* Typography.swift */,
 				C9A2637A8BDA992C79970140 /* BankFX.swift */,
+				5CCB937E60A08BBE160B6F57 /* SpeakView.swift */,
+				53385963B4987C5F6A4D5554 /* Forge.swift */,
 			);
-			name = FatcampWatch;
 			path = FatcampWatch;
 			sourceTree = "<group>";
 		};
@@ -281,7 +286,7 @@
 			);
 			name = FatcampWatch;
 			productName = FatcampWatch;
-			productReference = 81B7572411921FADFB0B6C03 /* FatcampWatch.app */;
+			productReference = 81B7572411921FADFB0B6C03 /* Fatcamp.app */;
 			productType = "com.apple.product-type.application";
 		};
 		FA7CA1B0000000000000000C /* FatcampTests */ = {
@@ -308,8 +313,9 @@
 		504EC2FC1FED79650016851F /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 0920;
+				LastUpgradeCheck = 2720;
 				TargetAttributes = {
 					504EC3031FED79650016851F = {
 						CreatedOnToolsVersion = 9.2;
@@ -412,6 +418,8 @@
 				7FA18D9132EA420854C73122 /* WorkoutManager.swift in Sources */,
 				AF287833B8A7A2008E8DF5ED /* Typography.swift in Sources */,
 				70CBCAD955AEA491F1B2DD4E /* BankFX.swift in Sources */,
+				A79EF65A8E0B87022438F485 /* SpeakView.swift in Sources */,
+				D14B0BC390CD2376A0406132 /* Forge.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -462,7 +470,6 @@
 		22FF73D0F8D97954D7F5CB24 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = FatcampWatch/FatcampWatch.entitlements;
@@ -478,6 +485,7 @@
 				INFOPLIST_KEY_NSMotionUsageDescription = "Fatcamp uses wrist motion to notice when you finish a set.";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.frennat.fatcamp;
 				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
 				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.frennat.fatcamp.watchkitapp;
 				PRODUCT_NAME = Fatcamp;
@@ -493,7 +501,6 @@
 		2D4F2D103C276514AE276403 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = FatcampWatch/FatcampWatch.entitlements;
@@ -509,6 +516,7 @@
 				INFOPLIST_KEY_NSMotionUsageDescription = "Fatcamp uses wrist motion to notice when you finish a set.";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.frennat.fatcamp;
 				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
 				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.frennat.fatcamp.watchkitapp;
 				PRODUCT_NAME = Fatcamp;
@@ -535,6 +543,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -542,8 +551,10 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -554,6 +565,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -572,6 +584,7 @@
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -591,6 +604,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -598,8 +612,10 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -610,6 +626,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -621,6 +638,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
@@ -637,7 +655,7 @@
 				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = App/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -661,7 +679,7 @@
 				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = App/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

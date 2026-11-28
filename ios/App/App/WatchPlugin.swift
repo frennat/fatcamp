@@ -58,12 +58,16 @@ public class WatchPlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
             call.resolve(["sent": false]); return
         }
         let json = call.getString("session") ?? ""
-        let ctx: [String: Any] = ["session": json, "at": Date().timeIntervalSince1970]
+        /* profile: kit, limitations, unit and recent history, so the watch can forge
+           a session over cellular with the phone out of range */
+        let profile = call.getString("profile") ?? ""
+        let ctx: [String: Any] = ["session": json, "profile": profile, "at": Date().timeIntervalSince1970]
         do { try s.updateApplicationContext(ctx) } catch {
             call.reject(error.localizedDescription); return
         }
         if s.isReachable {
-            s.sendMessage(["type": "session", "session": json], replyHandler: nil, errorHandler: nil)
+            s.sendMessage(["type": "session", "session": json, "profile": profile,
+                           "at": Date().timeIntervalSince1970], replyHandler: nil, errorHandler: nil)
         }
         call.resolve(["sent": true])
     }

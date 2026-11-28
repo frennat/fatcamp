@@ -1988,6 +1988,7 @@ function logoMark(size, opts){
     '" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 }
 
+/* @forge:begin — copied to supabase/functions/forge/gen.js by scripts/build-forge.mjs */
 /* ---------------------------------------------------------------- muscles */
 /* Stylized muscle chart. Each region is a set of primitives placed on a
    100x240 body; the back view is drawn in the same space, translated. */
@@ -2108,6 +2109,7 @@ function paintAnatomy(root, act){
     g.style.transition = "fill .5s ease, opacity .5s ease";
   });
 }
+/* @forge:end */
 /* ------------------------------------------------------------ movement rig
    A jointed figure. Joints, in order:
    0 head  1 neck  2 shoulder  3 elbow  4 wrist
@@ -3780,6 +3782,7 @@ function mountRig(host, archKey, opts){
   return inst;
 }
 function unmountAll(){ for(const r of RIGS){ if(r.rig.destroy) r.rig.destroy(); } RIGS.clear(); }
+/* @forge:begin — copied to supabase/functions/forge/gen.js by scripts/build-forge.mjs */
 /* --------------------------------------------------------------- equipment */
 const EQUIP = {
   bw:        {n:"Floor space",        g:"Basics"},
@@ -5138,6 +5141,7 @@ function packSession(sess){
   if(sess.cardio){ o.cardio = Object.assign({}, sess.cardio, {xid:sess.cardio.x.id}); delete o.cardio.x; }
   return o;
 }
+/* @forge:end */
 function unpackSession(sess){
   if(!sess) return null;
   if(sess.moves) sess.moves.forEach(m => { m.x = XMAP[m.id] || m.x; });
@@ -6005,6 +6009,7 @@ function renderPresets(){
     </button>`).join("");
   $$("#presets .preset").forEach(b => b.addEventListener("click", () => applyPreset(b.dataset.preset)));
 }
+/* @forge:begin — copied to supabase/functions/forge/gen.js by scripts/build-forge.mjs */
 function applyPreset(k){
   const p = PRESETS[k];
   const c = state.cfg;
@@ -6026,6 +6031,7 @@ function applyPreset(k){
   syncControls(); save();
   toast(p.n+" loaded", "Criteria filled in below. Change anything you like, then forge it.", "");
 }
+/* @forge:end */
 function renderFocus(){
   $("#focusChips").innerHTML = Object.entries(FOCUS).map(([k,f]) =>
     `<button class="chip" type="button" data-focus="${k}" aria-pressed="${state.cfg.focus.includes(k)}">${f.n}</button>`).join("");
@@ -7078,6 +7084,7 @@ function applyPlanLimits(){
   if(typeof upLockSync === "function") upLockSync();
 }
 
+/* @forge:begin — copied to supabase/functions/forge/gen.js by scripts/build-forge.mjs */
 /* -------------------------------------------------------------- the agent
    A sentence in, the Workload above filled in. Deliberately literal: it takes
    what it recognises and leaves the rest of your settings alone, so a half-formed
@@ -7294,6 +7301,7 @@ function askApply(raw){
   return true;
 }
 
+/* @forge:end */
 /* ---------------------------------------------------------------- session */
 function doForge(){
   /* The paid first month is up and nothing is subscribed — this is the
@@ -7479,10 +7487,12 @@ function coverageLine(s, ranked){
   else if(missed.length) t += ` ${missed.length} more sit this one out.`;
   return t;
 }
+/* @forge:begin — copied to supabase/functions/forge/gen.js by scripts/build-forge.mjs */
 function repsLabel(m){
   if(m.failure) return "AMRAP";
   return m.unit === "sec" ? m.reps : m.reps + (m.each ? " each" : "");
 }
+/* @forge:end */
 function moveRow(m){
   const x = m.x;
   const reps = repsLabel(m);
@@ -8135,6 +8145,7 @@ function watchPlugin(){
   if(!_watchProxy) _watchProxy = C.registerPlugin("Watch");
   return _watchProxy;
 }
+/* @forge:begin — copied to supabase/functions/forge/gen.js by scripts/build-forge.mjs */
 function cardioTarget(c){ return c.style === "treadmill" ? Math.max(1, c.mins - 5) : c.mins; }
 function watchPayload(s){
   if(!s) return "";
@@ -8149,15 +8160,40 @@ function watchPayload(s){
       done:!!s.cardio.done, doneMins:s.cardio.doneMins != null ? s.cardio.doneMins : null} : null
   });
 }
+/* @forge:end */
+/* What the watch needs to forge a session on its own (speech, over cellular):
+   the same inputs generate() reads from this profile. */
+function watchProfile(){
+  return JSON.stringify({
+    equip:state.equip || [], limits:state.limits || [], loc:state.cfg.loc || "home",
+    unit:state.unit || "lb", streak:state.streak|0,
+    history:(state.history || []).slice(0, 14).map(h => ({mids:h.mids || []}))
+  });
+}
+/* A session spoken into the watch and forged on the server arrives here once the
+   two reconnect. It becomes today's session unless the phone already has a newer
+   one or one already under way. */
+function watchAdoptForged(e){
+  let packed; try{ packed = JSON.parse(e.packed); }catch(err){ return false; }
+  const cur = state.session;
+  const started = cur && (cur.moves.some(m => m.doneSets.some(Boolean)) || (cur.cardio && cur.cardio.done));
+  if(cur && String(cur.date) === String(packed.date)) return false;
+  if(started && Date.parse(cur.date) > Date.parse(packed.date)) return false;
+  const s = unpackSession(packed);
+  if(!s || !s.moves) return false;
+  state.session = s;
+  toast("Session from your watch", (s.title || "Today's session") + " is ready — " + s.moves.length + " movements.", "");
+  return true;
+}
 let _watchT = 0, _watchLast = null;
 function watchPush(){
   if(!watchPlugin()) return;
   clearTimeout(_watchT);
   _watchT = setTimeout(() => {
-    const json = watchPayload(state.session);
-    if(json === _watchLast) return;
-    _watchLast = json;
-    watchPlugin().push({session:json}).catch(() => { _watchLast = null; });
+    const json = watchPayload(state.session), profile = watchProfile();
+    if(json + profile === _watchLast) return;
+    _watchLast = json + profile;
+    watchPlugin().push({session:json, profile}).catch(() => { _watchLast = null; });
   }, 250);
 }
 function watchSeen(){
@@ -8175,6 +8211,7 @@ async function watchDrain(){
     if(!e || (e.eid && seen.indexOf(e.eid) >= 0)) continue;
     if(e.eid) seen.push(e.eid);
     if(e.type === "bank") bank = true;
+    else if(e.type === "forged") changed = watchAdoptForged(e) || changed;
     else changed = watchApply(e) || changed;
   }
   try{ localStorage.setItem("fc.watchSeen", JSON.stringify(seen.slice(-300))); }catch(e){}

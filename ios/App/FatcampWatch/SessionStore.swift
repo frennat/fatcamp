@@ -37,6 +37,13 @@ final class SessionStore: NSObject, ObservableObject {
             return
         }
         #endif
+        #if DEBUG
+        /* simulator: start with no session, ignoring the phone's earlier ones */
+        if ProcessInfo.processInfo.arguments.contains("-fcEmpty") {
+            session = nil
+            forgedAt = Date().timeIntervalSince1970
+        }
+        #endif
         if WCSession.isSupported() {
             WCSession.default.delegate = self
             WCSession.default.activate()
@@ -113,6 +120,35 @@ final class SessionStore: NSObject, ObservableObject {
         send(["type": "workoutStart"])
     }
 
+    /// The person's kit, limitations, unit and recent history, kept fresh by the
+    /// phone. It's what lets the watch forge a session on its own.
+    var forgeTried = false   // debug hook guard (see SpeakView)
+    private var forgedAt: Double = UserDefaults.standard.double(forKey: "fc.forgedAt")
+    private(set) var profileJSON: String = UserDefaults.standard.string(forKey: "fc.profile") ?? ""
+
+    fileprivate func receive(profile json: String) {
+        guard !json.isEmpty, json != profileJSON else { return }
+        profileJSON = json
+        UserDefaults.standard.set(json, forKey: "fc.profile")
+    }
+
+    /// Speak a session into existence: forge it on the server, start it here,
+    /// and queue it for the phone (it arrives whenever the two reconnect).
+    func forge(_ text: String) async throws -> String {
+        let r = try await Forge.run(text: text, profile: profileJSON)
+        guard let data = r.watch.data(using: .utf8),
+              let s = try? JSONDecoder().decode(WatchSession.self, from: data) else {
+            throw ForgeError("The session came back unreadable. Try again.")
+        }
+        commit(s)
+        /* anything the phone sent before this moment is older than this session */
+        forgedAt = Date().timeIntervalSince1970
+        UserDefaults.standard.set(forgedAt, forKey: "fc.forgedAt")
+        send(["type": "forged", "packed": r.packed])
+        Buzz.forge()
+        return r.summary
+    }
+
     /// Called when the phone clears the session (it was banked or discarded there).
     var onCleared: (() -> Void)?
 
@@ -142,7 +178,10 @@ final class SessionStore: NSObject, ObservableObject {
         }
     }
 
-    fileprivate func receive(json: String) {
+    fileprivate func receive(json: String, at: Double? = nil) {
+        /* a phone update older than a session forged on the wrist (e.g. replayed when
+           the watch app relaunches out of range) must not overwrite it */
+        if let at, forgedAt > 0, at < forgedAt { return }
         guard !json.isEmpty, let data = json.data(using: .utf8) else {
             let had = session != nil
             session = nil
@@ -163,18 +202,29 @@ extension SessionStore: WCSessionDelegate {
         let reach = session.isReachable
         Task { @MainActor in
             self.phoneReachable = reach
-            if let json = ctx["session"] as? String { self.receive(json: json) }
+            if let p = ctx["profile"] as? String { self.receive(profile: p) }
+            if let json = ctx["session"] as? String { self.receive(json: json, at: ctx["at"] as? Double) }
         }
     }
 
     nonisolated func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
+        let profile = applicationContext["profile"] as? String
+        let at = applicationContext["at"] as? Double
         guard let json = applicationContext["session"] as? String else { return }
-        Task { @MainActor in self.receive(json: json) }
+        Task { @MainActor in
+            if let p = profile { self.receive(profile: p) }
+            self.receive(json: json, at: at)
+        }
     }
 
     nonisolated func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
         guard message["type"] as? String == "session", let json = message["session"] as? String else { return }
-        Task { @MainActor in self.receive(json: json) }
+        let profile = message["profile"] as? String
+        let at = message["at"] as? Double
+        Task { @MainActor in
+            if let p = profile { self.receive(profile: p) }
+            self.receive(json: json, at: at)
+        }
     }
 
     nonisolated func sessionReachabilityDidChange(_ session: WCSession) {

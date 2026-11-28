@@ -18,15 +18,8 @@ struct SessionView: View {
         }
     }
 
-    private var empty: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "dumbbell.fill").font(.title2).foregroundStyle(Color.fcAccent)
-            Text("No session yet").fcHeading(17)
-            Text("Type what you want to train on your phone. It lands here.")
-                .font(.footnote).foregroundStyle(Color.fcDim).multilineTextAlignment(.center)
-        }
-        .padding()
-    }
+    /// No session yet: the Fatcamp mark. Tap, speak, train.
+    private var empty: some View { SpeakView() }
 
     private func session(_ s: WatchSession) -> some View {
         List {
