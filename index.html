@@ -8184,6 +8184,11 @@ function watchApply(e){
           ((e.mins|0) > 0 ? (e.mins|0) + " min of movement" : "under a minute of movement") + (e.kcal ? " · " + (e.kcal|0) + " kcal" : "") + ".", "");
     return true;
   }
+  if(e.type === "workoutStart"){
+    /* the watch's Apple workout is recording this session — it saves to Health itself */
+    s.watchWorkout = true;
+    return true;
+  }
   if(e.type === "workout"){
     /* the watch already wrote this to Health — banking must not write a second copy */
     s.watchWorkout = true;

@@ -35,6 +35,26 @@ final class Coach: ObservableObject {
         workout.onTargetHit = { [weak self] mins, kcal, km, hr in
             self?.store.logCardio(minutes: mins, kcal: kcal, km: km, avgHR: hr, auto: true)
         }
+        /* Banked (or discarded) on the phone: stop the Apple workout that started
+           with the session, save it to Health, and go back to the home screen. */
+        store.onCleared = { [weak self] in
+            guard let self else { return }
+            Task { @MainActor in
+                self.path = []
+                if self.workout.running { await self.endWorkout() }
+                self.phase = .idle
+            }
+        }
+    }
+
+    /// Start the Apple workout, then tell the phone if Health is recording it.
+    private func beginWorkout(_ kind: WorkoutManager.Kind, cardio c: WatchSession.Cardio? = nil, pace: String? = nil) async {
+        if let c {
+            await beginWorkout(.cardio, cardio: c, pace: pace)
+        } else {
+            await workout.start(kind)
+        }
+        if workout.healthRecording { store.reportWorkoutStarted() }
     }
 
     /// The first thing left to do: an unfinished movement, else unlogged cardio.
@@ -54,7 +74,7 @@ final class Coach: ObservableObject {
             phase = .active
             /* the Health workout starts in the background; the wrist doesn't wait
                for it, so the movement opens instantly even before Health answers */
-            Task { await workout.start(.strength) }
+            Task { await beginWorkout(.strength) }
             if store.autoDetect { detector.start() }
             Buzz.start()
         }
@@ -101,7 +121,7 @@ final class Coach: ObservableObject {
     /// Tick the next set of a movement and start its rest clock. On the last set,
     /// move on to whatever is next.
     func completeNextSet(of move: WatchSession.Move) {
-        if phase == .idle { phase = .active; Task { await workout.start(.strength) } }
+        if phase == .idle { phase = .active; Task { await beginWorkout(.strength) } }
         guard let set = store.nextSet(of: move.i) else { return }
         let finished = store.setDone(move: move.i, set: set, true)
         Buzz.set()   // the phone buzzes the same light tap for every set, last one included

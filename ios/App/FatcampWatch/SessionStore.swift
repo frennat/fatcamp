@@ -107,6 +107,15 @@ final class SessionStore: NSObject, ObservableObject {
         send(["type": "workout", "kind": kind, "mins": minutes, "kcal": kcal, "hr": avgHR])
     }
 
+    /// Health is recording a workout for this session on the wrist. The phone
+    /// then skips writing its own copy when the session is banked there.
+    func reportWorkoutStarted() {
+        send(["type": "workoutStart"])
+    }
+
+    /// Called when the phone clears the session (it was banked or discarded there).
+    var onCleared: (() -> Void)?
+
     func bank() {
         send(["type": "bank"])   // the haptic plays with the celebration (BankFX)
     }
@@ -135,8 +144,10 @@ final class SessionStore: NSObject, ObservableObject {
 
     fileprivate func receive(json: String) {
         guard !json.isEmpty, let data = json.data(using: .utf8) else {
+            let had = session != nil
             session = nil
             UserDefaults.standard.removeObject(forKey: cacheKey)
+            if had { onCleared?() }
             return
         }
         guard let s = try? JSONDecoder().decode(WatchSession.self, from: data) else { return }

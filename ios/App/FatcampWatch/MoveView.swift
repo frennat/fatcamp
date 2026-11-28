@@ -14,6 +14,17 @@ struct MoveView: View {
         ScrollView {
             if let m = move {
                 VStack(alignment: .leading, spacing: 8) {
+                    if let s = store.session {
+                        /* the whole session, not this movement: climbs with every set logged */
+                        HStack(alignment: .firstTextBaseline, spacing: 6) {
+                            Text("\(Int((s.progress * 100).rounded()))%")
+                                .font(FC.display(22)).foregroundStyle(Color.fcAccent)
+                                .contentTransition(.numericText())
+                                .animation(.easeOut(duration: 0.3), value: s.doneSets)
+                            Text("of session").fcEyebrow(9)
+                        }
+                        ProgressView(value: s.progress).tint(.fcAccent)
+                    }
                     Text(m.n).fcHeading(18)
                     Text("\(m.sets) × \(m.reps)\(m.failure ? " · to failure" : "") · \(m.rest)s rest").fcEyebrow(9)
                     if !m.weight.isEmpty {
