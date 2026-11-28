@@ -123,6 +123,11 @@
 
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;touch-action:manipulation}   /* no double-tap zoom — nothing here to zoom into */
+/* The app never scrolls sideways. On iPhone the page root (not body) is what
+   scrolls, so it is clipped too; `clip` (not hidden) so position:sticky and the
+   fixed bars keep working. A decoration a few px too wide can no longer drag
+   the whole screen, top and bottom bars with it, off to one side. */
+html,body{overflow-x:hidden;overflow-x:clip;max-width:100%;overscroll-behavior-x:none}
 body{
   background:var(--bg);
   color:var(--ink);
@@ -196,7 +201,7 @@ h1,h2,h3,h4{font-family:var(--f-display);font-weight:800;margin:0;text-wrap:bala
   font-family:var(--f-mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
   border:1px solid var(--line);padding:6px 12px;border-radius:var(--r-pill);color:var(--ink-3);
 }
-.ask{position:relative;padding:34px 0 30px;border-bottom:1px solid var(--line);isolation:isolate}
+.ask{position:relative;padding:34px 0 30px;border-bottom:1px solid var(--line);isolation:isolate;overflow-x:clip}
 @media(min-width:760px){.ask{padding:54px 0 44px}}
 .ask-glow,.ask-obj{position:absolute;left:50%;top:57%;translate:-50% -50%;z-index:0;pointer-events:none}
 .ask-glow{
@@ -1585,6 +1590,49 @@ html.splash-handover #paneCreate .ask-in > *:nth-child(n+5){ animation-delay:.56
 .bodygrid input,.bodygrid select{font:inherit;font-size:1rem;padding:9px 11px;border-radius:10px;
   color:var(--ink);background:var(--bg);min-width:0;
   border:1px solid color-mix(in srgb, var(--line) 70%, transparent)}
+
+/* ---- breathing room on phones (2026-11-28) ----
+   Same density of information, more air around it: controls a size smaller,
+   more space between and inside sections, nothing squeezed into one line. */
+@media (max-width:640px){
+  .panel{margin-top:58px}
+  .panel-head{margin-bottom:24px}
+  .presets{gap:14px}
+  .preset{padding:14px 14px 13px}
+  .preset b{font-size:17px}
+  .preset .pd{font-size:12px}
+  .preset .pmark svg{height:36px}
+  .preset .pmark svg.run{height:34px}
+  .field{padding:20px var(--pad)}
+  .field > .eyebrow{margin-bottom:14px}
+  .seg button{font-size:13px;padding:7px 12px;letter-spacing:.03em}
+  .stepper{gap:18px}
+  .stepper button{width:32px;height:32px;font-size:19px}
+  .stepper output{font-size:25px;min-width:36px}
+  .btn{font-size:12.5px;padding:8px 15px}
+  .btn.primary{padding:5px 5px 5px 15px}
+  /* the Logbook: date, points and Share on top; the session underneath, full width */
+  .hist{gap:12px}
+  .histrow{display:grid !important;grid-template-columns:auto 1fr auto auto;
+           grid-template-areas:"dot date pts share" "name name name name" "meta meta meta meta";
+           column-gap:10px;row-gap:4px;align-items:center;padding:14px 18px;border-radius:22px}
+  .histrow .hdot{grid-area:dot}
+  .histrow .hd{grid-area:date;width:auto}
+  .histrow .hx{grid-area:pts}
+  .histrow .hshare{grid-area:share;margin-left:0}
+  .histrow .hn{grid-area:name;font-size:18px;line-height:1.1;margin-top:4px}
+  .histrow .hmeta{grid-area:meta;font-size:11.5px}
+  /* folding groups (Focus, Failure & Conditioning) */
+  .fgroup{margin:0 0 14px}
+  .fgroup > summary{padding:11px 14px}
+  .gname{font-size:14px}
+  /* the forge bar and the session's own buttons */
+  .forgebar{margin-top:30px;padding:10px 10px 10px 22px;gap:12px}
+  .forgebar .flabel{font-size:22px}
+  .forgebar .fmeta{font-size:10px}
+  .sessionhead .actions{gap:10px;margin-top:6px}
+  .sessionhead .actions .btn{font-size:12px;padding:7px 14px}
+}
 </style>
 </head>
 <body>
@@ -9287,11 +9335,15 @@ async function pushSessions(){
     minutes: Math.max(0, Math.min(600, h.minutes | 0)),
     effort: Math.max(1, Math.min(4, h.effort || 2))
   }));
-  if(!rows.length) return 0;
-  /* the unique key is (lifter, done_at), so re-sending is a no-op */
-  await sb("/rest/v1/sessions", {method:"POST",
-    headers:{"Prefer":"resolution=ignore-duplicates,return=minimal"}, body:rows});
-  return rows.length;
+  /* one row per moment: two log entries stamped the same second would collide in one batch */
+  const seen = new Set();
+  const uniq = rows.filter(r => !seen.has(r.done_at) && seen.add(r.done_at));
+  if(!uniq.length) return 0;
+  /* the unique key is (lifter, done_at); naming it in on_conflict is what makes
+     ignore-duplicates skip re-sent sessions instead of failing the whole batch */
+  await sb("/rest/v1/sessions?on_conflict=lifter,done_at", {method:"POST",
+    headers:{"Prefer":"resolution=ignore-duplicates,return=minimal"}, body:uniq});
+  return uniq.length;
 }
 async function fetchBoard(scope){
   const a = auth();

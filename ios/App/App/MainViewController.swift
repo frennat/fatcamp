@@ -17,5 +17,19 @@ class MainViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(ReviewPlugin())
         bridge?.registerPluginInstance(WatchPlugin())
         if #available(iOS 15.0, *) { bridge?.registerPluginInstance(StorePlugin()) }
+        lockHorizontalScroll()
     }
+
+    /// The app scrolls up and down only. The web view's scroll view is pinned
+    /// sideways, so even content a few pixels too wide can't pan the screen.
+    private func lockHorizontalScroll() {
+        guard let sv = webView?.scrollView else { return }
+        sv.alwaysBounceHorizontal = false
+        sv.showsHorizontalScrollIndicator = false
+        sv.isDirectionalLockEnabled = true
+        xLock = sv.observe(\.contentOffset, options: [.new]) { sv, _ in
+            if sv.contentOffset.x != 0 { sv.contentOffset.x = 0 }
+        }
+    }
+    private var xLock: NSKeyValueObservation?
 }
