@@ -1,0 +1,45 @@
+# Publish the website from an allowlist.
+#
+# GitHub Pages used to serve this whole repository, so every internal note
+# (BRAND-ACCOUNTS.md, MARKETING.md, PAYWALL-RESTORE.md, supabase/…) was a
+# public URL. Now only the files below are deployed; anything else in the repo
+# stops resolving on frennat.github.io/fatcamp/.
+#
+# Adding a new public file or folder? Add it to the copy list below, or it
+# won't be on the site.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Collect the public files
+        run: |
+          mkdir -p _site
+          cp index.html sw.js manifest.json capacitor.js _site/
+          cp -R icons site brand _site/
+          echo "Publishing:" && find _site -type f | sort
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
