@@ -193,6 +193,7 @@ Deno.serve(async (req) => {
 
   let body: {
     jws?: string;
+    owner?: string;
     frames?: string[];
     kind?: string;
     catalog?: { id: string; n: string }[];
@@ -225,11 +226,23 @@ Deno.serve(async (req) => {
   }
   const kind = body.kind === "video" ? "video" : "photo";
 
+  /* ---- owner key ----
+   * While the paywall is off, the owner's own device carries a long random key
+   * (secret OWNER_KEY, set with `supabase secrets set`). It stands in for the
+   * Max subscription, for that one person only. It is never in the app's code,
+   * so nobody else has it; it is metered under its own monthly cap. */
+  const ownerKey = Deno.env.get("OWNER_KEY") || "";
+  const isOwner = ownerKey.length >= 32 && typeof body.owner === "string" &&
+    body.owner.length === ownerKey.length &&
+    (await sha256hex(new TextEncoder().encode(body.owner))) ===
+      (await sha256hex(new TextEncoder().encode(ownerKey)));
+
   /* ---- entitlement ---- */
+  let tx: Record<string, unknown> = {};
+  if (!isOwner) {
   if (typeof body.jws !== "string" || !body.jws) {
     return reply(401, { error: "no subscription proof" });
   }
-  let tx: Record<string, unknown>;
   try {
     tx = await verifyTransaction(body.jws);
   } catch (e) {
@@ -255,15 +268,18 @@ Deno.serve(async (req) => {
   if (tx.revocationDate) return reply(403, { error: "that subscription was refunded" });
   const expires = Number(tx.expiresDate || 0);
   if (!expires || expires < Date.now()) return reply(403, { error: "that Max subscription has lapsed" });
+  }
 
   /* ---- metering ---- */
   const db = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
-  const monthlyCap = Number(Deno.env.get("MONTHLY_CAP") || 30);
+  const monthlyCap = isOwner
+    ? Number(Deno.env.get("OWNER_MONTHLY_CAP") || 300)
+    : Number(Deno.env.get("MONTHLY_CAP") || 30);
   const dailyCap = Number(Deno.env.get("GLOBAL_DAILY_CAP") || 400);
-  const subject = String(tx.originalTransactionId || tx.transactionId || "unknown");
+  const subject = isOwner ? "owner" : String(tx.originalTransactionId || tx.transactionId || "unknown");
   const month = new Date().toISOString().slice(0, 7);
   const day = new Date().toISOString().slice(0, 10);
 
