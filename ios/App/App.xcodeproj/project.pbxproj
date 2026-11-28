@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		02D096D21A3B38F73C1BE0C8 /* FatcampWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4EC6DD223ACB9D2B83E1D3F1 /* FatcampWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		10ABB2D5B4B0071908BE786A /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C8575F8ACBEDE8C65124DD0 /* SessionStore.swift */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
 		420BCB064C884EFC256E8E18 /* CardioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B8E067787A17E214149220 /* CardioView.swift */; };
@@ -39,14 +40,24 @@
 		BB16618EC9147D03739D0467 /* MoveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC13041C19E439DE23B0F7AE /* MoveView.swift */; };
 		C0058AF36A9B71E33E3ABB63 /* SessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75114F166AC857869627ABF3 /* SessionView.swift */; };
 		C692FE7A24EA82E8F342FF7A /* WatchPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3017B8F82EF6168DB005B607 /* WatchPlugin.swift */; };
+		C995535C87C228B4C3CB7157 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 23B75B556E991F3B6873454E /* Foundation.framework */; };
 		D146188A7EBE4ED71D1A34BF /* FatcampWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B1A22E8C8C1A915EADAEA0A /* FatcampWatchApp.swift */; };
 		D14B0BC390CD2376A0406132 /* Forge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53385963B4987C5F6A4D5554 /* Forge.swift */; };
+		D5F947926931663120386A42 /* FatcampWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83CA040EA92B74C14D9F0C42 /* FatcampWidget.swift */; };
+		D9339D6D74C918CFACBAFEF5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0B8EAAAE77261F83636AAA45 /* Assets.xcassets */; };
 		FA7CA1B00000000000000002 /* PaywallTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA7CA1B00000000000000001 /* PaywallTests.swift */; };
 		FA7CA1B00000000000000004 /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = FA7CA1B00000000000000003 /* Products.storekit */; };
 		FD9FE514F1CADF793A4425DE /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 23B75B556E991F3B6873454E /* Foundation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		D629CB35C7CA2341699A407C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D452FA1EF9B89D29CF3D91D2;
+			remoteInfo = FatcampWidget;
+		};
 		D9492526B5BFB98115ACF821 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
@@ -75,11 +86,23 @@
 			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FB06ED9239CCB41CF8DBA3C1 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				02D096D21A3B38F73C1BE0C8 /* FatcampWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		07B8E067787A17E214149220 /* CardioView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CardioView.swift; sourceTree = "<group>"; };
 		0A581EC10C38171DE086E5CA /* Typography.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
+		0B8EAAAE77261F83636AAA45 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		23B75B556E991F3B6873454E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
 		3017B8F82EF6168DB005B607 /* WatchPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchPlugin.swift; sourceTree = "<group>"; };
@@ -87,6 +110,7 @@
 		3668F78DAA279A1137924F28 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4B1A22E8C8C1A915EADAEA0A /* FatcampWatchApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FatcampWatchApp.swift; sourceTree = "<group>"; };
 		4C70CFD741F8CEA88616F8E5 /* FatcampWatch.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = FatcampWatch.entitlements; sourceTree = "<group>"; };
+		4EC6DD223ACB9D2B83E1D3F1 /* FatcampWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FatcampWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* Fatcamp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Fatcamp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -99,7 +123,9 @@
 		5CCB937E60A08BBE160B6F57 /* SpeakView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpeakView.swift; sourceTree = "<group>"; };
 		75114F166AC857869627ABF3 /* SessionView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SessionView.swift; sourceTree = "<group>"; };
 		771FF910B31F4B6BCEACCAB1 /* RepDetector.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RepDetector.swift; sourceTree = "<group>"; };
+		7EDA22DF4B3C9456509ADDE5 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		81B7572411921FADFB0B6C03 /* Fatcamp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Fatcamp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		83CA040EA92B74C14D9F0C42 /* FatcampWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FatcampWidget.swift; sourceTree = "<group>"; };
 		889ED13229E236E95E2A32F3 /* Coach.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Coach.swift; sourceTree = "<group>"; };
 		92A53C1DDF50CBA59087A181 /* WatchSession.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchSession.swift; sourceTree = "<group>"; };
 		9582B6822FE993A50072D4E8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -124,6 +150,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		0EC80AA6B1AA248CE6C148A6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C995535C87C228B4C3CB7157 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		504EC3011FED79650016851F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -167,6 +201,7 @@
 				504EC3051FED79650016851F /* Products */,
 				6A521670643DFD95432C6382 /* Frameworks */,
 				AAB1EF9641D7909555CA2E83 /* FatcampWatch */,
+				647508DB1E642E15FA7A32CB /* FatcampWidget */,
 			);
 			sourceTree = "<group>";
 		};
@@ -176,6 +211,7 @@
 				FA7CA1B00000000000000005 /* FatcampTests.xctest */,
 				504EC3041FED79650016851F /* Fatcamp.app */,
 				81B7572411921FADFB0B6C03 /* Fatcamp.app */,
+				4EC6DD223ACB9D2B83E1D3F1 /* FatcampWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -205,6 +241,17 @@
 				3017B8F82EF6168DB005B607 /* WatchPlugin.swift */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		647508DB1E642E15FA7A32CB /* FatcampWidget */ = {
+			isa = PBXGroup;
+			children = (
+				83CA040EA92B74C14D9F0C42 /* FatcampWidget.swift */,
+				0B8EAAAE77261F83636AAA45 /* Assets.xcassets */,
+				7EDA22DF4B3C9456509ADDE5 /* Info.plist */,
+			);
+			name = FatcampWidget;
+			path = FatcampWidget;
 			sourceTree = "<group>";
 		};
 		6A521670643DFD95432C6382 /* Frameworks */ = {
@@ -279,15 +326,34 @@
 				56296CDD91A9A7932B50A66A /* Sources */,
 				F09C6B7E8CE20BA312C7E29F /* Frameworks */,
 				71A8F965C58838D3816C45AC /* Resources */,
+				FB06ED9239CCB41CF8DBA3C1 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				2CC75B8C38AE603EEF59698D /* PBXTargetDependency */,
 			);
 			name = FatcampWatch;
 			productName = FatcampWatch;
 			productReference = 81B7572411921FADFB0B6C03 /* Fatcamp.app */;
 			productType = "com.apple.product-type.application";
+		};
+		D452FA1EF9B89D29CF3D91D2 /* FatcampWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 510E679D16E3470DE4FD46A5 /* Build configuration list for PBXNativeTarget "FatcampWidget" */;
+			buildPhases = (
+				0622780AA32F47BD17CF36C3 /* Sources */,
+				0EC80AA6B1AA248CE6C148A6 /* Frameworks */,
+				27BF064D6D6B79ECAA6C9D7B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FatcampWidget;
+			productName = FatcampWidget;
+			productReference = 4EC6DD223ACB9D2B83E1D3F1 /* FatcampWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 		FA7CA1B0000000000000000C /* FatcampTests */ = {
 			isa = PBXNativeTarget;
@@ -347,11 +413,20 @@
 				504EC3031FED79650016851F /* App */,
 				FA7CA1B0000000000000000C /* FatcampTests */,
 				B46FB1B25767CC4EE4A6520D /* FatcampWatch */,
+				D452FA1EF9B89D29CF3D91D2 /* FatcampWidget */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		27BF064D6D6B79ECAA6C9D7B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D9339D6D74C918CFACBAFEF5 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		504EC3021FED79650016851F /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -385,6 +460,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		0622780AA32F47BD17CF36C3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5F947926931663120386A42 /* FatcampWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		504EC3001FED79650016851F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -434,6 +517,12 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		2CC75B8C38AE603EEF59698D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = FatcampWidget;
+			target = D452FA1EF9B89D29CF3D91D2 /* FatcampWidget */;
+			targetProxy = D629CB35C7CA2341699A407C /* PBXContainerItemProxy */;
+		};
 		F0CF3B08C095FC113ED03269 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = FatcampWatch;
@@ -467,6 +556,32 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		14510966F3A4381C0FC1E657 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 20;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FatcampWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Fatcamp;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.4;
+				PRODUCT_BUNDLE_IDENTIFIER = com.frennat.fatcamp.watchkitapp.widget;
+				PRODUCT_NAME = FatcampWidget;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
 		22FF73D0F8D97954D7F5CB24 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -693,6 +808,33 @@
 			};
 			name = Release;
 		};
+		50B47B375A0A359825F246CE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 20;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FatcampWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Fatcamp;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.4;
+				PRODUCT_BUNDLE_IDENTIFIER = com.frennat.fatcamp.watchkitapp.widget;
+				PRODUCT_NAME = FatcampWidget;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
 		FA7CA1B0000000000000000E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -740,6 +882,15 @@
 			buildConfigurations = (
 				504EC3171FED79650016851F /* Debug */,
 				504EC3181FED79650016851F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		510E679D16E3470DE4FD46A5 /* Build configuration list for PBXNativeTarget "FatcampWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				50B47B375A0A359825F246CE /* Release */,
+				14510966F3A4381C0FC1E657 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

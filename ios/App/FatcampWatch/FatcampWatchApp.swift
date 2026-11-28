@@ -60,9 +60,28 @@ struct FatcampWatchApp: App {
                     }
                 }
                 .animation(.easeInOut(duration: 0.25), value: coach.bankFx == nil)
+                /* the widget: Smart Stack or complication → straight to the mic */
+                #if DEBUG
+                .onAppear { if ProcessInfo.processInfo.arguments.contains("-fcWidgetTap") { openMicFromWidget() } }
+                #endif
+                .onOpenURL { url in
+                    guard url.scheme == "fatcamp", url.host == "speak" else { return }
+                    openMicFromWidget()
+                }
+                .fullScreenCover(isPresented: $coach.speakNow) {
+                    SpeakView(startListening: true, onFinish: { coach.speakNow = false })
+                        .environmentObject(store).environmentObject(coach).environmentObject(workout)
+                }
                 /* ask for Health once, up front, so the prompt is answered before the first workout */
                 .task { _ = await workout.requestAuthorization() }
         }
+    }
+
+    /// A widget tap can arrive while the app is still launching; presenting the
+    /// mic a beat later makes sure the window is ready to draw it.
+    private func openMicFromWidget() {
+        coach.path = []
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { coach.speakNow = true }
     }
 
     /// Debug builds can open straight onto one screen for design review:

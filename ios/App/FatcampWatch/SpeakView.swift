@@ -6,6 +6,10 @@ import SwiftUI
 /// if the phone isn't around — and lands here ready to train.
 struct SpeakView: View {
     @EnvironmentObject var store: SessionStore
+    /// Opened from the widget: skip the logo and go straight to the mic.
+    var startListening = false
+    /// Presented over the app (widget): called when it's done or cancelled.
+    var onFinish: (() -> Void)? = nil
 
     enum Stage: Equatable { case idle, listening, forging, failed(String) }
     @State private var stage: Stage = .idle
@@ -31,18 +35,13 @@ struct SpeakView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .animation(.spring(response: 0.5, dampingFraction: 0.7), value: stage)
+        .onAppear { if startListening && stage == .idle { openMic() } }
     }
 
     // MARK: the button
 
     private var markButton: some View {
-        Button {
-            Buzz.set()
-            burst = false
-            stage = .listening
-            withAnimation(.easeOut(duration: 0.6)) { burst = true }
-            pulse = true; flicker = true
-        } label: {
+        Button { openMic() } label: {
             Image("BankMark").resizable().frame(width: 104, height: 104).clipShape(Circle())
                 .shadow(color: blue.opacity(pulse ? 0.55 : 0.25), radius: pulse ? 14 : 6)
                 .scaleEffect(pulse ? 1.03 : 0.97)
@@ -130,8 +129,17 @@ struct SpeakView: View {
         .padding(.horizontal, 6)
     }
 
+    private func openMic() {
+        Buzz.set()
+        burst = false
+        stage = .listening
+        withAnimation(.easeOut(duration: 0.6)) { burst = true }
+        pulse = true; flicker = true
+    }
+
     private func reset() {
         stage = .idle; burst = false; spin = false; flicker = false
+        onFinish?()
     }
 
     // MARK: the burst (shared look with the bank celebration)

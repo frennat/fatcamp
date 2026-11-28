@@ -15,6 +15,8 @@ final class Coach: ObservableObject {
     enum Phase { case idle, active, paused }
 
     @Published var path: [Route] = []
+    /// The widget asked for the mic ("fatcamp://speak").
+    @Published var speakNow = false
     @Published private(set) var phase: Phase = .idle
     @Published private(set) var pausedAt: Route?
     @Published private(set) var restEndsAt: Date?
