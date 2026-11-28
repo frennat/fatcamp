@@ -23,6 +23,7 @@ struct WatchSession: Codable, Equatable {
         var claimed: Bool
         var failure: Bool
         var weight: String
+        var a: String? = nil   // the 3D motion (ARCH key) — the watch plays its pre-rendered strip
         var cls: String        // comp | acc | iso | core
         var id: Int { i }
 

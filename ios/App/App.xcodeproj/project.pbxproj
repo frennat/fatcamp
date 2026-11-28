@@ -22,6 +22,7 @@
 		6002A5C5C51C8D6A82F40854 /* Coach.swift in Sources */ = {isa = PBXBuildFile; fileRef = 889ED13229E236E95E2A32F3 /* Coach.swift */; };
 		70CBCAD955AEA491F1B2DD4E /* BankFX.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A2637A8BDA992C79970140 /* BankFX.swift */; };
 		7FA18D9132EA420854C73122 /* WorkoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0CB6639F5386DBAA6A91F38 /* WorkoutManager.swift */; };
+		8E534F95E188B1FDF3359F8B /* RigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36C944EBEFCDED5EA8E64A5B /* RigView.swift */; };
 		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
 		97F34895F4404EBA3C9E5319 /* RepDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 771FF910B31F4B6BCEACCAB1 /* RepDetector.swift */; };
 		99DDD98FB348498EE1664781 /* WatchSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A53C1DDF50CBA59087A181 /* WatchSession.swift */; };
@@ -43,6 +44,7 @@
 		C995535C87C228B4C3CB7157 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 23B75B556E991F3B6873454E /* Foundation.framework */; };
 		D146188A7EBE4ED71D1A34BF /* FatcampWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B1A22E8C8C1A915EADAEA0A /* FatcampWatchApp.swift */; };
 		D14B0BC390CD2376A0406132 /* Forge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53385963B4987C5F6A4D5554 /* Forge.swift */; };
+		D592596869C9AA17078D58B1 /* Rigs.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D0AAB3B0A2CD28B016EC9E6F /* Rigs.xcassets */; };
 		D5F947926931663120386A42 /* FatcampWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83CA040EA92B74C14D9F0C42 /* FatcampWidget.swift */; };
 		D9339D6D74C918CFACBAFEF5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0B8EAAAE77261F83636AAA45 /* Assets.xcassets */; };
 		FA7CA1B00000000000000002 /* PaywallTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA7CA1B00000000000000001 /* PaywallTests.swift */; };
@@ -108,6 +110,7 @@
 		3017B8F82EF6168DB005B607 /* WatchPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchPlugin.swift; sourceTree = "<group>"; };
 		33696B7A4C71CF72F6F03ABB /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3668F78DAA279A1137924F28 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		36C944EBEFCDED5EA8E64A5B /* RigView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RigView.swift; sourceTree = "<group>"; };
 		4B1A22E8C8C1A915EADAEA0A /* FatcampWatchApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FatcampWatchApp.swift; sourceTree = "<group>"; };
 		4C70CFD741F8CEA88616F8E5 /* FatcampWatch.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = FatcampWatch.entitlements; sourceTree = "<group>"; };
 		4EC6DD223ACB9D2B83E1D3F1 /* FatcampWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FatcampWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -142,6 +145,7 @@
 		A1F0C0DE0000000000000016 /* SharePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharePlugin.swift; sourceTree = "<group>"; };
 		A1F0C0DE0000000000000018 /* ReviewPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewPlugin.swift; sourceTree = "<group>"; };
 		C9A2637A8BDA992C79970140 /* BankFX.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BankFX.swift; sourceTree = "<group>"; };
+		D0AAB3B0A2CD28B016EC9E6F /* Rigs.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Rigs.xcassets; sourceTree = "<group>"; };
 		D0CB6639F5386DBAA6A91F38 /* WorkoutManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutManager.swift; sourceTree = "<group>"; };
 		EC13041C19E439DE23B0F7AE /* MoveView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MoveView.swift; sourceTree = "<group>"; };
 		FA7CA1B00000000000000001 /* PaywallTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTests.swift; sourceTree = "<group>"; };
@@ -281,6 +285,8 @@
 				C9A2637A8BDA992C79970140 /* BankFX.swift */,
 				5CCB937E60A08BBE160B6F57 /* SpeakView.swift */,
 				53385963B4987C5F6A4D5554 /* Forge.swift */,
+				36C944EBEFCDED5EA8E64A5B /* RigView.swift */,
+				D0AAB3B0A2CD28B016EC9E6F /* Rigs.xcassets */,
 			);
 			path = FatcampWatch;
 			sourceTree = "<group>";
@@ -446,6 +452,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A609DF971A23F01E0AEBC29F /* Assets.xcassets in Resources */,
+				D592596869C9AA17078D58B1 /* Rigs.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -503,6 +510,7 @@
 				70CBCAD955AEA491F1B2DD4E /* BankFX.swift in Sources */,
 				A79EF65A8E0B87022438F485 /* SpeakView.swift in Sources */,
 				D14B0BC390CD2376A0406132 /* Forge.swift in Sources */,
+				8E534F95E188B1FDF3359F8B /* RigView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

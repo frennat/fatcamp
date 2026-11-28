@@ -55,7 +55,7 @@ final class SessionStore: NSObject, ObservableObject {
         sid: "demo", title: "Push", effort: 3, unit: "lb", streak: 6, points: 286,
         moves: [
             .init(i: 0, n: "Dumbbell Bench Press", sets: 4, reps: "6–8", rest: 120,
-                  done: [true, true, false, false], claimed: false, failure: false, weight: "60", cls: "comp"),
+                  done: [true, true, false, false], claimed: false, failure: false, weight: "60", a: "bench", cls: "comp"),
             .init(i: 1, n: "Seated Dumbbell Press", sets: 3, reps: "8–10", rest: 90,
                   done: [true, true, true], claimed: true, failure: false, weight: "40", cls: "comp"),
             .init(i: 2, n: "Push-Up", sets: 3, reps: "to failure", rest: 60,

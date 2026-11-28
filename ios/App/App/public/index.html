@@ -2496,7 +2496,159 @@ const ARCH = {
            J(128,168, 156,158, 168,154))},
   bearcrawl:{v:"side",root:"wrist",pr:[],
     a:POSE(J(56,146, 70,152, 78,156, 80,182, 82,208, 128,168, 132,170, 146,192, 150,212, 162,214)),
-    b:POSE(J(60,142, 74,148, 82,152, 92,176, 100,204, 130,164, 134,166, 152,188, 158,210, 170,212))}
+    b:POSE(J(60,142, 74,148, 82,152, 92,176, 100,204, 130,164, 134,166, 152,188, 158,210, 170,212))},
+  /* ---- from the notebook (2026-11-28): authored and render-checked ---- */
+  /* Incline fly: the inclinebench body untouched (pelvis on the seat, back on
+     the pad, feet planted) with the fly arc re-angled to the incline. The
+     shoulder is the only moving joint: the elbow holds a fixed ~18° bend
+     all rep, the top (b) stacks the bells perpendicular to the torso over
+     the upper chest, the bottom (a) opens the arc wide toward the head the
+     way ARCH.fly reads it in side view. m is the chord's midpoint so the
+     bells travel a true arc instead of cutting the corner. */
+  inclinefly:{v:"side",root:"pelvis",pr:["bench_incl","db_hands"],
+    a:POSE(J(54,119, 72,127, 80,132, 66,108, 46,88, 118,153, 122,155, 170,180, 150,220, 166,224)),
+    m:POSE(J(54,119, 72,127, 80,132, 81,104, 73,77, 118,153, 122,155, 170,180, 150,220, 166,224)),
+    b:POSE(J(54,119, 72,127, 80,132, 95,109, 102,81, 118,153, 122,155, 170,180, 150,220, 166,224))},
+  /* Barbell Y raise (lower-trap raise): prone on a ~35° incline, chest on
+     the pad, toes on the floor behind. Only the arms move, and they move as
+     one locked lever: the bar hangs plumb under the shoulder, sweeps forward
+     through m, and finishes at ear level in the line of the trunk, so the
+     arms read as an extension of the torso — the Y. */
+  bbtrapraise:{v:"side",root:"pelvis",pr:["bench_incl","bb_hands"],
+    a:POSE(J(37,100, 52,113, 60,118, 60,146, 60,174, 102,147, 106,150, 134,186, 176,206, 182,220)),
+    m:POSE(J(37,100, 52,113, 60,118, 36,132, 12,146, 102,147, 106,150, 134,186, 176,206, 182,220)),
+    b:POSE(J(37,100, 52,113, 60,118, 36,103, 13,88, 102,147, 106,150, 134,186, 176,206, 182,220))},
+  /* Cable Y raise, crossed low cables, face-on. The front plane mirrors the
+     arms, so this is the two-handed version: each hand starts across the
+     front of the opposite hip and sweeps up and out on a locked elbow to
+     ~30 deg off vertical — one arm of the Y each. The arc is 167 deg, too
+     wide for a two-key chord (the hands would cut through the shoulder at
+     mid-rep), so m holds the arms level out to the side. Shoulders stay put
+     at y56 the whole rep: the blade drives down, not up into a shrug.
+     pr "cable_low" is a new prop case (see notes); without it nothing is drawn. */
+  cabletrapraise:{v:"front",pr:["cable_low"],
+    a:POSE(J(100,28, 100,48, 108,56, 100,83, 92,110,  100,108, 106,114, 110,166, 110,212, 110,220)),
+    m:POSE(J(100,28, 100,48, 108,56, 136,58, 164,58,  100,108, 106,114, 110,166, 110,212, 110,220)),
+    b:POSE(J(100,28, 100,48, 108,56, 122,32, 136,8,   100,108, 106,114, 110,166, 110,212, 110,220))},
+  /* Power clean, four keys: deadlift start (hips above the knees, shins on
+     the bar), bar past the knees with the shoulders over it, triple
+     extension up on the toes with a shrug and the elbows high, then the
+     elbows whip round into a front rack caught in a quarter squat. The bar
+     stays on a near-vertical line over mid-foot until the turnover; dn<1
+     makes the pull the fast half. */
+  powerclean:{v:"side",pr:["bb_hands"],dn:0.85,
+    k:[POSE(J(133,126, 116,136, 107,140, 106,168, 105,196, 69,158, 64,160, 118,171, 97,212, 111,218), null, null, J(0,0, 0,0)),
+       POSE(J(138,73, 120,81, 113,88, 111,116, 109,144, 75,126, 72,130, 106,167, 97,212, 111,218), null, null, J(0,0, 0,0)),
+       POSE(J(97,26, 96,46, 97,55, 91,82, 109,104, 102,108, 103,113, 103,159, 104,205, 111,218), null, null, J(0,0, 0,0)),
+       POSE(J(103,45, 101,65, 99,74, 125,82, 110,73, 90,126, 89,131, 116,170, 97,212, 111,218), null, null, J(0,0, 0,0))]},
+  /* Sit-up: the crunch keeps going. Same flat start and the same planted
+     legs; the thoracic curls off the mat first (m, rounded back, chin
+     tucked), then the hip hinges the whole trunk up to near vertical with the
+     chest over the knees, finishing tall. Pelvis and feet never move. */
+  situp:{v:"side",root:"pelvis",pr:[],
+    a:POSE(J(62,188, 78,190, 88,191, 80,176, 68,182, 126,190, 130,192, 158,166, 178,196, 192,200),
+           null, null, J(0,0, 0,0)),
+    m:POSE(J(81,129, 82,149, 89,155, 103,131, 76,138, 126,189, 130,192, 158,166, 178,196, 192,200),
+           null, null, J(-3,4, -5,7)),
+    b:POSE(J(151,111, 143,129, 141,138, 164,121, 138,110, 131,187, 130,192, 158,166, 178,196, 192,200),
+           null, null, J(0,0, 0,0))},
+  /* Twisting sit-up: the sit-up with a rotation at the top, alternating.
+     Cyclic, two reps per loop: flat, curl up, elbow to the far knee, back
+     down, flat, then the same to the other side. The rig has no trunk yaw,
+     so the twist is carried by the arms: at the top the working elbow drives
+     down onto the knees while the other flares back and open, then they
+     swap. Hands stay at the ears on every key (mid-curl keys keep the spline
+     from dragging them off the head). Floor-true like the lying presses. */
+  twistsitup:{v:"side",root:"pelvis",pr:[],cyc:1,
+    k:[POSE(J(47,214, 67,214, 76,214, 69,187, 51,208, 121,214, 126,214, 157,178, 176,220, 190,224),
+           null, J(69,187,51,208), J(0,0,0,0)),
+       POSE(J(67,162, 77,180, 85,185, 95,159, 68,166, 122,211, 126,214, 160,177, 176,220, 190,224),
+           null, J(95,159,68,166), J(-3,4,-5,7)),
+       POSE(J(136,136, 128,155, 128,164, 156,161, 136,141, 126,209, 126,214, 165,175, 176,220, 190,224),
+           null, J(104,148,129,136), J(-2,0,-3,0)),
+       POSE(J(67,162, 77,180, 85,185, 95,159, 68,166, 122,211, 126,214, 160,177, 176,220, 190,224),
+           null, J(95,159,68,166), J(-3,4,-5,7)),
+       POSE(J(47,214, 67,214, 76,214, 69,187, 51,208, 121,214, 126,214, 157,178, 176,220, 190,224),
+           null, J(69,187,51,208), J(0,0,0,0)),
+       POSE(J(67,162, 77,180, 85,185, 95,159, 68,166, 122,211, 126,214, 160,177, 176,220, 190,224),
+           null, J(95,159,68,166), J(-3,4,-5,7)),
+       POSE(J(136,136, 128,155, 128,164, 104,148, 129,136, 126,209, 126,214, 165,175, 176,220, 190,224),
+           null, J(156,161,136,141), J(-2,0,-3,0)),
+       POSE(J(67,162, 77,180, 85,185, 95,159, 68,166, 122,211, 126,214, 160,177, 176,220, 190,224),
+           null, J(95,159,68,166), J(-3,4,-5,7))]},
+  /* Heel touches: a crunch held, not repeated. Lumbar pinned (sp), shoulder
+     blades off the floor the whole set, hips and feet furniture. The side
+     bend itself lives in the frontal plane, which a side-view rig cannot
+     draw, so it reads through the hands: one arm slides straight down the
+     floor toward its heel while the other draws up the side, then they
+     swap. Four keys on a loop (centre, near touch, centre, far touch) so
+     the alternation never plays backwards. Laid on the floor grid (y~226)
+     rather than hovering at crunch height. */
+  heeltouch:{v:"side",root:"pelvis",pr:[],cyc:1,
+    k:[POSE(J(52,183, 69,194, 78,197, 106,194, 126,213, 126,212, 131,213, 158,170, 164,216, 178,221),
+            null, J(106,194,126,213), J(0,3, 0,2)),
+       POSE(J(53,181, 69,192, 78,196, 105,205, 131,215, 126,212, 131,213, 158,170, 164,216, 178,221),
+            null, J(104,185,112,212), J(0,3, 0,2)),
+       POSE(J(52,183, 69,194, 78,197, 106,194, 126,213, 126,212, 131,213, 158,170, 164,216, 178,221),
+            null, J(106,194,126,213), J(0,3, 0,2)),
+       POSE(J(53,181, 69,192, 78,196, 104,185, 112,212, 126,212, 131,213, 158,170, 164,216, 178,221),
+            null, J(105,205,131,215), J(0,3, 0,2))]},
+  /* Butterfly kicks: the legraise floor set — lumbar pinned, palms under the
+     glutes — with the shoulders curled a touch off the mat and both straight
+     legs hovering 6-12 inches up. The scissor itself is lateral, which the
+     sagittal rig cannot extrude, so it reads here as the cross: the near leg
+     passes over the far, they level out as they open, then the far leg
+     passes over. cyc closes it into a loop so the cross never rewinds. */
+  butterflykick:{v:"side",root:"pelvis",pr:[],cyc:1,
+    k:[POSE(J(50,181, 66,194, 75,195, 96,214, 124,217, 125,203, 130,204, 179,192, 224,181, 238,176),
+            J(179,192,224,181,238,176), null, J(0,3, 0,1.5)),
+       POSE(J(50,181, 66,194, 75,195, 96,214, 124,217, 125,203, 130,204, 179,188, 222,174, 236,168),
+            J(180,195,226,187,240,184), null, J(0,3, 0,1.5)),
+       POSE(J(50,181, 66,194, 75,195, 96,214, 124,217, 125,203, 130,204, 179,192, 224,181, 238,176),
+            J(179,192,224,181,238,176), null, J(0,3, 0,1.5)),
+       POSE(J(50,181, 66,194, 75,195, 96,214, 124,217, 125,203, 130,204, 180,195, 226,187, 240,184),
+            J(179,188,222,174,236,168), null, J(0,3, 0,1.5))]},
+  /* Flutter kicks: legraise's supine base (hands tucked under the glutes, low
+     back on the mat) with the head nodded up off the floor. Straight legs
+     scissor vertically from the hip, one leg at ~34 deg while the other (l2)
+     hovers ~6 deg off the deck, crossing at ~20 deg in between. cyc closes the
+     loop so the kicks keep alternating and never play backwards. Knees stay
+     locked, toes pointed, and the low heel never reaches the floor. */
+  flutterkick:{v:"side",root:"pelvis",pr:[],cyc:1,
+    k:[POSE(J(59,186, 77,196, 86,196, 106,211, 132,213, 125,196, 130,196, 172,167, 210,142, 220,130),
+           J(181,191,226,186,240,180)),
+       POSE(J(59,186, 77,196, 86,196, 106,211, 132,213, 125,196, 130,196, 178,179, 221,163, 233,154),
+           J(178,179,221,163,233,154)),
+       POSE(J(59,186, 77,196, 86,196, 106,211, 132,213, 125,196, 130,196, 181,191, 226,186, 240,180),
+           J(172,167,210,142,220,130)),
+       POSE(J(59,186, 77,196, 86,196, 106,211, 132,213, 125,196, 130,196, 178,179, 221,163, 233,154),
+           J(178,179,221,163,233,154))]},
+  /* Starfish crunch: the trunk and the straight legs leave the floor TOGETHER
+     and meet in a V over the hips, balanced on the glutes — the shape crunch
+     (thoracic curl, bent knees) and legraise (trunk pinned) cannot draw. The
+     star is read in the sagittal plane as a long hollow-body line, arms
+     overhead and heels hovering; the rig's side view has no lateral splay, so
+     the spread itself lives in the cue. m is the half-rep: arms sweeping
+     through vertical while trunk and legs rise ~30 deg each. Straight limbs
+     are solved off the hip anchor at true segment lengths. */
+  starfish:{v:"side",root:"pelvis",pr:[],
+    a:POSE(J(36,188, 56,191, 65,192, 37,188, 10,184, 115,196, 120,196, 171,192, 217,188, 228,178),
+           null, null, J(0,0, 0,0)),
+    m:POSE(J(55,147, 64,165, 72,170, 77,142, 82,115, 116,195, 120,198, 164,173, 204,150, 212,137),
+           null, null, J(-0.5,0.5, -1,1.5)),
+    b:POSE(J(86,122, 87,142, 92,150, 118,140, 145,131, 117,194, 120,198, 144,153, 166,112, 167,97),
+           null, null, J(-1,0.5, -2.5,1.5))},
+  /* Reverse cable crunch: supine, feet toward a LOW pulley, ankle strap on
+     both feet. The shoulders and upper back stay on the mat and the hands
+     press the floor beside the hips; the work is the pelvis curling up toward
+     the ribs (posterior tilt, lumbar rounding into the sp offsets), which
+     draws the bent knees to the chest against the cable. Not legraise: there
+     the pelvis is fixed and straight legs swing from the hip. */
+  revcablecrunch:{v:"side",root:"pelvis",pr:["cable_low"],
+    a:POSE(J(24,191, 43,196, 53,196, 79,204, 106,212, 103,196, 108,196, 106,145, 152,145, 156,131),
+           null, null, J(0,0, 0,0)),
+    b:POSE(J(27,191, 44,200, 53,196, 76,212, 104,212, 98,174, 103,172, 67,136, 100,103, 92,90),
+           null, null, J(0,6, 0,4))},
 };
 
 const lerp = (a,b,t) => a + (b-a)*t;
@@ -4574,7 +4726,86 @@ const X = [
  cue:"Thirty on, thirty off. Hinge hard and breathe at the top."},
 {id:"shadowrun",n:"High Knees / Shadow Run",arch:"run",eq:["bw"],cls:"cardio",pat:"cardio",
  pri:["hipflex","calves"],sec:["quads","abs","tibialis"],
- cue:"Knees to hip height, quick feet, arms driving. No treadmill required."}
+ cue:"Knees to hip height, quick feet, arms driving. No treadmill required."},
+/* --- from the notebook (2026-11-28) ------------------------------------ */
+{id:"inclinefly",n:"Incline Dumbbell Fly",arch:"inclinefly",eq:["dumbbell","incline"],cls:"iso",pat:"push_h",
+ pri:["chest_up","chest"],sec:["delt_f"],
+ cue:"Lock the elbow angle and only move at the shoulder. If the elbows start bending, it's a press now."},
+{id:"bbtrapraise",n:"Barbell Y Raise",arch:"bbtrapraise",eq:["barbell","incline"],cls:"iso",pat:"iso_delt",
+ pri:["traps","upperback"],sec:["delt_r","delt_f"],
+ cue:"Chest stays on the pad, arms stay straight. Pull the shoulder blades down and lift the bar to ear level — light, or it turns into a shrug."},
+{id:"cabletrapraise",n:"Cable Y Raise",arch:"cabletrapraise",eq:["cable"],cls:"iso",pat:"iso_delt",uni:1,
+ pri:["traps","upperback"],sec:["delt_s"],
+ cue:"Thumb up, elbow locked, sweep from the opposite hip to the top of a Y. Shoulder blade down — if your ear meets your shoulder, it's a shrug."},
+{id:"powerclean",n:"Power Clean",arch:"powerclean",eq:["barbell"],cls:"comp",pat:"hinge",big:1,
+ pri:["glutes","hams","traps","quads"],sec:["lowerback","upperback","calves","forearms","delt_f"],
+ cue:"Push the floor away, stay over the bar, then jump and shrug. Elbows go round fast — catch it on the shoulders, not the hands."},
+{id:"situp",n:"Sit-Up",arch:"situp",eq:["bw"],cls:"core",pat:"core",
+ pri:["abs","hipflex"],sec:["obliques"],
+ cue:"Curl the ribs up first, then sit tall. Hands stay light — pulling on your neck is not a rep."},
+{id:"twistsitup",n:"Twisting Sit-Up",arch:"twistsitup",eq:["bw"],cls:"core",pat:"core",
+ pri:["abs","obliques"],sec:["hipflex"],
+ cue:"Elbow to the opposite knee, then switch. Turn from the ribs, not by yanking the head."},
+{id:"heeltouch",n:"Heel Touches",arch:"heeltouch",eq:["bw"],cls:"core",pat:"core",
+ pri:["obliques"],sec:["abs"],
+ cue:"Shoulders stay off the floor the whole set. Bend sideways to the heel — don't sit up to reach it."},
+{id:"butterflykick",n:"Butterfly Kicks",arch:"butterflykick",eq:["bw"],cls:"core",pat:"core",
+ pri:["abs","hipflex"],sec:["adductors","quads"],
+ cue:"Legs a few inches up, cross and open in a steady rhythm. Low back stays on the floor."},
+{id:"flutterkick",n:"Flutter Kicks",arch:"flutterkick",eq:["bw"],cls:"core",pat:"core",unit:"sec",
+ pri:["abs","hipflex"],sec:["quads"],
+ cue:"Low back stays pinned and the heels never touch. Small, quick kicks from the hip, knees locked."},
+{id:"starfish",n:"Starfish Crunch",arch:"starfish",eq:["bw"],cls:"core",pat:"core",
+ pri:["abs","hipflex"],sec:["obliques","adductors"],
+ cue:"Start wide as an X, then close it — hands to shins over the hips. Open back out without landing."},
+{id:"revcablecrunch",n:"Reverse Cable Crunch",arch:"revcablecrunch",eq:["cable"],cls:"core",pat:"core",
+ pri:["abs"],sec:["hipflex","obliques"],
+ cue:"Curl the hips off the floor toward the ribs. The knees come along for the ride; don't swing them."},
+{id:"banddip",n:"Banded Dip",arch:"dip",eq:["dipbar","bands"],cls:"comp",pat:"push_h",
+ pri:["chest","triceps"],sec:["delt_f","serratus"],
+ cue:"Band looped across the bars, knees in it. It helps most at the bottom, so own the lockout yourself."},
+{id:"dbskull",n:"Dumbbell Skull Crusher",arch:"lyingext",eq:["dumbbell","bench"],cls:"iso",pat:"iso_arm",
+ pri:["triceps"],sec:[],
+ cue:"Palms facing, elbows pointing at the ceiling. Bells lower beside the head, and only the forearms move."},
+{id:"dbskull1",n:"Single-Arm Dumbbell Skull Crusher",arch:"lyingext",eq:["dumbbell","bench"],cls:"iso",pat:"iso_arm",uni:1,
+ pri:["triceps"],sec:[],
+ cue:"One arm works while the other holds locked out. The working elbow stays pointed up and doesn't drift."},
+{id:"seatedohp",n:"Seated Barbell Press",arch:"ohp",eq:["barbell","incline","rack"],cls:"comp",pat:"push_v",big:1,
+ pri:["delt_f","triceps"],sec:["delt_s","upperback","traps"],
+ cue:"Bench upright, back on the pad, ribs down. Without the legs to help, the shoulders do all of it."},
+{id:"supfrontraise",n:"Underhand Front Raise",arch:"frontraise",eq:["dumbbell"],cls:"iso",pat:"iso_delt",
+ pri:["delt_f"],sec:["biceps","chest_up"],
+ cue:"Palms up, slight bend in the elbow, raise to eye level. Go lighter than you think."},
+{id:"bbfrontraise",n:"Barbell Front Raise",arch:"frontraise",eq:["barbell"],cls:"iso",pat:"iso_delt",
+ pri:["delt_f"],sec:["chest_up","abs"],
+ cue:"Overhand, shoulder-width, raise to eye level. If you have to lean back, the bar is too heavy."},
+{id:"bbshrug",n:"Barbell Shrug",arch:"shrug",eq:["barbell"],cls:"iso",pat:"iso_delt",
+ pri:["traps"],sec:["forearms","neck"],
+ cue:"Bar against the thighs, shrug straight up, pause at the top. Straps before your grip quits."},
+{id:"ezcurl",n:"EZ-Bar Curl",arch:"curl",eq:["ezbar"],cls:"iso",pat:"iso_arm",
+ pri:["biceps"],sec:["forearms"],
+ cue:"Grip the angled part so the wrists stay happy. Elbows stay at your sides, the bar does the travelling."},
+{id:"dbsplitsquat",n:"Dumbbell Split Squat",arch:"lunge",eq:["dumbbell"],cls:"acc",pat:"lunge",uni:1,
+ pri:["quads","glutes"],sec:["hams","adductors"],
+ cue:"Bells hang at your sides, feet stay planted. Straight down until the back knee nearly touches."},
+{id:"bbcalf",n:"Barbell Calf Raise",arch:"calf",eq:["barbell","rack"],cls:"iso",pat:"iso_leg",
+ pri:["calves"],sec:["tibialis"],
+ cue:"Bar on the back like a squat, balls of the feet on a plate. Full stretch, pause at the top."},
+{id:"dbsinglecalf",n:"Single-Leg Dumbbell Calf Raise",arch:"calf",eq:["dumbbell"],cls:"iso",pat:"iso_leg",uni:1,
+ pri:["calves"],sec:["tibialis"],
+ cue:"Bell in the working-side hand, other hand on something solid. Full range, no bouncing."},
+{id:"bandbridge",n:"Banded Glute Bridge",arch:"hipthrust",eq:["bands"],cls:"acc",pat:"hip",
+ pri:["glutes"],sec:["hams","abs"],
+ cue:"Mini-band above the knees, push them out against it the whole way up. Hold the top."},
+{id:"elevbridge",n:"Elevated Glute Bridge",arch:"hipthrust",eq:["bench"],cls:"acc",pat:"hip",
+ pri:["glutes"],sec:["hams","abs"],
+ cue:"Shoulder blades on the bench, chin tucked. Drive through the heels and lock out with the glutes, not the back."},
+{id:"bwcrunch",n:"Crunch",arch:"crunch",eq:["bw"],cls:"core",pat:"core",
+ pri:["abs"],sec:["obliques"],
+ cue:"Curl the ribs toward the hips, don't yank the head. Small range done properly beats a big one done badly."},
+{id:"lowleghold",n:"9-Inch Leg Hold",arch:"legraise",eq:["bw"],cls:"core",pat:"core",unit:"sec",
+ pri:["abs","hipflex"],sec:["quads"],
+ cue:"Legs straight, heels about nine inches up, low back flat on the floor. If it arches, the set is over."},
 ];
 const XMAP = Object.fromEntries(X.map(x=>[x.id,x]));
 /* ------------------------------------------------------------------ focus */
@@ -8154,7 +8385,7 @@ function watchPayload(s){
     streak:state.streak|0, points:scoreSession(s, state.streak).total,
     moves:s.moves.map((m, i) => ({i, n:m.x.n, sets:m.sets, reps:String(repsLabel(m)), rest:m.rest|0,
       done:Array.from({length:m.sets}, (_, k) => !!m.doneSets[k]), claimed:!!m.claimed,
-      failure:!!m.failure, weight:String(m.weight || ""), cls:m.x.cls})),
+      failure:!!m.failure, weight:String(m.weight || ""), cls:m.x.cls, a:m.x.arch || ""})),
     cardio:s.cardio ? {n:s.cardio.x.n, style:s.cardio.style, styleName:s.cardio.styleName,
       mins:s.cardio.mins|0, target:cardioTarget(s.cardio), segs:s.cardio.segs || [],
       done:!!s.cardio.done, doneMins:s.cardio.doneMins != null ? s.cardio.doneMins : null} : null

@@ -7,6 +7,7 @@ struct MoveView: View {
     @EnvironmentObject var store: SessionStore
     @EnvironmentObject var coach: Coach
     @EnvironmentObject var workout: WorkoutManager
+    @State private var showRig = false
 
     private var move: WatchSession.Move? { store.session?.moves.first { $0.i == moveIndex } }
 
@@ -22,6 +23,15 @@ struct MoveView: View {
                                 .contentTransition(.numericText())
                                 .animation(.easeOut(duration: 0.3), value: s.doneSets)
                             Text("of session").fcEyebrow(9)
+                            Spacer(minLength: 0)
+                            /* the movement in 3D: a small mark, nothing more */
+                            if RigPlayer.has(m.a) {
+                                Button { showRig = true } label: {
+                                    Image("BankMark").resizable().frame(width: 24, height: 24).clipShape(Circle())
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityLabel("Show \(m.n) in 3D")
+                            }
                         }
                         ProgressView(value: s.progress).tint(.fcAccent)
                     }
@@ -89,5 +99,8 @@ struct MoveView: View {
             }
         }
         .navigationTitle(move.map { "\($0.doneCount)/\($0.sets)" } ?? "")
+        .sheet(isPresented: $showRig) {
+            if let m = move, let a = m.a { RigSheet(name: m.n, arch: a) }
+        }
     }
 }

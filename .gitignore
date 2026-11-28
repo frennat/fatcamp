@@ -9,3 +9,4 @@ www/
 ios/App/Pods/
 ios/DerivedData/
 *.xcuserdatad
+tools/rig-harness/
